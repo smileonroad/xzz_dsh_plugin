@@ -104,7 +104,27 @@ maxRows 是解析器硬上限，解析时就停，防的是模型丢来一个几
   name: dsh-csv-query-tool
 ```
 
-重启 web，让模型解析一段 CSV，它自主调用 csv_query，收到 Parsed 3 columns, 3 rows，算出平均值。端到端通了。
+## 端到端验证，bundle 里的工具真的能用
+
+装进去只是第一步，还得证明这个从 bundle 加载的工具真的能被模型用起来。重启 web，新建会话，发了一条消息，让模型解析一段三行的 CSV 并算 age 列平均值。
+
+等模型跑完一轮，界面上是完整的链路。
+
+```
+用户消息  请使用 csv_query 工具解析这段 CSV，并告诉我共有几行、age 列的平均值
+    ↓
+工具调用卡片  csv_query · name,age,city    ← 模型自主发起调用，传了 CSV 文本
+    ↓
+工具执行  返回 { ok: true, columns: [...], rows: [...], totalRows: 3 }
+    ↓
+模型回复  The csv_query returned "Parsed 3 columns, 3 rows"，然后算出平均值 30
+```
+
+模型读到的 Parsed 3 columns, 3 rows 正是 render 的输出，它拿着这个结果继续算平均值，链路是通的。
+
+轨迹视图也确认了这一点，点进会话的轨迹面板，csv_query 的调用记录和 Parsed 3 columns, 3 rows 的结果按轮次排在事件序列里，跟前面 sql_check 验证时看到的一样。
+
+到这一步，工具的验证闭环就是完整的三层，dump-config 看挂载（layer 在组合树里）、测试看行为（13 个用例）、web 端到端看真实模型轮次（模型自主调用并消费结果）。三层都过，才敢说这个 bundle 是能用的。
 
 ## 三种加载方式的适用场景
 
