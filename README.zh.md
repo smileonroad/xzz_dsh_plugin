@@ -30,8 +30,18 @@ xzz-dsh-plugin/
 
 - 从零开始：先读 [docs/cordis-basics.md](docs/cordis-basics.md) 了解插件模型，再读 [docs/plugin-package.md](docs/plugin-package.md) 了解包布局。
 - 第一个实战：`examples/helloworld-command/`（`/helloworld` 命令插件，含源码与测试）；第二个：`examples/sql-check-tool/`（`sql_check` 工具插件）；第三个：`examples/csv-query-tool/`（`csv_query` 工具插件，含插件配置与可安装 bundle）。
-- 踩坑心得（对外文章）：`notes/2026-08-15-helloworld-command.md`、`notes/2026-08-16-sql-check-tool.md` 与 `notes/2026-08-16-csv-query-tool.md`。
+- 经验文章索引：见下方 [经验文章](#经验文章)。
 - 官方一手教程：[reference/cordis-tutorial/](reference/cordis-tutorial/)。
+
+## 经验文章
+
+对外发布的经验笔记，一个实战对应一篇，每篇与其 `examples/` 下的源码包配对（实战表见 [docs/README.md](docs/README.md)）。
+
+| 日期 | 主题 | 笔记 |
+| ---- | ---- | ---- |
+| 2026-08-15 | `/helloworld` 命令插件实战：命令 vs 工具、三个坑、测试哲学 | [2026-08-15-helloworld-command.md](notes/2026-08-15-helloworld-command.md) |
+| 2026-08-16 | `sql_check` 工具插件实战：defineTool 契约、canonical value、presenters 纯函数、零依赖 node:sqlite | [2026-08-16-sql-check-tool.md](notes/2026-08-16-sql-check-tool.md) |
+| 2026-08-18 | `csv_query` 工具插件实战：Config schema、参数覆盖配置分层、手写 CSV 解析器、bundle 打包分发 | [2026-08-16-csv-query-tool.md](notes/2026-08-16-csv-query-tool.md) |
 
 ## 什么是 DeepSeek Harness（dsh）
 

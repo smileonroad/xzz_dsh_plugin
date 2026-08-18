@@ -47,9 +47,20 @@ cheatsheet + key deepseek-harness sources).
   command plugin, with source and tests). Second: `examples/sql-check-tool/`
   (the `sql_check` tool plugin). Third: `examples/csv-query-tool/` (the
   `csv_query` tool plugin, with plugin config and an installable bundle).
-- Pitfalls essays (published articles): `notes/2026-08-15-helloworld-command.md`,
-  `notes/2026-08-16-sql-check-tool.md`, and `notes/2026-08-16-csv-query-tool.md`.
+- Experience essays: see [Published notes](#published-notes) below.
 - Official first-hand tutorial: [reference/cordis-tutorial/](reference/cordis-tutorial/).
+
+## Published notes
+
+Experience essays, one per practice project, written in Chinese. Each pairs
+with its source package under `examples/` (see the practice table in
+[docs/README.md](docs/README.md)).
+
+| Date | Topic | Note |
+| ---- | ----- | ---- |
+| 2026-08-15 | `/helloworld` command plugin: commands vs tools, three pitfalls, test philosophy | [2026-08-15-helloworld-command.md](notes/2026-08-15-helloworld-command.md) |
+| 2026-08-16 | `sql_check` tool plugin: defineTool contract, canonical values, pure presenters, zero-dependency node:sqlite | [2026-08-16-sql-check-tool.md](notes/2026-08-16-sql-check-tool.md) |
+| 2026-08-18 | `csv_query` tool plugin: Config schema, config/argument layering, hand-written CSV parser, bundle distribution | [2026-08-16-csv-query-tool.md](notes/2026-08-16-csv-query-tool.md) |
 
 ## What is DeepSeek Harness (dsh)
 
