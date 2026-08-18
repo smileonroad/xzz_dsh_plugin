@@ -1,0 +1,16 @@
+# helloworld-command composition: the command registry, its session and agent
+# registries, and the demo plugin. A Loader boots this file directly as a
+# config tree; the driver mints a stub agent on a real session to execute the
+# command (the agent registry serves registration and scoped lookup without a
+# loop factory).
+- id: session
+  name: '@deepseek-ai/dsh-session'
+
+- id: agents
+  name: '@deepseek-ai/dsh-agent'
+
+- id: commands
+  name: '@deepseek-ai/dsh-commands'
+
+- id: helloworld
+  name: './src/index.ts'

@@ -1,0 +1,8 @@
+# Bilingual-pair consistency record: the git blob hash of each side as of the
+# last confirmed-consistent state. Both languages carry equal authority; after
+# editing either side, bring the other along and re-record with:
+#   git hash-object README.md README.zh.md
+# (Not gated by dsh's verify-translation-pairing in this repo; kept for
+# consistency with examples/helloworld-command/.)
+README.md: a107999838adf5b6385288bbbba944794817c4e9
+README.zh.md: 782a55e71e4821bb2e5505e9db9a9b92659b03b7

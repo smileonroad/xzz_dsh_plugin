@@ -1,0 +1,7 @@
+# Bundle layer: plugin rows reference the package by name, so Node resolution
+# finds the installed code in the profile's node_modules. Installed with:
+#   pnpm dsh plugin --profile web add examples/csv-query-tool/bundle
+# Plugin config can be supplied here; omitted fields take Schema defaults.
+- insert:
+    - id: csv-query-tool
+      name: dsh-csv-query-tool
