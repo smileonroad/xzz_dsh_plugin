@@ -122,6 +122,20 @@ maxRows 是解析器硬上限，解析时就停，防的是模型丢来一个几
 
 模型读到的 Parsed 3 columns, 3 rows 正是 render 的输出，它拿着这个结果继续算平均值，链路是通的。
 
+但这一轮还差一件事，配置没有参与验证。工具装进去时是默认配置，defaultDelimiter 和 maxRows 都是摆设，端到端里看不到它们。于是我做了第二轮验证，给 bundle 的 patch 加上配置，maxRows: 2，重新安装重启，再让模型解析那段三行的 CSV。
+
+结果立刻不一样了。
+
+```
+工具执行  返回 { ok: true, columns: [...], rows: [2 行], totalRows: 2, truncated: true }
+    ↓
+模型回复  返回了 2 行数据，且被截断（truncated）了
+```
+
+工具返回的 render 文本是 Parsed 2 columns, 2 rows (truncated)，模型照着读出了「被截断」。三行数据只回来两行，这就是配置在真实链路里生效的证据，配置不是摆设。
+
+这一轮还踩了个隐蔽的坑，值得记。pnpm 的 file: 依赖是拷贝不是链接，我改了 bundle 的 patch 文件，profile 里装着的还是旧副本，dump-config 里 config 一直不出现。重新 remove 再 add 一次，config 才进了组合树。改 bundle 之后必须重新安装，这是 file: 依赖的固定动作。
+
 轨迹视图也确认了这一点，点进会话的轨迹面板，csv_query 的调用记录和 Parsed 3 columns, 3 rows 的结果按轮次排在事件序列里，跟前面 sql_check 验证时看到的一样。
 
 到这一步，工具的验证闭环就是完整的三层，dump-config 看挂载（layer 在组合树里）、测试看行为（13 个用例）、web 端到端看真实模型轮次（模型自主调用并消费结果）。三层都过，才敢说这个 bundle 是能用的。

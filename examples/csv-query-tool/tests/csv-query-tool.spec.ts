@@ -9,11 +9,13 @@ import * as csvQueryTool from '../src/index.ts'
 const signal = new AbortController().signal
 
 /** Mount the real tool registry + system-prompt assembler, then the plugin. */
-async function harness(config: csvQueryTool.Config = {}): Promise<{ ctx: Context; tools: ToolRuntime }> {
+async function harness(config: Partial<csvQueryTool.Config> = {}): Promise<{ ctx: Context; tools: ToolRuntime }> {
   const ctx = new Context()
   await ctx.plugin(SystemPrompt)
   await ctx.plugin(ToolRuntime, { mode: 'native' })
-  await ctx.plugin(csvQueryTool, config)
+  // Merge with the schema defaults so the plugin always sees a complete config.
+  const effective: csvQueryTool.Config = { defaultDelimiter: ',', maxRows: 1000, ...config }
+  await ctx.plugin(csvQueryTool, effective)
   return { ctx, tools: ctx.tools }
 }
 
@@ -50,7 +52,7 @@ describe('csv-query-tool example plugin', () => {
       description: 'duplicate registration must throw',
       parameters: {},
       output: { schema: { type: 'null' }, render: () => [] },
-      execute: () => null,
+      execute: async () => null,
     }))).toThrow(/tool "csv_query" is already registered/)
   })
 

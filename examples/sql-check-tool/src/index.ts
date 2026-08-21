@@ -80,15 +80,15 @@ export function apply(ctx: Context) {
       // Model-facing projection of the canonical value.
       render: (_args, value) => [{
         type: 'text',
-        text: value.valid
+        text: value.valid === true
           ? 'SQL is valid (SQLite dialect).'
-          : value.errors.map(e => `- [${e.type}] ${e.message}`).join('\n'),
+          : (value.errors ?? []).map(e => `- [${e.type}] ${e.message}`).join('\n'),
       }],
       // Replayable card data: persisted on `tool/result`, handed to
       // `presentResult` on live streaming AND on session-log replay.
       presentationMeta: (_args, value) => ({
-        valid: value.valid,
-        errorCount: value.errors.length,
+        valid: value.valid === true,
+        errorCount: (value.errors ?? []).length,
       }),
     },
     // Pending-state card. Pure function of `args` — no I/O, no session state.

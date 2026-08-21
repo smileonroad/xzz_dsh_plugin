@@ -37,6 +37,7 @@ async function run(
   const execution = await test.ctx.commands.execute(
     test.agent,
     `/helloworld${suffix}`,
+    [],
     new AbortController().signal,
   )
   if (execution === undefined) throw new Error('helloworld command was not registered')
@@ -109,7 +110,7 @@ describe('helloworld-command example plugin', () => {
 
   it('admission misses log nothing', async () => {
     const test = await harness()
-    const missing = await test.ctx.commands.execute(test.agent, '/nope', new AbortController().signal)
+    const missing = await test.ctx.commands.execute(test.agent, '/nope', [], new AbortController().signal)
     expect(missing).toBeUndefined()
     expect(test.session.events).toHaveLength(0)
   })

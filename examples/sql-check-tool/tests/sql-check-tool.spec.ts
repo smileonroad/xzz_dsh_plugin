@@ -50,7 +50,7 @@ describe('sql-check-tool example plugin', () => {
       description: 'duplicate registration must throw',
       parameters: {},
       output: { schema: { type: 'null' }, render: () => [] },
-      execute: () => null,
+      execute: async () => null,
     }))).toThrow(/tool "sql_check" is already registered/)
   })
 

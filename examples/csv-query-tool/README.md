@@ -58,6 +58,13 @@ The plugin accepts config through `cordis.yml` (Loader path), through
 Layering: a per-call `delimiter` argument overrides `defaultDelimiter`; `limit`
 only trims the returned rows so `totalRows` keeps the true parsed count.
 
+The installed bundle layer pins `maxRows: 2` (see `bundle/cordis.patch.yml`)
+so the web E2E can observe config reaching the tool: a 3-row CSV returns
+`Parsed 2 columns, 2 rows (truncated)` and the model reports the truncation.
+Note that pnpm installs a `file:` dependency as a **copy**, not a link — after
+editing the bundle, `dsh plugin --profile web remove` + `add` again or the
+profile keeps the stale copy and the config never appears.
+
 ## Design
 
 - **Domain outcomes, not throws.** Malformed CSV and blank input return

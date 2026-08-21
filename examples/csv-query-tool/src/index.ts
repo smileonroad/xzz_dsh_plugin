@@ -261,14 +261,14 @@ export function apply(ctx: Context, config: Config) {
         : parsed.columns
           .map((name, index) => args.select!.includes(name) ? index : -1)
           .filter(index => index >= 0)
-      const columns = selectedIndexes.map(index => parsed.columns[index])
+      const columns = selectedIndexes.map(index => parsed.columns[index]!)
       const limited = args.limit === undefined
         ? parsed.rows
         : parsed.rows.slice(0, args.limit)
       const rows = limited.map(row => {
         const out: Record<string, string> = {}
         for (const index of selectedIndexes) {
-          out[parsed.columns[index]] = row[index] ?? ''
+          out[parsed.columns[index]!] = row[index] ?? ''
         }
         return out
       })

@@ -41,6 +41,8 @@ alice,25"*。
 
 分层规则：调用参数 `delimiter` 覆盖 `defaultDelimiter`；`limit` 只裁剪返回的行，`totalRows` 保持真实解析数。
 
+已安装的 bundle 层固定了 `maxRows: 2`（见 `bundle/cordis.patch.yml`），用于在 web 端到端中观察配置到达工具：一段 3 行的 CSV 只返回 `Parsed 2 columns, 2 rows (truncated)`，模型会报告截断。注意 pnpm 的 `file:` 依赖是**拷贝**不是链接——改完 bundle 必须 `dsh plugin --profile web remove` 再 `add`，否则 profile 里还是旧副本，config 永远不会出现。
+
 ## 设计思路
 
 - **领域结果，不抛异常。** 畸形 CSV 与空输入返回 `{ ok: false, error: { type: 'parse' | 'empty', message, line? } }`，是模型可以直接分支的正常规范值。throw 只留给基础设施故障。
