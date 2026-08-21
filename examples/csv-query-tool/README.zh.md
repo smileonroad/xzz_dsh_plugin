@@ -75,7 +75,8 @@ csv-query-tool/
 #    从 profile 的 node_modules 解析）
 cd examples/csv-query-tool
 npx esbuild src/index.ts --bundle --format=esm --platform=node \
-  --external:@deepseek-ai/dsh-tools --outfile=bundle/index.js
+  --external:@deepseek-ai/dsh-tools --external:@deepseek-ai/schemastery \
+  --outfile=bundle/index.js
 
 # 2. 装进 profile（在 deepseek-harness 根目录）
 cd ../..
@@ -85,6 +86,28 @@ pnpm dsh plugin --profile web add examples/csv-query-tool/bundle
 pnpm dsh --profile web --dump-config   # 出现 "# == dsh-csv-query-tool" layer
 pnpm dsh web
 ```
+
+### 更新 bundle 三步纪律
+
+bundle 是**分发快照**：构建产物 `index.js` 加清单的拷贝。`src/index.ts` 是权威源码，但 profile 跑的是构建产物，只改源码什么都不会变。每次改源码必须按序完成三步：
+
+```sh
+# 1. 重建产物（在 deepseek-harness 根目录）
+node node_modules/.pnpm/esbuild@*/node_modules/esbuild/bin/esbuild \
+  examples/csv-query-tool/src/index.ts --bundle --format=esm --platform=node \
+  --external:@deepseek-ai/dsh-tools --external:@deepseek-ai/schemastery \
+  --outfile=examples/csv-query-tool/bundle/index.js
+
+# 2. bundle/package.json 里 bump 版本号（0.1.0 → 0.1.1），然后重装——
+#    pnpm 的 file: 依赖是拷贝，不 remove + add 就一直是旧快照
+pnpm dsh plugin --profile web remove dsh-csv-query-tool
+pnpm dsh plugin --profile web add "dsh-csv-query-tool@file:$PWD/examples/csv-query-tool/bundle"
+
+# 3. 重启 web 进程（HMR 发布版禁用）
+taskkill //F //IM node.exe && pnpm dsh web
+```
+
+漏掉任何一步，profile 静默跑的都是旧版——上面的 config 端到端验证正好踩中（patch 改了但 profile 副本是旧的，`config:` 一直不出现，重装才生效）。版本号 bump 让「新旧」可见：dump-config 看 layer，profile 的 package.json 钉住安装的版本。
 
 `dsh plugin add` 会把 bundle pnpm-link 进 profile，并因包声明了 `dsh.bundle` 而把它追加到 profile 的 `dsh.profile.bundles` 列表。bundle layer 按包名解析插件，所以不涉及 junction 或绝对路径——这是 `--patch`（本地临时）和 junction 相对路径（机器本地）都不具备的可移植分发路径。卸载用 `dsh plugin --profile web remove dsh-csv-query-tool`。
 

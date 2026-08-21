@@ -115,7 +115,8 @@ The `bundle/` directory is the installable form. Build it, then install:
 #    runtime dependency resolved from the profile's node_modules)
 cd examples/csv-query-tool
 npx esbuild src/index.ts --bundle --format=esm --platform=node \
-  --external:@deepseek-ai/dsh-tools --outfile=bundle/index.js
+  --external:@deepseek-ai/dsh-tools --external:@deepseek-ai/schemastery \
+  --outfile=bundle/index.js
 
 # 2. Install into a profile (from the deepseek-harness root)
 cd ../..
@@ -125,6 +126,35 @@ pnpm dsh plugin --profile web add examples/csv-query-tool/bundle
 pnpm dsh --profile web --dump-config   # shows a "# == dsh-csv-query-tool" layer
 pnpm dsh web
 ```
+
+### Updating the bundle — three mandatory steps
+
+The bundle is a **distribution snapshot**: a copy of the built `index.js` plus
+its manifest. `src/index.ts` is the source of truth, but the profile runs the
+built copy, so changing source alone changes nothing. Every source change
+requires, in order:
+
+```sh
+# 1. Rebuild the artifact (from the deepseek-harness root)
+node node_modules/.pnpm/esbuild@*/node_modules/esbuild/bin/esbuild \
+  examples/csv-query-tool/src/index.ts --bundle --format=esm --platform=node \
+  --external:@deepseek-ai/dsh-tools --external:@deepseek-ai/schemastery \
+  --outfile=examples/csv-query-tool/bundle/index.js
+
+# 2. Bump the version in bundle/package.json (0.1.0 → 0.1.1), then reinstall —
+#    pnpm installs a file: dependency as a COPY, so the profile keeps the old
+#    snapshot until you remove + add again
+pnpm dsh plugin --profile web remove dsh-csv-query-tool
+pnpm dsh plugin --profile web add "dsh-csv-query-tool@file:$PWD/examples/csv-query-tool/bundle"
+
+# 3. Restart the web process (HMR is disabled in release builds)
+taskkill //F //IM node.exe && pnpm dsh web
+```
+
+Skipping any step silently runs the previous version — the config E2E above
+hit exactly this (patch edited, profile copy stale, `config:` never appeared
+until reinstall). The version bump makes staleness visible: `dump-config`
+shows the layer, and the profile's `package.json` pins the installed version.
 
 `dsh plugin add` pnpm-links the bundle into the profile and appends it to the
 profile's `dsh.profile.bundles` list because the package declares
