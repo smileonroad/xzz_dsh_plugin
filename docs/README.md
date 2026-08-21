@@ -61,11 +61,11 @@ git hash-object docs/cordis-basics.md reference/cordis-primer.zh.md ...
 
 | 摘要                     | 上游原文                                                     | 摘要 hash | 上游 hash | 一致? |
 | ------------------------ | ------------------------------------------------------------ | --------- | --------- | ----- |
-| `docs/cordis-basics.md`  | `reference/cordis-primer.zh.md`                              | 7cf57c2   | d4d60f6   | ✓     |
-| `docs/adding-a-tool.md`  | `reference/cookbook/adding-a-tool.zh.md`                     | 60c09e0   | 27a90ce   | ✓     |
-| `docs/plugin-package.md` | `reference/cookbook/adding-a-package.zh.md`                  | c8e77c0   | b7a7492   | ✓     |
-| `docs/plugin-config.md` | `reference/basic/config.md`（deepseek-harness `docs/user/develop/basic/config.md` 双语副本） | 8fa986b | 21ba39f / a882c4d | ✓     |
-| `docs/client-plugin.md`  | `reference/cookbook/adding-a-conversation-node.zh.md`（部分）+ deepseek-harness `packages/client/AGENTS.md` | 6fc508e   | 92445e1   | ✓     |
+| `docs/cordis-basics.md`  | `reference/cordis-primer.zh.md`                              | 7cf57c2   | 9990736   | ✓     |
+| `docs/adding-a-tool.md`  | `reference/cookbook/adding-a-tool.zh.md`                     | 60c09e0   | 6a24d5d   | ✓     |
+| `docs/plugin-package.md` | `reference/cookbook/adding-a-package.zh.md`                  | c8e77c0   | c6d0918   | ✓     |
+| `docs/plugin-config.md` | `reference/basic/config.md`（deepseek-harness `docs/user/develop/basic/config.md` 双语副本） | 8fa986b | d935fc3 / 642a413 | ✓     |
+| `docs/client-plugin.md`  | `reference/cookbook/adding-a-conversation-node.zh.md`（部分）+ deepseek-harness `packages/client/AGENTS.md` | 6fc508e   | 2986f69   | ✓     |
 
 > `docs/client-plugin.md` 还参考了 deepseek-harness 侧的 `packages/client/AGENTS.md`、`apps/web/`、`packages/client/modules/`、`packages/client/hmr/` 等；hash 只覆盖本仓库内的原文。摘要对 deepseek-harness 文件的引用更新时，修改本表备注。
 >
