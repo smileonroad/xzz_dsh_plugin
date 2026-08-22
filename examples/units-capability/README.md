@@ -88,6 +88,72 @@ Rules that fall out of this split:
   any `ctx.tools` registration, `unit_convert`'s name / description / parameters
   are assembled into the model's system prompt by `dsh-system-prompt`.
 
+## Loading and runtime flow
+
+Two sequence diagrams make the three roles concrete: how the composition
+**boots** (provider registers the service, consumer waits for it) and how a
+model call **flows** through the seam at runtime.
+
+### Loading, who registers what and in what order
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant L as Loader (cordis.yml)
+    participant P as units-builtin (Provider)
+    participant S as Service base class (super(ctx, 'units'))
+    participant C as tool-units (Consumer)
+    participant R as tools registry
+
+    Note over L: boot starts, plugins scheduled by dependency
+    L->>P: apply(ctx), no inject so it runs first
+    P->>S: new BuiltinUnits(ctx)
+    S-->>L: registers ctx.units
+    Note over L: tool-units injects ['tools', 'units']<br/>cordis waits until both exist
+    L->>C: apply(ctx)
+    C->>R: ctx.tools.register(unit_convert)
+    Note over R: tool schema flows into the system prompt
+```
+
+Note the Definition (`units/`) does **not** appear in this diagram, because it
+has no `apply` and never enters the composition tree. It is a plain library
+imported by the provider and the consumer — the contract is just there, it does
+not "load". The custom provider (`units-custom/`) follows the exact same path;
+only its table comes from config instead of a constant.
+
+### Runtime, what happens when the model calls the tool
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant M as model / agent loop
+    participant R as tools registry
+    participant T as unit_convert execute
+    participant U as ctx.units (UnitsService)
+    participant D as convertWithTable (pure math, in Definition)
+
+    M->>R: ctx.tools.execute('unit_convert', args)
+    R->>R: auto-validate args (JSON Schema)
+    R->>T: execute(args)
+    T->>U: ctx.units.convert({ value, from, to })
+    U->>D: convertWithTable(value, from, to, table)
+    alt domain error (unknown unit / cross-system)
+        D-->>U: throws UnitsError
+        U-->>T: error propagates, service does not catch
+        T-->>R: { ok: false, error: { type, message } }
+    else ok
+        D-->>U: number
+        U-->>T: { value, from, to }
+        T-->>R: { ok: true, value, from, to }
+    end
+    R-->>M: rendered ToolExecutionResult
+```
+
+The consumer's `execute` is the only place that catches `UnitsError` — the
+service layer lets it propagate (a domain error, not an infrastructure
+failure) — and the tool maps it to a canonical `{ ok: false, error }` result,
+never a throw.
+
 ## How to develop
 
 ```

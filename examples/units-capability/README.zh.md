@@ -47,6 +47,63 @@ dsh 里插件互不 import，只通过 `ctx` 上扁平的服务键耦合。所�
 - **加载顺序由依赖决定，不是文件顺序。** 工具的 `inject` 让 cordis 等齐 `tools` 和 `units` 才加载它，所以 provider 行不必写在 tool 行前面（写在前只是为了可读性）。
 - **工具的 schema 照样免费进系统提示词。** 和任何 `ctx.tools` 注册一样，`unit_convert` 的 name / description / parameters 由 `dsh-system-prompt` 装配进模型的系统提示词。
 
+## 加载与运行时序
+
+两张时序图把三个角色落到「动起来」的样子：组合**启动**时谁注册什么、谁等谁，以及模型调用时调用链**怎么走**。
+
+### 加载，谁注册什么、什么顺序
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant L as Loader (cordis.yml)
+    participant P as units-builtin (Provider)
+    participant S as Service 基类 (super(ctx, 'units'))
+    participant C as tool-units (Consumer)
+    participant R as tools 注册表
+
+    Note over L: 启动，按依赖调度插件
+    L->>P: apply(ctx)，无 inject，先执行
+    P->>S: new BuiltinUnits(ctx)
+    S-->>L: 注册 ctx.units
+    Note over L: tool-units 声明 inject ['tools', 'units']<br/>cordis 等两个服务都就绪
+    L->>C: apply(ctx)
+    C->>R: ctx.tools.register(unit_convert)
+    Note over R: 工具 schema 流入系统提示词
+```
+
+注意 Definition（`units/`）**没有**出现在这张图里，因为它没有 `apply`，永远不会进组合树。它就是被 Provider 和 Consumer import 的普通库，契约一直在那，不需要「加载」。自定义 provider（`units-custom/`）走的是完全一样的路径，只是表来自配置而不是常量。
+
+### 运行时，模型调用工具时发生了什么
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant M as 模型 / agent 循环
+    participant R as tools 注册表
+    participant T as unit_convert execute
+    participant U as ctx.units (UnitsService)
+    participant D as convertWithTable（纯数学，在 Definition）
+
+    M->>R: ctx.tools.execute('unit_convert', args)
+    R->>R: 自动校验参数 (JSON Schema)
+    R->>T: execute(args)
+    T->>U: ctx.units.convert({ value, from, to })
+    U->>D: convertWithTable(value, from, to, table)
+    alt 领域错误（未知单位 / 跨系统）
+        D-->>U: 抛 UnitsError
+        U-->>T: 错误继续传播，服务层不接
+        T-->>R: { ok: false, error: { type, message } }
+    else 正常
+        D-->>U: number
+        U-->>T: { value, from, to }
+        T-->>R: { ok: true, value, from, to }
+    end
+    R-->>M: 渲染后的 ToolExecutionResult
+```
+
+Consumer 的 `execute` 是唯一接住 `UnitsError` 的地方——服务层让它继续传播（这是领域错误，不是基础设施故障）——工具把它映射成 canonical 的 `{ ok: false, error }`，绝不 throw。
+
 ## 怎么开发
 
 ```
