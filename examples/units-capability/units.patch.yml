@@ -1,0 +1,40 @@
+# Web overlay: load the units capability into the web profile
+# (dsh-base + dsh-web-app bundle layers). Applied from the deepseek-harness root:
+#   pnpm dsh web --patch examples/units-capability/units.patch.yml
+#
+# Two rows are inserted: the service provider (units-builtin) and the consumer
+# tool (tool-units). The tool's `inject: ['tools', 'units']` makes cordis wait
+# for the provider, so row order here is readability only. To serve a different
+# table, swap the provider row for units-custom (with a `config.table`).
+#
+# HOW the entry `name` resolves (vendor/loader/src/config/tree.ts):
+#   - `cordis:` prefix   → builtin
+#   - starts with `.`    → resolved against the Loader's baseUrl, which is THE
+#                          PROFILE DIRECTORY (~/.dsh/profiles/web/), NOT this
+#                          patch file and NOT the current working directory.
+#   - anything else      → passed to import() as-is: an absolute file:// URL
+#                          or a bare package name.
+# The baseUrl anchors at the profile directory because bundle plugins install
+# their dependencies there; a patch overlay cannot change it. So a local
+# plugin source has three options:
+#
+# 1. RELATIVE PATH + junction (used below, no absolute path in this file).
+#    Point the profile directory at the source with a Windows directory
+#    junction (no admin rights needed):
+#      cmd //c "mklink /J %USERPROFILE%\.dsh\profiles\web\examples <deepseek-harness>\examples"
+#    The `./examples/units-capability/...` below then resolves
+#    through the junction. Re-create the junction on each new machine.
+# 2. RELATIVE PATH + same drive: set DSH_HOME to a directory on the same
+#    drive as the deepseek-harness checkout; the relative hop then crosses
+#    only directories, e.g. ../../deepseek-harness/examples/... .
+# 3. ABSOLUTE file:// URL (works everywhere, machine-specific):
+#    name: 'file:///D:/path/to/deepseek-harness/examples/units-capability/units-builtin/src/index.ts'
+#    The `file:///` prefix is mandatory on Windows (a bare `D:/...` is read as
+#    the URL scheme `d:` and rejected by the ESM loader).
+# For portable distribution, promote the example to a bundle and
+# `dsh plugin add` it instead of using --patch.
+- insert:
+    - id: units-builtin
+      name: './examples/units-capability/units-builtin/src/index.ts'
+    - id: tool-units
+      name: './examples/units-capability/tool-units/src/index.ts'

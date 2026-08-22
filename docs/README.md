@@ -11,8 +11,8 @@
 | 添加模型工具（工具 vs 命令、执行扩展点） | [adding-a-tool.md](adding-a-tool.md)                         |
 | 插件配置（Schemastery、同名导出、分层）  | [plugin-config.md](plugin-config.md)                         |
 | Client 插件（Web UI 侧）                 | [client-plugin.md](client-plugin.md)                         |
-| 实战源码 + 测试（含装配模式）            | [../examples/helloworld-command/](../examples/helloworld-command/) / [../examples/sql-check-tool/](../examples/sql-check-tool/) / [../examples/csv-query-tool/](../examples/csv-query-tool/) |
-| 经验笔记（对外文章，含坑与测试哲学）     | [../notes/2026-08-15-helloworld-command.md](../notes/2026-08-15-helloworld-command.md) / [../notes/2026-08-16-sql-check-tool.md](../notes/2026-08-16-sql-check-tool.md) / [../notes/2026-08-16-csv-query-tool.md](../notes/2026-08-16-csv-query-tool.md) |
+| 实战源码 + 测试（含装配模式）            | [../examples/helloworld-command/](../examples/helloworld-command/) / [../examples/sql-check-tool/](../examples/sql-check-tool/) / [../examples/csv-query-tool/](../examples/csv-query-tool/) / [../examples/units-capability/](../examples/units-capability/) |
+| 经验笔记（对外文章，含坑与测试哲学）     | [../notes/2026-08-15-helloworld-command.md](../notes/2026-08-15-helloworld-command.md) / [../notes/2026-08-16-sql-check-tool.md](../notes/2026-08-16-sql-check-tool.md) / [../notes/2026-08-16-csv-query-tool.md](../notes/2026-08-16-csv-query-tool.md) / [../notes/2026-08-22-units-capability.md](../notes/2026-08-22-units-capability.md) |
 | 官方一手教程/手册                        | [../reference/](../reference/)                               |
 | 关键源码位置（deepseek-harness 内）      | 见下文                                                       |
 
@@ -30,6 +30,7 @@
 | 2026-08-15 | `/helloworld` 命令插件实战：命令 vs 工具、三个坑、测试哲学 | [notes/2026-08-15-helloworld-command.md](../notes/2026-08-15-helloworld-command.md) | [examples/helloworld-command/](../examples/helloworld-command/) |
 | 2026-08-16 | `sql_check` 工具插件实战：defineTool 契约、canonical value、presenters 纯函数、零依赖 node:sqlite | [notes/2026-08-16-sql-check-tool.md](../notes/2026-08-16-sql-check-tool.md) | [examples/sql-check-tool/](../examples/sql-check-tool/)       |
 | 2026-08-18 | `csv_query` 工具插件实战：Config schema、参数覆盖配置分层、手写 CSV 解析器、bundle 打包分发 | [notes/2026-08-16-csv-query-tool.md](../notes/2026-08-16-csv-query-tool.md) | [examples/csv-query-tool/](../examples/csv-query-tool/)       |
+| 2026-08-22 | `ctx.units` 服务缝实战：Definition/Provider/Consumer 三角色、服务键命名空间、inject 依赖驱动、config 换表 | [notes/2026-08-22-units-capability.md](../notes/2026-08-22-units-capability.md) | [examples/units-capability/](../examples/units-capability/) |
 
 ## 开发流程速记（helloworld / sql-check-tool 实战印证）
 

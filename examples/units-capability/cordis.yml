@@ -1,0 +1,22 @@
+# units capability composition: ONE provider of ctx.units plus the consumer
+# tool. The Definition package (units/) is a plain library — it has no apply
+# and never enters the tree; providers and the tool import it directly.
+# Swap the provider row to change the capability's data without touching the
+# tool (built-in table <-> config-supplied table).
+- id: units-builtin
+  name: './units-builtin/src/index.ts'
+
+- id: tool-units
+  name: './tool-units/src/index.ts'
+
+# Alternative provider (uncomment to replace the built-in table):
+# - id: units-custom
+#   name: './units-custom/src/index.ts'
+#   config:
+#     table:
+#       - name: smoot
+#         system: length
+#         factor: 1.7018
+#       - name: sm
+#         system: length
+#         factor: 1

@@ -1,0 +1,7 @@
+# Bilingual-pair consistency record (docs/i18n/README.md in deepseek-harness):
+# the git blob hash of each side as of the last confirmed-consistent state.
+# Both languages carry equal authority; after editing either side, bring the
+# other along and re-record with:
+#   git hash-object README.md README.zh.md
+README.md: 88624e6812ed285d4cd9d360296c6026aceae961
+README.zh.md: d716cf4285507520dcc7a399d05601564e0f6ee3

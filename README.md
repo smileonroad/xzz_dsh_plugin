@@ -31,7 +31,8 @@ xzz-dsh-plugin/
     │                             #   truth — copy into the deepseek-harness source to run)
     ├── helloworld-command/       # practice #1: /helloworld command plugin (source + tests)
     ├── sql-check-tool/           # practice #2: sql_check tool plugin (source + tests)
-    └── csv-query-tool/           # practice #3: csv_query tool plugin (config + bundle)
+    ├── csv-query-tool/           # practice #3: csv_query tool plugin (config + bundle)
+    └── units-capability/         # practice #4: ctx.units service seam (Definition/Provider/Consumer)
 ```
 
 **Master index: [docs/README.md](docs/README.md)** (summary catalog +
@@ -47,6 +48,8 @@ cheatsheet + key deepseek-harness sources).
   command plugin, with source and tests). Second: `examples/sql-check-tool/`
   (the `sql_check` tool plugin). Third: `examples/csv-query-tool/` (the
   `csv_query` tool plugin, with plugin config and an installable bundle).
+  Fourth: `examples/units-capability/` (the `unit_convert` tool behind a
+  `ctx.units` service seam split into Definition/Provider/Consumer).
 - Experience essays: see [Published notes](#published-notes) below.
 - Official first-hand tutorial: [reference/cordis-tutorial/](reference/cordis-tutorial/).
 
@@ -61,6 +64,7 @@ with its source package under `examples/` (see the practice table in
 | 2026-08-15 | `/helloworld` command plugin: commands vs tools, three pitfalls, test philosophy | [2026-08-15-helloworld-command.md](notes/2026-08-15-helloworld-command.md) |
 | 2026-08-16 | `sql_check` tool plugin: defineTool contract, canonical values, pure presenters, zero-dependency node:sqlite | [2026-08-16-sql-check-tool.md](notes/2026-08-16-sql-check-tool.md) |
 | 2026-08-18 | `csv_query` tool plugin: Config schema, config/argument layering, hand-written CSV parser, bundle distribution | [2026-08-16-csv-query-tool.md](notes/2026-08-16-csv-query-tool.md) |
+| 2026-08-22 | `ctx.units` service seam: Definition/Provider/Consumer roles, flat service-key namespace, inject-driven loading, config-swapped tables | [2026-08-22-units-capability.md](notes/2026-08-22-units-capability.md) |
 
 ## What is DeepSeek Harness (dsh)
 
