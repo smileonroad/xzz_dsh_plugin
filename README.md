@@ -32,7 +32,8 @@ xzz-dsh-plugin/
     ├── helloworld-command/       # practice #1: /helloworld command plugin (source + tests)
     ├── sql-check-tool/           # practice #2: sql_check tool plugin (source + tests)
     ├── csv-query-tool/           # practice #3: csv_query tool plugin (config + bundle)
-    └── units-capability/         # practice #4: ctx.units service seam (Definition/Provider/Consumer)
+    ├── units-capability/         # practice #4: ctx.units service seam (Definition/Provider/Consumer)
+    └── events-demo/              # practice #5: typed events on real harness events (tools waterfall + commands/change)
 ```
 
 **Master index: [docs/README.md](docs/README.md)** (summary catalog +
@@ -50,6 +51,8 @@ cheatsheet + key deepseek-harness sources).
   `csv_query` tool plugin, with plugin config and an installable bundle).
   Fourth: `examples/units-capability/` (the `unit_convert` tool behind a
   `ctx.units` service seam split into Definition/Provider/Consumer).
+  Fifth: `examples/events-demo/` (typed events on real harness events — the
+  `tools/*` waterfall interception points and `commands/change`).
 - Experience essays: see [Published notes](#published-notes) below.
 - Official first-hand tutorial: [reference/cordis-tutorial/](reference/cordis-tutorial/).
 
@@ -65,6 +68,7 @@ with its source package under `examples/` (see the practice table in
 | 2026-08-16 | `sql_check` tool plugin: defineTool contract, canonical values, pure presenters, zero-dependency node:sqlite | [2026-08-16-sql-check-tool.md](notes/2026-08-16-sql-check-tool.md) |
 | 2026-08-18 | `csv_query` tool plugin: Config schema, config/argument layering, hand-written CSV parser, bundle distribution | [2026-08-16-csv-query-tool.md](notes/2026-08-16-csv-query-tool.md) |
 | 2026-08-22 | `ctx.units` service seam: Definition/Provider/Consumer roles, flat service-key namespace, inject-driven loading, config-swapped tables | [2026-08-22-units-capability.md](notes/2026-08-22-units-capability.md) |
+| 2026-08-22 | typed events on real harness events: tools/* waterfall observer/decider discipline, five distribution modes (serial/bail/parallel via fixtures) | [2026-08-22-events-demo.md](notes/2026-08-22-events-demo.md) |
 
 ## What is DeepSeek Harness (dsh)
 

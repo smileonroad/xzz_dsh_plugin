@@ -22,7 +22,8 @@ xzz-dsh-plugin/
     ├── helloworld-command/       # 实战①：/helloworld 命令插件（源码+测试）
     ├── sql-check-tool/           # 实战②：sql_check 工具插件（源码+测试）
     ├── csv-query-tool/           # 实战③：csv_query 工具插件（配置 + bundle）
-    └── units-capability/         # 实战④：ctx.units 服务缝（Definition/Provider/Consumer）
+    ├── units-capability/         # 实战④：ctx.units 服务缝（Definition/Provider/Consumer）
+    └── events-demo/              # 实战⑤：监听真实 harness 事件（tools 瀑布 + commands/change）
 ```
 
 **整体索引：[docs/README.md](docs/README.md)**（摘要目录 + 摘要↔上游 hash 配对 + 实战 + 开发流程速记 + deepseek-harness 关键源码）。
@@ -30,7 +31,7 @@ xzz-dsh-plugin/
 ## 快速导航
 
 - 从零开始：先读 [docs/cordis-basics.md](docs/cordis-basics.md) 了解插件模型，再读 [docs/plugin-package.md](docs/plugin-package.md) 了解包布局。
-- 第一个实战：`examples/helloworld-command/`（`/helloworld` 命令插件，含源码与测试）；第二个：`examples/sql-check-tool/`（`sql_check` 工具插件）；第三个：`examples/csv-query-tool/`（`csv_query` 工具插件，含插件配置与可安装 bundle）；第四个：`examples/units-capability/`（`unit_convert` 工具，背后是拆成 Definition/Provider/Consumer 的 `ctx.units` 服务缝）。
+- 第一个实战：`examples/helloworld-command/`（`/helloworld` 命令插件，含源码与测试）；第二个：`examples/sql-check-tool/`（`sql_check` 工具插件）；第三个：`examples/csv-query-tool/`（`csv_query` 工具插件，含插件配置与可安装 bundle）；第四个：`examples/units-capability/`（`unit_convert` 工具，背后是拆成 Definition/Provider/Consumer 的 `ctx.units` 服务缝）；第五个：`examples/events-demo/`（监听真实 harness 事件的类型化事件练习——`tools/*` 瀑布拦截点与 `commands/change`）。
 - 经验文章索引：见下方 [经验文章](#经验文章)。
 - 官方一手教程：[reference/cordis-tutorial/](reference/cordis-tutorial/)。
 
@@ -44,6 +45,7 @@ xzz-dsh-plugin/
 | 2026-08-16 | `sql_check` 工具插件实战：defineTool 契约、canonical value、presenters 纯函数、零依赖 node:sqlite | [2026-08-16-sql-check-tool.md](notes/2026-08-16-sql-check-tool.md) |
 | 2026-08-18 | `csv_query` 工具插件实战：Config schema、参数覆盖配置分层、手写 CSV 解析器、bundle 打包分发 | [2026-08-16-csv-query-tool.md](notes/2026-08-16-csv-query-tool.md) |
 | 2026-08-22 | `ctx.units` 服务缝实战：Definition/Provider/Consumer 三角色、服务键命名空间、inject 依赖驱动、config 换表 | [2026-08-22-units-capability.md](notes/2026-08-22-units-capability.md) |
+| 2026-08-22 | 事件实战：监听真实 harness 事件（tools 瀑布 + commands/change）、waterfall 观察者/决策者纪律、五种分发模式 | [2026-08-22-events-demo.md](notes/2026-08-22-events-demo.md) |
 
 ## 什么是 DeepSeek Harness（dsh）
 

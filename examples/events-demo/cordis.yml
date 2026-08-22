@@ -1,0 +1,9 @@
+# events-demo composition: two plugins, both listening to real harness
+# waterfall events. tool-observer is the decider's upstream observer (it MUST
+# delegate via next()); tool-policy is the decider (it may veto without
+# next()). Both inject ['tools'] so they mount after the tool registry.
+- id: events-demo-tool-observer
+  name: './src/tool-observer.ts'
+
+- id: events-demo-tool-policy
+  name: './src/tool-policy.ts'
