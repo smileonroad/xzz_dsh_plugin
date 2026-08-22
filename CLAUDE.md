@@ -65,6 +65,16 @@ pnpm dsh web --patch examples/helloworld-command/helloworld.patch.yml
 - 若要验证插件挂载进真实 Loader 组合树（启动 `cordis.yml` 经 app bin），参照 deepseek-harness 源码 `examples/headless-agent/tests/` 的 `runLoaderSmoke` 模式（`packages/test-support/loader-smoke`）。本仓库早期有 `web-load.spec.ts` + `fixtures/helloworld-driver.ts` 作为该模式的教学副本，但在本仓库（Windows）跑不过，已删除；README 保留了指路说明。
 - 命令生命周期事件：`command/run`（执行前）与 `command/done`（结算时）记入接收 agent 的 session，payload 在 `event.data`；admission miss 什么都不记。
 
+## 实战开发流程
+
+**新实战必须按「探索 → 提案 → 开发」三步走，禁止直接动手写代码。**
+
+1. **探索**：先进入探索模式（openspec-explore 立场），只读源码/文档、画图、捋思路，不写实现代码。目标是产出选题与形态的判断——对应官方哪份指引、练什么、验证方式是什么。
+2. **提案**：探索有结论后，固化成**正式提案**再动手。提案至少包含选题依据（对应官方指引/教程章节）、实战形态（目录结构、插件角色、测试与验证方式）、风险与开放问题。本仓库未初始化 OpenSpec 时，提案写入 `docs/proposals/<日期>-<项目>.md`；初始化后走 OpenSpec change proposal。
+3. **开发**：提案经确认后才写源码、测试、README、笔记，按系列惯例收尾并提交。
+
+> 定稿背景（2026-08-22）：events-demo 实战先动手后探索，被用户叫停，确立此流程。当前事件实战正处于探索阶段。
+
 ## 文档维护约定
 
 - **整体索引在 [docs/README.md](docs/README.md)**：`docs/*.md` 摘要目录 + 摘要↔上游 hash 配对表 + 实战/开发流程速记/deepseek-harness 关键源码。根 `README.md` 只留定位、目录结构、快速导航、验证方式、什么是 dsh、许可；新增 `docs/*.md` 摘要或编辑摘要/上游同步时，更新配对表并重记 hash。
