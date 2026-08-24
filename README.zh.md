@@ -47,7 +47,7 @@ xzz-dsh-plugin/
 | 2026-08-18 | `csv_query` 工具插件实战：Config schema、参数覆盖配置分层、手写 CSV 解析器、bundle 打包分发 | [2026-08-16-csv-query-tool.md](notes/2026-08-16-csv-query-tool.md) |
 | 2026-08-22 | `ctx.units` 服务缝实战：Definition/Provider/Consumer 三角色、服务键命名空间、inject 依赖驱动、config 换表 | [2026-08-22-units-capability.md](notes/2026-08-22-units-capability.md) |
 | 2026-08-22 | 事件实战：监听真实 harness 事件（tools 瀑布 + commands/change）、waterfall 观察者/决策者纪律、五种分发模式 | [2026-08-22-events-demo.md](notes/2026-08-22-events-demo.md) |
-| 2026-08-22 | 自声明事件实战：奶茶店事件族（declare module + @mode 契约）、五种分发模式全自有声明（serial/bail/parallel 真实语义）、type-only import、事件派生 | [2026-08-22-tea-shop-demo.md](notes/2026-08-22-tea-shop-demo.md) |
+| 2026-08-24 | 自声明事件实战：奶茶店事件族（declare module + @mode 契约）、五种分发模式全自有声明（serial/bail/parallel 真实语义）、type-only import、事件派生 | [2026-08-24-tea-shop-demo.md](notes/2026-08-24-tea-shop-demo.md) |
 
 ## 什么是 DeepSeek Harness（dsh）
 

@@ -120,7 +120,7 @@ tea-shop-demo/
 └── tea-shop.patch.yml   # web overlay 入口
 ```
 
-> 关系说明：本目录是自声明事件实战的完整源码 + 测试包；`notes/2026-08-22-tea-shop-demo.md` 记录它背后的学习心得，成形它的提案在 `docs/proposals/2026-08-22-tea-shop-demo.md`。
+> 关系说明：本目录是自声明事件实战的完整源码 + 测试包；`notes/2026-08-24-tea-shop-demo.md` 记录它背后的学习心得，成形它的提案在 `docs/proposals/2026-08-22-tea-shop-demo.md`。
 
 - `src/tea-shop.ts` — `TeaShopService extends Service`（构造器把它注册成 `ctx.teaShop`）、声明全部六个事件并标 `@mode` 的 `declare module` 块、三个分发方法。店规拒绝时 `placeOrder` 抛结构化 `TeaShopError`（`code: 'refused'`）。
 - `src/order-watch.ts` — `name = 'tea-shop-order-watch'`、`inject = ['teaShop']`；type-only import 拿类型合并；从 `order/ready` 派生 `orders/served`。

@@ -189,7 +189,7 @@ tea-shop-demo/
 ```
 
 > Relationship note: this directory is the complete source + test package for
-> the self-declared-events practice; `notes/2026-08-22-tea-shop-demo.md`
+> the self-declared-events practice; `notes/2026-08-24-tea-shop-demo.md`
 > records the learning notes behind it, and the proposal that shaped it lives
 > in `docs/proposals/2026-08-22-tea-shop-demo.md`.
 
