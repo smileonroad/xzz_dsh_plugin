@@ -73,8 +73,6 @@ pnpm dsh web --patch examples/helloworld-command/helloworld.patch.yml
 2. **提案**：探索有结论后，固化成**正式提案**再动手。提案至少包含选题依据（对应官方指引/教程章节）、实战形态（目录结构、插件角色、测试与验证方式）、风险与开放问题。本仓库未初始化 OpenSpec 时，提案写入 `docs/proposals/<日期>-<项目>.md`；初始化后走 OpenSpec change proposal。
 3. **开发**：提案经确认后才写源码、测试、README、笔记，按系列惯例收尾并提交。
 
-> 定稿背景（2026-08-22）：events-demo 实战先动手后探索，被用户叫停，确立此流程。当前事件实战正处于探索阶段。
-
 ## 文档维护约定
 
 - **整体索引在 [docs/README.md](docs/README.md)**：`docs/*.md` 摘要目录 + 摘要↔上游 hash 配对表 + 实战/开发流程速记/deepseek-harness 关键源码。根 `README.md` 只留定位、目录结构、快速导航、验证方式、什么是 dsh、许可；新增 `docs/*.md` 摘要或编辑摘要/上游同步时，更新配对表并重记 hash。
@@ -82,19 +80,8 @@ pnpm dsh web --patch examples/helloworld-command/helloworld.patch.yml
 - 双语 README（`README.md` / `README.zh.md`）要保持同步，但本仓库**不跑** dsh 的 `verify-translation-pairing` 门禁；`README.i18n.yaml` 在根目录与 helloworld 目录里保留（后续 git 提交会校验配对），其他双语对不强制加 `.i18n.yaml`。
 - `notes/<日期>-<项目>.md` 是学习心得精炼版，`examples/<项目>/README` 是源码使用说明；两者互补，勿重复维护。
 - 实战组织方式固定为「一个源码目录（`examples/`）+ 一篇笔记（`notes/`）」。
-- **笔记写作风格（2026-08-22 定稿，混合体）**：系列结构 + 卡兹克文风（文风来自 khazix-writer skill，规则已内联在此，不依赖该 skill 是否可用）。写 `notes/` 笔记时按此执行。
-  - 结构（系列惯例）：`# <日期> — <项目>，一句话主题` 开头；`## 事情是这样的` 开篇；`##` 小标题分段（**不加目录**，不加公众号固定尾部）；跨篇引用前几篇（「上篇写了…」「sql_check 那篇讲过」）；源码引用（deepseek-harness 源码路径 + 本仓库 `examples/` 路径）并带代码块节选；坑 / 测试 / 验证逐段展开；`## 接下来该干嘛` 收尾。
-  - 文风（卡兹克味）：第一人称口语化、自嘲与承认不足、私人视角连接、契诃夫之枪回环收尾（开头埋钩子结尾响）、文化升维、具体工具名不空泛。
-  - 硬性规则（正文保留，代码块除外）：不用冒号「：」、破折号「——」、双引号（强调用「」）；禁用词：说白了 / 意味着 / 本质上 / 换句话说 / 不可否认 / 综上所述 / 总的来说 / 值得注意的是 / 不难发现 / 让我们 / 在当今 / 随着；不罗列 bullet 观点；情绪标点（？？？/。。。）可用；可适量加粗术语（**小标题和加粗是用户明确覆盖的卡兹克禁区**，按系列惯例保留）。
-  - 自检：写完跑卡兹克四层自检的 L1 扫描（禁用词 / 禁用标点 / 空泛工具名）必须零命中，结构项按上述系列惯例。
-- **README 写作风格（2026-08-22 定稿）**：以 `examples/tea-shop-demo/README.md` 润色版为模板，写/改任何 `examples/<项目>/README` 时按此执行。
-  - 开头先给直觉，不抛术语墙：先用一句话类比（「事件就是喊一嗓子」）或定位（练什么、跟哪个实战配对、为什么用这个领域），再进入正文。
-  - 逻辑递进：Design 用 `###` 小节做台阶（问题 → 机制 → 纪律 → 表格 → 消费方），每步承接上一步，不来回跳。
-  - 名词首现即解释：typed events、event family、distribution modes、@mode 等术语第一次出现就给一句话人话解释，不默认读者知道。
-  - 表格带「为什么」列：模式/选项对比表不只列「会发生什么」，加「为什么用这个」列，把语义和机制对上。
-  - 技术难点用深挖块：`> **Deeper / 深入：...**` 引用块放在对应小节后，详细解释机制（类型合并原理、接力链走向、身份快照必要性），配具体场景或走向图；普通读者可跳过，想深究的读者有地方看。
-  - 语句要求：不用括号连环句、少 parenthetical chains，一句一层。
-  - 双语同步：EN/ZH 内容一致，改完重记 `README.i18n.yaml` hash。
+- **笔记写作风格见 [docs/notes-writing-style.md](docs/notes-writing-style.md)**：写 `notes/` 笔记前先读（系列结构 + 卡兹克文风 + 硬性规则 + 自检）。
+- **README 写作风格见 [docs/readme-writing-style.md](docs/readme-writing-style.md)**：写/改 `examples/<项目>/README` 前先读（直觉先行 + 逻辑递进 + 深挖块 + 双语同步）。
 
 ## 关键源码位置（deepseek-harness 内）
 
