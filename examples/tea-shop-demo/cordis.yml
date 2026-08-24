@@ -1,0 +1,11 @@
+# tea-shop-demo composition: the producer service (tea-shop), then the two
+# consumers. Both consumers inject ['teaShop'], so dependency-driven loading
+# mounts them after the producer regardless of row order.
+- id: tea-shop-demo
+  name: './src/tea-shop.ts'
+
+- id: tea-shop-order-watch
+  name: './src/order-watch.ts'
+
+- id: tea-shop-shop-policy
+  name: './src/shop-policy.ts'
