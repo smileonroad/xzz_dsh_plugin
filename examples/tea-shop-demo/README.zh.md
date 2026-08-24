@@ -55,9 +55,17 @@ declare module '@deepseek-ai/cordis' {
 
 「类型化」的意思是，事件名、参数、返回值在整个项目里都经过编译期检查——`ctx.emit` 和 `ctx.on` 都知道事件的精确形状。每个事件还带一个 `@mode` 标注，说明监听器会被怎么调用。这个标注是契约的一部分：分发方必须调用对应的 ctx 方法（`ctx.emit`、`ctx.serial`、`ctx.bail`、`ctx.parallel`、`ctx.waterfall`）。
 
+> **深入：为什么要用 `declare module`？**
+>
+> TypeScript 的接口可以**合并**——同名 `interface` 声明会叠加，不会互相覆盖。`declare module '@deepseek-ai/cordis'` 是在不修改 cordis 源码的前提下，往它的 `Events` 接口追加成员。合并之后，整个项目里 `ctx.emit('order/start', ...)` 和 `ctx.on('order/start', ...)` 的参数都被检查；没有这行声明，事件名就只是一个普通字符串，参数退化成 `any`，写错也不报错。类型化事件的价值，就是把这套约定从「运行时靠自觉」提前到「编译期被检查」。
+
 ### 事件族：start 与 end 配对
 
 事件族描述同一件事的不同阶段，靠稳定 id 串起来。这里的 `order/start` 和 `order/ready` 都带同一个 `orderId`（身份快照），监听器可以配对它们。这与 harness 自己的纪律一致（`command/run` ↔ `command/done`、`workflow/start` ↔ `workflow/agent-end`）：有 start 没 end，或者 end 不带 id，监听器就只能猜。
+
+> **深入：为什么 start 和 end 必须带同一个 id？**
+>
+> 想一个消费方：它把事件记进日志，之后要回答「这单到底完成了没有」。如果 `order/start` 和 `order/ready` 没有共同的 `orderId`，重放日志时你无法把 start 和 end 对上——不知道哪个 start 配哪个 end，也重建不出「完成」这个状态。真实 harness 的事件对（`command/run` ↔ `command/done`）都靠 id 关联，client 端的 conversation-node 也靠稳定 id 把整条链路渲染出来。身份快照不是锦上添花，是可重放性的地基。
 
 ### 五种分发模式，各司其职
 
@@ -73,12 +81,32 @@ declare module '@deepseek-ai/cordis' {
 
 服务方法负责驱动：`placeOrder(drink)` 先走 `order/request` 的 waterfall（打烊时拒单），再发 `order/start`，用 `serial` 选店员，最后发 `order/ready`；`announce(orderId)` 扇出 `notify/patrons`；`isOpen()` 走 `shop/open` 的 bail。
 
+> **深入：waterfall 的 `next()` 到底怎么走？**
+>
+> 把它想成一根接力棒链条：监听器按注册顺序排队，最外层的先拿到接力棒；每个监听器收到 `(请求, next)`，调 `next()` 就是把接力棒传给下一个（或最内层的默认行为），返回值原路返回、每层还可以改写；不调 `next()` 直接返回，链条到此终止，后面的监听器和默认行为全部不执行。
+>
+> 奶茶店的 `order/request` 就是一根这样的链：
+>
+> ```
+> 最外层 → shop-policy（店规）
+>            │ 打烊？→ 返回 refuse，不调 next()，链条终止 → 订单被拒
+>            │ 营业？→ 调 next()，接力棒传给默认行为
+>            ▼
+>          默认行为 → 返回 accept → 订单被接
+> ```
+>
+> 这解释了 events-demo 里那条纪律：**只观察的监听器必须调 `next()`**——忘调等于你无声地吞掉了整条链，后面的决策者全都轮不到。
+
 ### 消费方
 
 两个消费方插件展示在这些自声明事件上的监听侧：
 
 - `order-watch` 只导入类型——`import type { OrderInfo } from './tea-shop.ts'`——把事件声明拉进自己的编译，无运行时依赖。它监听事件族，派生自己的 `orders/served` 事件。
 - `shop-policy` 监听 `order/request` 的 waterfall，打烊时（`Config { closed }`）不调 `next()` 直接拒单，延续 events-demo 的决策者角色。
+
+> **深入：`import type` 为什么能把事件声明带进另一个插件？**
+>
+> 类型导入和值导入都会让 TypeScript 把目标文件纳入编译范围。`order-watch.ts` 里的 `import type { OrderInfo } from './tea-shop.ts'` 一次做了两件事：既拿到了 `OrderInfo` 类型，也让 TypeScript 看到了 tea-shop.ts 里的 `declare module` 块——于是 `order/ready` 这些事件名在这个文件里同样可用、同样有类型。关键在于 `type` 关键字：编译后这一行 import 会被完全删除，`order-watch` 运行时对 tea-shop.ts 零依赖。消费者只消费契约，不消费实现。
 
 ## 怎么开发
 

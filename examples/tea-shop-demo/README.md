@@ -81,6 +81,18 @@ listeners will be invoked. That annotation is part of the contract, and the
 dispatcher must call the matching ctx method (`ctx.emit`, `ctx.serial`,
 `ctx.bail`, `ctx.parallel`, `ctx.waterfall`).
 
+> **Deeper: why `declare module`?**
+>
+> TypeScript interfaces **merge** — two `interface` declarations with the same
+> name add up instead of overwriting each other. `declare module
+> '@deepseek-ai/cordis'` appends members to Cordis's `Events` interface without
+> touching its source. After the merge, `ctx.emit('order/start', ...)` and
+> `ctx.on('order/start', ...)` are argument-checked everywhere. Without the
+> declaration, the event name is just a string and the arguments degrade to
+> `any` — typos and wrong shapes pass silently. That is the whole point of
+> typed events: the convention moves from "trusted at runtime" to "checked at
+> compile time".
+
 ### An event family pairs start with end
 
 An event family describes the stages of one thing, linked by a stable id.
@@ -89,6 +101,16 @@ identity snapshot — so a listener can pair them. This is the same discipline
 the harness itself uses (`command/run` ↔ `command/done`, `workflow/start` ↔
 `workflow/agent-end`): a start without its end, or an end without its id,
 leaves listeners guessing.
+
+> **Deeper: why must start and end carry the same id?**
+>
+> Picture a consumer that logs the events and later must answer "did this
+> order actually finish?". Without a shared `orderId`, replaying the log cannot
+> pair each `order/start` with its `order/ready` — you cannot rebuild the
+> "finished" state. The harness's own pairs (`command/run` ↔ `command/done`)
+> are linked by id for the same reason, and the client-side conversation-node
+> renders a whole chain from one stable id. The identity snapshot is not a
+> nicety; it is the foundation of replayability.
 
 ### Five distribution modes, each with a real job
 
@@ -108,6 +130,29 @@ waterfall (a closed shop refuses), then emits `order/start`, picks a barista
 via `serial`, and finishes with `order/ready`; `announce(orderId)` fans out
 `notify/patrons`; `isOpen()` bails on `shop/open`.
 
+> **Deeper: how does waterfall's `next()` actually flow?**
+>
+> Think of a relay baton: listeners queue in registration order, the outermost
+> gets the baton first. Each listener receives `(request, next)`, and calling
+> `next()` passes the baton to the next listener (or to the innermost default
+> behavior); the return value travels back up, and each layer may rewrite it.
+> Returning without calling `next()` ends the chain — every later listener and
+> the default behavior are skipped.
+>
+> The shop's `order/request` is such a chain:
+>
+> ```
+> outermost → shop-policy (the shop rule)
+>              │ closed? → return refuse, no next() → chain ends → order refused
+>              │ open?   → call next(), baton passes to the default
+>              ▼
+>             default → return accept → order accepted
+> ```
+>
+> This is where events-demo's discipline comes from: an **observer listener
+> must call `next()`** — forgetting it silently swallows the whole chain, and
+> every downstream decider never runs.
+
 ### The consumers
 
 Two consumer plugins show the listening side on these self-declared events:
@@ -119,6 +164,17 @@ Two consumer plugins show the listening side on these self-declared events:
 - `shop-policy` listens to the `order/request` waterfall and refuses without
   calling `next()` when the shop is closed (`Config { closed }`), mirroring
   the decider role from events-demo.
+
+> **Deeper: why does `import type` bring the events into another plugin?**
+>
+> Both type imports and value imports make TypeScript include the target file
+> in the compilation. The line `import type { OrderInfo } from './tea-shop.ts'`
+> in `order-watch.ts` does two things at once: it provides the `OrderInfo`
+> type, and it lets TypeScript see the `declare module` block in tea-shop.ts —
+> so `order/ready` and the other event names are available and typed in this
+> file too. The crucial bit is the `type` keyword: after compilation this
+> import line is deleted entirely, so `order-watch` has zero runtime dependency
+> on tea-shop.ts. The consumer consumes the contract, not the implementation.
 
 ## How to develop
 
