@@ -42,6 +42,10 @@ pnpm dsh web --patch examples/sql-check-tool/sql-check.patch.yml
 - **UI 卡片是纯投影。** `presentCall` / `presentResult` 是 `args` 与持久化 `presentationMeta` 的纯函数——它们既跑在实时流上，也跑在会话日志**重放**上，绝不能碰 I/O 或会话状态。完成卡片的标题（`sql_check: valid` / `sql_check: 2 error(s)`）在重放时从 `meta` 重建。
 - **零第三方依赖。** 检查器就是真实 SQLite 解析器，通过 Node 内置的 `node:sqlite`（`DatabaseSync`）调用——与 dsh 官方 `session-query-sqlite` 包的选择一致。每次调用新建一个 `:memory:` 库，获得权威解析且无持久化、无跨调用状态。
 
+> **深入：为什么 presenters 必须是纯函数？**
+>
+> `presentCall` / `presentResult` 跑在两种完全不同的场合：实时流（调用正在进行时）和会话日志**重放**（重新打开旧会话时）。重放时没有任何实时状态、没有 I/O、没有时钟——卡片只能从 `args` 和持久化的 `presentationMeta` 纯重建。如果 presenter 读了会话状态或碰了网络，重放的会话要么崩、要么渲染得和当时不一样。`defineTool` 还会软校验 presenters：坏的旧日志参数会回退到 generic 卡片而不是抛错。
+
 诚实的边界：检查器只说 **SQLite 方言**。为 MySQL 或 PostgreSQL 写的 SQL 可能按 SQLite 语法通过或失败；description 里已告诉模型这一点。
 
 ## 如何开发

@@ -2,12 +2,12 @@
 
 English | [中文](README.zh.md)
 
-A **typed-events practice on real harness events**: two plugins that listen to
-the `tools/*` waterfall events (`tools/pre-execute`, `tools/post-execute`) —
-the same interception points the harness itself uses for tool policies and
-audit — plus the real `commands/change` emit event. It demonstrates the second
-plugin-coupling mechanism after service keys: **plugins never import each
-other, they couple through typed events on `ctx`**.
+Events are how dsh plugins shout without knowing who listens: one plugin
+emits (`ctx.emit`), whoever cares listens (`ctx.on`). This example practices
+the **listening side** against real harness events — the `tools/*` waterfall
+interception points that the harness itself uses for tool policies and audit,
+plus the `commands/change` emit event. Declaring and emitting your own events
+is the next practice, [tea-shop-demo](../tea-shop-demo/).
 
 ## Running
 
@@ -45,12 +45,15 @@ pnpm dsh web --patch examples/events-demo/events.patch.yml
 ## Design
 
 Services are "I need your capability, give it to me". **Events are "I don't
-know who is listening, I just shout"**. The harness itself runs on events —
-`tools/pre-execute` is how a policy allows / denies / asks before a tool runs,
-`tools/post-execute` is how a wrapper accepts / replaces / blocks a result, and
-`commands/change` fires whenever the command registry mutates. This example
-listens to those real events instead of declaring its own (declaring and
-emitting your own events is the next practice).
+know who is listening, I just shout"**: one plugin emits with `ctx.emit`,
+anyone who cares listens with `ctx.on`. The harness itself runs on events —
+`tools/pre-execute` is where a policy allows / denies / asks before a tool
+runs, `tools/post-execute` is where a wrapper accepts / replaces / blocks a
+result (both are **waterfall** events: a middleware chain where each listener
+wraps a `next()` call), and `commands/change` is a plain **emit** event that
+fires whenever the command registry mutates. This example listens to those
+real events instead of declaring its own — declaring and emitting your own
+events is the next practice, [tea-shop-demo](../tea-shop-demo/).
 
 The two plugins are the two roles a waterfall chain allows:
 
@@ -69,6 +72,24 @@ tools/pre-execute (waterfall, outermost listener runs first)
 │ tool body runs (or is denied) │
 └───────────────────────────────┘
 ```
+
+> **Deeper: what can a `tools/pre-execute` listener return?**
+>
+> The decision type is `PreToolDecision`:
+>
+> - `{ kind: 'allow' }` — run the call (only meaningful if you call `next()`
+>   or are the outermost listener; returning it without `next()` short-circuits
+>   every later listener)
+> - `{ kind: 'deny', reason }` — the call settles as an error carrying that
+>   reason (`Error: denied by policy`)
+> - `{ kind: 'ask', reason? }` — needs an approval seam; without one mounted it
+>   degrades to a deny
+>
+> `tools/post-execute` answers with `PostToolDecision`: `accept` (optionally
+> replacing the result content or value) or `block` (turning the result into an
+> error with corrective feedback). These two types are the whole interface of
+> the tool-interception points — a policy or audit plugin never touches the
+> tool's own code.
 
 Rules that fall out of this split:
 
@@ -99,7 +120,7 @@ events-demo/
 ```
 
 > Relationship note: this directory is the complete source + test package for
-> the typed-events practice; `notes/2026-08-22-events-demo.md` records the
+> the typed-events practice; `notes/2026-08-23-events-demo.md` records the
 > learning notes behind it. The proposal that shaped it lives in
 > `docs/proposals/2026-08-22-events-demo.md`.
 

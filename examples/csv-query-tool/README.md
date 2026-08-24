@@ -81,6 +81,16 @@ profile keeps the stale copy and the config never appears.
   `args` and the persisted `presentationMeta` (replay-safe), same as
   sql-check-tool.
 
+> **Deeper: why does a `file:` dependency act as a copy, not a link?**
+>
+> pnpm installs a `file:` dependency by **copying** it into the profile's
+> `node_modules` — a snapshot. Editing the bundle's source or patch afterwards
+> changes nothing in the installed copy, so `dump-config` keeps showing the old
+> layer (or no config) until you reinstall. The discipline: after every source
+> change, rebuild the artifact, bump the version (so staleness is visible),
+> `remove` + `add` again, then restart web. Skipping any step silently runs the
+> previous version — the config E2E in this example hit exactly this.
+
 ## How to develop
 
 ```

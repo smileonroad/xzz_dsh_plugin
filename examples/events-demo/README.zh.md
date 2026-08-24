@@ -2,7 +2,7 @@
 
 [English](README.md) | 中文
 
-一个**基于真实 harness 事件的类型化事件练习**：两个插件监听 `tools/*` 瀑布事件（`tools/pre-execute`、`tools/post-execute`）——就是 harness 自己用来做工具策略和审计的拦截点——外加真实的 `commands/change` emit 事件。它演示服务键之后的第二种插件耦合机制：**插件互不 import，只通过 `ctx` 上的类型化事件耦合**。
+事件是 dsh 插件之间「喊一嗓子」的方式：一个插件用 `ctx.emit` 发出，谁关心谁用 `ctx.on` 收听。这个实战练**监听侧**——监听真实 harness 事件：`tools/*` 瀑布拦截点（harness 自己用来做工具策略和审计的入口）加 `commands/change` emit 事件。声明并发出自己的事件是下一个实战，[tea-shop-demo](../tea-shop-demo/)。
 
 ## 运行
 
@@ -30,7 +30,7 @@ pnpm dsh web --patch examples/events-demo/events.patch.yml
 
 ## 设计
 
-服务是「我要用你的能力，你先把东西给我」；**事件是「我不知道谁在听，反正我喊一嗓子」**。harness 自己就跑在事件上——`tools/pre-execute` 是策略在工具执行前放行/拒绝/询问的入口，`tools/post-execute` 是包装器接受/替换/阻断结果的入口，`commands/change` 在命令注册表一变就触发。本实战监听这些真实事件，不自声明（自声明事件是下一个实战的练习）。
+服务是「我要用你的能力，你先把东西给我」；**事件是「我不知道谁在听，反正我喊一嗓子」**：一个插件用 `ctx.emit` 发出，谁关心谁用 `ctx.on` 收听。harness 自己就跑在事件上——`tools/pre-execute` 是策略在工具执行前放行/拒绝/询问的入口，`tools/post-execute` 是包装器接受/替换/阻断结果的入口（两者都是 **waterfall** 事件：一条中间件链，每个监听器包裹一个 `next()` 调用），`commands/change` 是普通 **emit** 事件，命令注册表一变就触发。本实战监听这些真实事件，不自声明——声明并发出自己的事件是下一个实战，[tea-shop-demo](../tea-shop-demo/)。
 
 两个插件正好是 waterfall 链条允许的两种角色：
 
@@ -50,6 +50,16 @@ tools/pre-execute（waterfall，最外层监听器先跑）
 └───────────────────────────────┘
 ```
 
+> **深入：`tools/pre-execute` 监听器能返回什么？**
+>
+> 决策类型是 `PreToolDecision`：
+>
+> - `{ kind: 'allow' }` — 放行调用（只有你调了 `next()` 或你就是最外层监听器才有意义；不调 `next()` 就返回它会短路掉后面所有监听器）
+> - `{ kind: 'deny', reason }` — 调用结算成携带该原因的错误（`Error: denied by policy`）
+> - `{ kind: 'ask', reason? }` — 需要审批渠道；没挂审批时降级为拒绝
+>
+> `tools/post-execute` 的回答类型是 `PostToolDecision`：`accept`（可选替换结果内容或值）或 `block`（把结果变成带纠正反馈的错误）。这两个类型就是工具拦截点的全部接口——策略或审计插件从不碰工具自己的代码。
+
 这套拆分带出的规则：
 
 - **观察者必须委托。** `tool-observer` 在 `tools/pre-execute` 和 `tools/post-execute` 上都调 `next()`。纪律测试专门注册一个不调 `next()` 就返回 `{ kind: 'allow' }` 的监听器，证明决策者再也轮不到——被封锁的工具照样执行。
@@ -68,7 +78,7 @@ events-demo/
 └── events.patch.yml          # web overlay 入口
 ```
 
-> 关系说明：本目录是类型化事件实战的完整源码 + 测试包；`notes/2026-08-22-events-demo.md` 记录它背后的学习心得。成形它的提案在 `docs/proposals/2026-08-22-events-demo.md`。
+> 关系说明：本目录是类型化事件实战的完整源码 + 测试包；`notes/2026-08-23-events-demo.md` 记录它背后的学习心得。成形它的提案在 `docs/proposals/2026-08-22-events-demo.md`。
 
 - `src/tool-policy.ts` — `name = 'events-demo-tool-policy'`、`inject = ['tools']`（等工具注册表就绪），监听 `tools/pre-execute`，对封锁名单上的工具返回 `{ kind: 'deny', reason }` 不调 `next()`；其余一律 `next()` 放行。
 - `src/tool-observer.ts` — 观察者对照：监听 `tools/pre-execute` 和 `tools/post-execute`，不产生可见记录、始终委托。它存在的意义是给「正确的观察者」当模板——纪律测试展示观察者忘调 `next()` 会怎样。

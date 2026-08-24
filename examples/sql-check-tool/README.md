@@ -79,6 +79,17 @@ call on its own**. The tool therefore speaks the model's language:
   `session-query-sqlite` package makes. A fresh `:memory:` database per call
   gives authoritative parsing with no persistence and no cross-call state.
 
+> **Deeper: why must presenters stay pure?**
+>
+> `presentCall` / `presentResult` run in two very different situations: on the
+> live stream while a call is happening, and during session-log **replay** when
+> you reopen an old session. Replay has no live state, no I/O, no clock — the
+> card must be rebuilt purely from `args` and the persisted
+> `presentationMeta`. If a presenter ever read a session or hit the network,
+> the replayed session would crash or render differently from what actually
+> happened. `defineTool` also soft-guards presenters: bad historical arguments
+> fall back to the generic card instead of throwing.
+
 The honest boundary: the checker speaks **SQLite dialect only**. SQL written
 for MySQL or PostgreSQL may pass or fail per SQLite's grammar; the description
 tells the model this.

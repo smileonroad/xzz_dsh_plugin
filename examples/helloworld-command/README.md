@@ -70,6 +70,16 @@ The command does not own the session event stream, the command registry itself
 records the lifecycle (`command/run`/`command/done`), so there are no package
 invariants to assert beyond the domain's own behavior.
 
+> **Deeper: why does `rawInput` include the separator whitespace?**
+>
+> `rawInput` is the verbatim text after the command name — `/helloworld 小明`
+> gives `" 小明"` with the leading space, because the registry keeps the
+> separator as part of the raw input. The handler must `trim()` before
+> parsing, or it will keep "seeing" a spurious leading space. This trips up
+> almost every first plugin (the note records it as a classic pitfall); the
+> trick is to log `rawInput` during a test run and see the space with your own
+> eyes.
+
 ## How to develop
 
 ```

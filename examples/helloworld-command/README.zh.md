@@ -44,6 +44,10 @@ pnpm dsh web --patch examples/helloworld-command/helloworld.patch.yml
 
 该命令不拥有会话事件流——生命周期（`command/run`/`command/done`）由命令注册表本身记录——因此除了域自身的行为之外，没有需要断言的包不变量。
 
+> **深入：为什么 `rawInput` 带分隔空白？**
+>
+> `rawInput` 是命令名之后的**原样**文本——`/helloworld 小明` 得到 `" 小明"`，前面带一个空格，因为注册表把分隔符算进了原始输入。handler 必须先 `trim()` 再解析，否则会一直「看到」一个莫名的前导空格。这个坑几乎每个第一个插件都会踩（笔记里记成了经典坑）；调试技巧是测试里打一行 `rawInput`，跑一次就亲眼看见那个空格。
+
 ## 如何开发
 
 ```

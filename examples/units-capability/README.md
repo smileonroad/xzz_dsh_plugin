@@ -2,12 +2,12 @@
 
 English | [中文](README.zh.md)
 
-A **three-role service composition**: one capability (`ctx.units`, unit
-conversion) split across a Definition package, a service Provider, and a
-model-facing Consumer tool. It demonstrates how dsh plugins cooperate **without
-importing each other** — through a shared service key on `ctx` — and how
-swapping the provider row in `cordis.yml` changes the capability's data without
-touching the tool.
+A unit-conversion capability (`ctx.units`) split into three roles — a
+Definition that owns the contract, a Provider that supplies the unit table,
+and a Consumer tool the model calls. It shows how dsh plugins cooperate
+**without importing each other**: everyone couples through one service key on
+`ctx`, so swapping the provider row in `cordis.yml` changes the capability's
+data without touching the tool.
 
 ## Running
 
@@ -69,6 +69,16 @@ on `ctx`. A capability is therefore a **seam with three roles**:
   `inject = ['tools', 'units']` and delegates to `ctx.units.convert`. Domain
   errors (`UnitsError`) become canonical `{ ok: false, error }` values, never
   throws.
+
+> **Deeper: how does `super(ctx, 'units')` register the service?**
+>
+> The `Service` base-class constructor (`vendor/cordis/src/service.ts`) calls
+> `ctx.reflect.provide(name, this)` — that single call is what makes
+> `ctx.units` exist. Subclassing `UnitsService` and constructing it inside the
+> provider's `await ctx.plugin(BuiltinUnits)` is therefore the whole
+> registration; there is no separate "register" call. It also explains the
+> namespace rule below: the key is a flat global namespace, one owner per
+> context, so a second provider throws `service "units" has been registered`.
 
 Rules that fall out of this split:
 

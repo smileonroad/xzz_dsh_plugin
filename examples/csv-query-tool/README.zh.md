@@ -50,6 +50,10 @@ alice,25"*。
 - **手写解析器。** 带引号字段（内嵌分隔符/换行/`""` 转义）、首个非空行作表头、跳过空行、剥离 BOM、行列不一致时报 1 起始行号。
 - **纯函数 presenters。** `presentCall` / `presentResult` 从 `args` 与持久化 `presentationMeta` 派生卡片（重放安全），与 sql-check-tool 一致。
 
+> **深入：为什么 `file:` 依赖是拷贝而不是链接？**
+>
+> pnpm 安装 `file:` 依赖是**拷贝**进 profile 的 `node_modules`——一个快照。之后改 bundle 的源码或 patch，已安装的副本毫无变化，`dump-config` 一直显示旧层（或没有 config），直到重新安装。纪律是：每次改源码后，重建产物、升版本（让过期可见）、`remove` + `add` 重装、再重启 web。跳任何一步都会静默跑旧版本——本实战的 config 端到端就撞上过。
+
 ## 如何开发
 
 ```

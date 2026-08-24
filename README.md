@@ -71,7 +71,7 @@ with its source package under `examples/` (see the practice table in
 | 2026-08-16 | `sql_check` tool plugin: defineTool contract, canonical values, pure presenters, zero-dependency node:sqlite | [2026-08-16-sql-check-tool.md](notes/2026-08-16-sql-check-tool.md) |
 | 2026-08-18 | `csv_query` tool plugin: Config schema, config/argument layering, hand-written CSV parser, bundle distribution | [2026-08-16-csv-query-tool.md](notes/2026-08-16-csv-query-tool.md) |
 | 2026-08-22 | `ctx.units` service seam: Definition/Provider/Consumer roles, flat service-key namespace, inject-driven loading, config-swapped tables | [2026-08-22-units-capability.md](notes/2026-08-22-units-capability.md) |
-| 2026-08-22 | typed events on real harness events: tools/* waterfall observer/decider discipline, five distribution modes (serial/bail/parallel via fixtures) | [2026-08-22-events-demo.md](notes/2026-08-22-events-demo.md) |
+| 2026-08-23 | typed events on real harness events: tools/* waterfall observer/decider discipline, five distribution modes (serial/bail/parallel via fixtures) | [2026-08-23-events-demo.md](notes/2026-08-23-events-demo.md) |
 | 2026-08-24 | self-declared events: milk-tea shop event family (declare module + @mode contract), all five modes with real semantics, type-only import, event derivation | [2026-08-24-tea-shop-demo.md](notes/2026-08-24-tea-shop-demo.md) |
 
 ## What is DeepSeek Harness (dsh)

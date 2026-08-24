@@ -2,7 +2,7 @@
 
 [English](README.md) | 中文
 
-一个**三角色服务组合**：把「单位换算」这一个能力（`ctx.units`）拆成 Definition 包、服务 Provider、面向模型的 Consumer 工具三部分。它演示 dsh 插件如何**不互相 import**、只通过 `ctx` 上的共享服务键协作，以及如何通过换掉 `cordis.yml` 里的 provider 行来换数据、而不动工具本身。
+一个「单位换算」能力（`ctx.units`）拆成三个角色：Definition 管契约、Provider 管数据、面向模型的 Consumer 工具管消费。它演示 dsh 插件如何**不互相 import**——所有人只通过 `ctx` 上的一个服务键协作，所以换掉 `cordis.yml` 里的 provider 行就能换数据，工具一个字都不用改。
 
 ## 运行
 
@@ -39,6 +39,10 @@ dsh 里插件互不 import，只通过 `ctx` 上扁平的服务键耦合。所�
 - **Definition（`units/`）——契约**。它拥有服务键（`declare module '@deepseek-ai/cordis'` 给 `Context` 追加 `units: UnitsService`）、Request/Result 类型、结构化 `UnitsError`，以及纯换算数学 `base = (value + offset) * factor`。它没有 `apply`，永远不会进组合树——只是个普通库，Provider 和 Consumer 直接 import 它。
 - **Provider（`units-builtin/`、`units-custom/`）——数据**。各自继承抽象类 `UnitsService`，靠 `Service` 构造器（`super(ctx, 'units')`）把自己注册成 `ctx.units`。内置 provider 带一张静态表（长度/质量/温度/数据）；自定义 provider 通过 `Config` schema 从插件配置读表。因为数学在 Definition 里，provider 自身不带任何逻辑——换 `cordis.yml` 里的行只换表。
 - **Consumer（`tool-units/`）——面向模型的工具**。声明 `inject = ['tools', 'units']`，直接委托 `ctx.units.convert`。领域错误（`UnitsError`）变成 canonical 的 `{ ok: false, error }`，绝不 throw。
+
+> **深入：`super(ctx, 'units')` 是怎么注册服务的？**
+>
+> `Service` 基类构造器（`vendor/cordis/src/service.ts`）会调 `ctx.reflect.provide(name, this)`——就这一行让 `ctx.units` 存在。所以继承 `UnitsService` 并在 provider 的 `await ctx.plugin(BuiltinUnits)` 里构造它，就是注册的全部，没有单独的 register 调用。这也解释了下面的命名空间规则：键是扁平全局命名空间，一个 ctx 一个拥有者，第二个 provider 直接抛 `service "units" has been registered`。
 
 这套拆分带出的规则：
 
