@@ -2,12 +2,19 @@
 
 English | [中文](README.zh.md)
 
-The **declare-and-emit half of typed events**: a milk-tea shop service that
-declares its own typed event family (`declare module` + `interface Events`
-merge) and dispatches it with all five distribution modes. It completes the
-events story started by `events-demo` (which only *listened* to real harness
-events and deliberately declared nothing of its own) — this one declares
-everything, including `serial` / `bail` / `parallel` with real semantics.
+In dsh, plugins never import each other. They couple through two mechanisms:
+**services** ("I need your capability — give it to me") and **events** ("I
+don't know who is listening — I just shout"). An event is fired with
+`ctx.emit` and heard with `ctx.on`, and both sides are type-checked.
+
+This example practices the **producer side of events**: how a plugin defines
+its own typed events and emits them. The story is a milk-tea shop — order,
+make, serve — deliberately toy-sized so it is obviously a teaching sample, not
+a real system. It pairs with the
+[events-demo](../events-demo/) example, which practiced the consumer side on
+dsh's own real events; here the shop declares all six events itself and
+dispatches them with all five distribution modes — including the three
+(first-answer, fan-out, middleware) that real harness events almost never use.
 
 ## Running
 
@@ -27,10 +34,10 @@ pnpm exec vitest run examples/tea-shop-demo/tests/tea-shop-demo.spec.ts
 pnpm dsh web --patch examples/tea-shop-demo/tea-shop.patch.yml
 ```
 
-> Note: events plugins have **no visible UI** — mounted in web they show
-> nothing by themselves. The meaningful verification for this example is the
-> test suite. The patch file exists so the demo shop can be activated on a
-> running instance if you want it.
+> Note: events plugins have **no visible UI**. Mounted in web they show
+> nothing by themselves, so the meaningful verification for this example is
+> the test suite. The patch file exists in case you want the demo shop
+> running on a live instance.
 >
 > Note: an entry's `name` in a patch resolves against the **profile directory**
 > (`~/.dsh/profiles/web/`), not against this file. `tea-shop.patch.yml` uses a
@@ -43,53 +50,75 @@ pnpm dsh web --patch examples/tea-shop-demo/tea-shop.patch.yml
 
 ## Design
 
-Events-demo taught the *listen* half against real harness events. This example
-teaches the *declare and emit* half: a service owns its event namespace, the
-`@mode` annotation on every event is part of the contract, and the dispatcher
-must call the matching ctx method. The shop's story keeps it obviously a
-sample — nobody mistakes a milk-tea ordering demo for a real system.
+### Events have two halves
 
-The producer (`tea-shop`) declares six events covering all five modes:
+Listening is one half: someone shouts, you react (`ctx.on`). Declaring and
+emitting is the other half: you decide what the shouts look like, and you fire
+them. The events-demo example practiced listening against dsh's own events.
+This example practices declaring and emitting, from scratch.
 
-| Event | Mode | Meaning |
-|---|---|---|
-| `order/start` | emit | order accepted (family start, paired with `ready` by orderId) |
-| `order/ready` | emit | order served (family end) |
-| `barista/pick` | serial | first registered barista wins the order |
-| `shop/open` | bail | sync open check; first answer wins, none = closed |
-| `notify/patrons` | parallel | fan-out to every waiting patron |
-| `order/request` | waterfall | shop-rule interception: refuse or call `next()` |
+### A typed event is a compile-time contract
 
-The service methods dispatch them: `placeOrder(drink)` runs the `order/request`
-waterfall (refuse when the shop-rule policy is closed), emits `order/start`,
-picks a barista via `serial`, then emits `order/ready`; `announce(orderId)`
-fans out `notify/patrons`; `isOpen()` bails on `shop/open`.
+The shop declares its events by merging into Cordis's `Events` interface:
 
-Two consumers show the consumption side on *our own* events:
+```ts
+declare module '@deepseek-ai/cordis' {
+  interface Events {
+    'order/start'(order: OrderInfo): void
+    'order/ready'(order: OrderInfo): void
+    'barista/pick'(orderId: string): string | undefined | Promise<string | undefined>
+    'shop/open'(): boolean | undefined
+    'notify/patrons'(orderId: string): void | Promise<void>
+    'order/request'(order: OrderRequest, next: () => Promise<OrderDecision>): Promise<OrderDecision>
+  }
+}
+```
 
-- `order-watch` — `import type { OrderInfo } from './tea-shop.ts'` pulls the
-  producer's `interface Events` merge into its compilation (type-only, no
-  runtime import); it listens to the family and derives its own
+"Typed" means the event name, its arguments, and its return value are checked
+at compile time across the whole project — `ctx.emit` and `ctx.on` both know
+the exact shape. Each event also carries an `@mode` annotation, which says how
+listeners will be invoked. That annotation is part of the contract, and the
+dispatcher must call the matching ctx method (`ctx.emit`, `ctx.serial`,
+`ctx.bail`, `ctx.parallel`, `ctx.waterfall`).
+
+### An event family pairs start with end
+
+An event family describes the stages of one thing, linked by a stable id.
+Here `order/start` and `order/ready` both carry the same `orderId` — the
+identity snapshot — so a listener can pair them. This is the same discipline
+the harness itself uses (`command/run` ↔ `command/done`, `workflow/start` ↔
+`workflow/agent-end`): a start without its end, or an end without its id,
+leaves listeners guessing.
+
+### Five distribution modes, each with a real job
+
+An event's mode decides how its listeners run. The shop's six events cover all
+five modes, and each mode is chosen to fit its business meaning:
+
+| Event | Mode | What happens | Why this mode |
+|---|---|---|---|
+| `order/start` / `order/ready` | emit | broadcast, no waiting | the family announces its stages; nobody's answer matters |
+| `barista/pick` | serial | listeners run in order until one returns a value | first free barista takes the order — ask until someone says yes |
+| `shop/open` | bail | synchronous version of serial | a quick "are you open" check at the door |
+| `notify/patrons` | parallel | all listeners run concurrently, wait for all | a broadcast announcement — everyone must be told |
+| `order/request` | waterfall | listeners wrap a `next()` chain; not calling `next()` vetoes | the shop rule sits at the entrance: accept or refuse |
+
+The service methods drive them: `placeOrder(drink)` runs the `order/request`
+waterfall (a closed shop refuses), then emits `order/start`, picks a barista
+via `serial`, and finishes with `order/ready`; `announce(orderId)` fans out
+`notify/patrons`; `isOpen()` bails on `shop/open`.
+
+### The consumers
+
+Two consumer plugins show the listening side on these self-declared events:
+
+- `order-watch` imports only the types — `import type { OrderInfo } from
+  './tea-shop.ts'` — which pulls the event declarations into its compilation
+  with no runtime dependency. It listens to the family and derives its own
   `orders/served` event.
-- `shop-policy` — listens to the `order/request` waterfall and vetoes without
+- `shop-policy` listens to the `order/request` waterfall and refuses without
   calling `next()` when the shop is closed (`Config { closed }`), mirroring
-  events-demo's decider role.
-
-Rules that fall out of this split:
-
-- **The event family carries an identity snapshot.** Every payload carries
-  `orderId`; `order/start` and `order/ready` pair by it — the same discipline
-  as the harness's own pairs (`command/run` ↔ `command/done`,
-  `workflow/start` ↔ `workflow/agent-end`).
-- **`@mode` is a contract, not an enforcement.** The annotation documents the
-  mode; the actual behavior comes from which ctx method the dispatcher calls
-  (`ctx.emit` / `ctx.serial` / `ctx.bail` / `ctx.parallel` / `ctx.waterfall`).
-- **Consumers merge the declaration via type-only import.** `import type`
-  from the producer brings the typed event names into scope across plugins,
-  without a runtime dependency.
-- **Every mode got a real semantic.** Unlike events-demo, `serial` (first
-  barista), `bail` (open check), and `parallel` (patron fan-out) are declared
-  and driven with real meaning, not test fixtures.
+  the decider role from events-demo.
 
 ## How to develop
 
@@ -105,21 +134,21 @@ tea-shop-demo/
 
 > Relationship note: this directory is the complete source + test package for
 > the self-declared-events practice; `notes/2026-08-22-tea-shop-demo.md`
-> records the learning notes behind it. The proposal that shaped it lives in
-> `docs/proposals/2026-08-22-tea-shop-demo.md`.
+> records the learning notes behind it, and the proposal that shaped it lives
+> in `docs/proposals/2026-08-22-tea-shop-demo.md`.
 
-- `src/tea-shop.ts` — the `TeaShopService extends Service` (`super(ctx,
-  'teaShop')`), the `declare module` block declaring all six events with
-  `@mode`, and the three dispatch methods. `placeOrder` throws a structured
-  `TeaShopError` (`code: 'refused'`) when the shop rule refuses.
+- `src/tea-shop.ts` — `TeaShopService extends Service` (its constructor
+  registers it as `ctx.teaShop`), the `declare module` block declaring all six
+  events with `@mode`, and the three dispatch methods. `placeOrder` throws a
+  structured `TeaShopError` (`code: 'refused'`) when the shop rule refuses.
 - `src/order-watch.ts` — `name = 'tea-shop-order-watch'`,
-  `inject = ['teaShop']`; type-only import for the merge; derives
+  `inject = ['teaShop']`; the type-only import for the merge; derives
   `orders/served` from `order/ready`.
 - `src/shop-policy.ts` — `name = 'tea-shop-shop-policy'`, `inject =
   ['teaShop']`, a Schemastery `Config` (same-name export, the csv-query-tool
   pattern); vetoes `order/request` when closed.
-- `tests/tea-shop-demo.spec.ts` — twelve cases: the family pairing and
-  identity snapshots, waterfall refuse/delegate/default, serial first-wins and
+- `tests/tea-shop-demo.spec.ts` — twelve cases: family pairing and identity
+  snapshots, waterfall refuse / delegate / default, serial first-wins and
   no-listener, bail fail-closed and first-answer, parallel await-all, the
   derived event, the `ctx.on` disposer, and Loader-safe exports.
 
