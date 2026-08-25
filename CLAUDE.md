@@ -69,7 +69,7 @@ pnpm dsh web --patch examples/<项目>/<项目>.patch.yml               # 临时
 - 双语 README（`README.md` / `README.zh.md`）保持同步，改完重记 `README.i18n.yaml` hash（根目录与 helloworld 目录保留，其他双语对不强制加）。
 - `notes/<日期>-<项目>.md` 是学习心得精炼版，`examples/<项目>/README` 是源码使用说明；两者互补，勿重复维护。
 - 实战组织方式固定为「一个源码目录（`examples/`）+ 一篇笔记（`notes/`）」。
-- **笔记写作风格见 [docs/notes-writing-style.md](docs/notes-writing-style.md)**：写 `notes/` 笔记前先读（系列结构 + 卡兹克文风 + 硬性规则 + 自检）。
+- **笔记写作风格见 [docs/notes-writing-style.md](docs/notes-writing-style.md)**：写 `notes/` 笔记前先读（系列结构 + 正常表达为主、卡兹克味点缀 + 硬性规则 + 自检）。
 - **README 写作风格见 [docs/readme-writing-style.md](docs/readme-writing-style.md)**：写/改 `examples/<项目>/README` 前先读（直觉先行 + 逻辑递进 + 深挖块 + 双语同步）。
 
 ## 关键源码位置（deepseek-harness 内）
