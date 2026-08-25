@@ -62,7 +62,7 @@ pnpm dsh web --patch examples/<项目>/<项目>.patch.yml               # 临时
 
 ## 文档维护约定
 
-- **整体索引在 [docs/README.md](docs/README.md)**：`docs/*.md` 摘要目录 + 摘要↔上游 hash 配对表 + 实战/开发流程速记/deepseek-harness 关键源码。根 `README.md` 只留定位、目录结构、快速导航、验证方式、什么是 dsh、许可；新增 `docs/*.md` 摘要或编辑摘要/上游同步时，更新配对表并重记 hash。
+- **整体索引在 [docs/README.md](docs/README.md)**：`docs/*.md` 摘要目录 + 摘要↔上游 hash 配对表 + 实战/开发流程速记/deepseek-harness 关键源码。根 `README.md` 只留定位、目录结构、验证方式、什么是 dsh、许可（不单列快速导航，实践列表并入目录结构）；新增 `docs/*.md` 摘要或编辑摘要/上游同步时，更新配对表并重记 hash。
 - 本仓库 ↔ deepseek-harness 的对应关系在 `docs/README.md` 维护，新增 `reference/` 副本或 `examples/` 实战时更新。
 - 双语 README（`README.md` / `README.zh.md`）保持同步，改完重记 `README.i18n.yaml` hash（根目录与 helloworld 目录保留，其他双语对不强制加）。
 - `notes/<日期>-<项目>.md` 是学习心得精炼版，`examples/<项目>/README` 是源码使用说明；两者互补，勿重复维护。

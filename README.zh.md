@@ -29,19 +29,6 @@ xzz-dsh-plugin/
 
 **整体索引：[docs/README.md](docs/README.md)**（摘要目录 + 摘要↔上游 hash 配对 + 实战 + 开发流程速记 + deepseek-harness 关键源码）。
 
-## 快速导航
-
-- 从零开始：先读 [docs/cordis-basics.md](docs/cordis-basics.md) 了解插件模型，再读 [docs/plugin-package.md](docs/plugin-package.md) 了解包布局。
-- 实战项目，按顺序：
-  1. `examples/helloworld-command/` — `/helloworld` 命令插件
-  2. `examples/sql-check-tool/` — `sql_check` 工具插件
-  3. `examples/csv-query-tool/` — `csv_query` 工具插件（配置 + 可安装 bundle）
-  4. `examples/units-capability/` — `ctx.units` 服务缝（Definition/Provider/Consumer）
-  5. `examples/events-demo/` — 监听真实 harness 事件的类型化事件练习（tools 瀑布 + commands/change）
-  6. `examples/tea-shop-demo/` — 自声明事件（奶茶店事件族，五种分发模式全落地）
-- 经验文章索引：见下方 [经验文章](#经验文章)。
-- 官方一手教程：[reference/cordis-tutorial/](reference/cordis-tutorial/)。
-
 ## 经验文章
 
 对外发布的经验笔记，一个实战对应一篇，每篇与其 `examples/` 下的源码包配对（实战表见 [docs/README.md](docs/README.md)）。

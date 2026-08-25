@@ -42,21 +42,6 @@ xzz-dsh-plugin/
 summary↔upstream hash pairing + practice projects + development workflow
 cheatsheet + key deepseek-harness sources).
 
-## Quick navigation
-
-- Start from scratch: read [docs/cordis-basics.md](docs/cordis-basics.md) for
-  the plugin model, then [docs/plugin-package.md](docs/plugin-package.md) for
-  the package layout.
-- Practice projects, in order:
-  1. `examples/helloworld-command/` — the `/helloworld` command plugin
-  2. `examples/sql-check-tool/` — the `sql_check` tool plugin
-  3. `examples/csv-query-tool/` — the `csv_query` tool plugin (config + installable bundle)
-  4. `examples/units-capability/` — the `ctx.units` service seam (Definition/Provider/Consumer)
-  5. `examples/events-demo/` — typed events on real harness events (tools waterfall + commands/change)
-  6. `examples/tea-shop-demo/` — self-declared events (milk-tea shop event family, all five modes)
-- Experience essays: see [Published notes](#published-notes) below.
-- Official first-hand tutorial: [reference/cordis-tutorial/](reference/cordis-tutorial/).
-
 ## Published notes
 
 Experience essays, one per practice project, written in Chinese. Each pairs
