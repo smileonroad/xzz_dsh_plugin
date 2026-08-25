@@ -58,7 +58,7 @@ const CUSTOM_TABLE: UnitInfo[] = [
 ]
 
 describe('units capability: three-role seam', () => {
-  it('the Definition owns the contract and the pure conversion math', () => {
+  it('the Definition owns the contract and the pure conversion logic', () => {
     // Abstract service: cannot be constructed directly.
     expect(typeof UnitsService).toBe('function')
     expect(() => new (UnitsService as unknown as new () => unknown)()).toThrow()

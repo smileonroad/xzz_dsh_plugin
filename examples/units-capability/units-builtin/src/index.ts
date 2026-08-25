@@ -1,6 +1,6 @@
 /**
  * Service Provider of `ctx.units`: the built-in unit table (length, mass,
- * temperature, data). It carries no logic of its own — the conversion math
+ * temperature, data). It carries no logic of its own — the conversion logic
  * lives in the Definition — so swapping this provider for another one (e.g.
  * units-custom) changes only the table, never the seam.
  * @module units-builtin-provider

@@ -20,7 +20,7 @@
 
 ## 一个 seam，三个角色
 
-第一个角色，**Definition，契约**。单独开一个包，里面没有一行插件代码，没有 name、没有 apply，永远不会进组合树。它只做三件事，定义契约类型、给 Context 增强类型、写纯换算数学。
+第一个角色，**Definition，契约**。单独开一个包，里面没有一行插件代码，没有 name、没有 apply，永远不会进组合树。它只做三件事，定义契约类型、给 Context 增强类型、写纯换算逻辑。
 
 ```ts
 // examples/units-capability/units/src/index.ts（节选）
@@ -35,7 +35,7 @@ export abstract class UnitsService extends Service {
 
 `super(ctx, 'units')` 这行是整条 seam 的轴心，Service 基类的构造函数会把子类注册成 ctx.units。这个基类在 deepseek-harness 的 `vendor/cordis/src/service.ts`，11 行开始，值得翻一翻。
 
-换算数学就一条公式，`base = (value + offset) * factor`，先把值归到系统基准单位，再落到目标单位。线性单位就是 offset 为零的特例，温度的仿射偏移也由同一公式覆盖。错误也在这里定义，单位不认识抛 unknown-unit，跨系统硬换抛 cross-system，都带 code，消费方拿 code 分类处理，不用解析字符串。
+换算逻辑就一条公式，`base = (value + offset) * factor`，先把值归到系统基准单位，再落到目标单位。线性单位就是 offset 为零的特例，温度的仿射偏移也由同一公式覆盖。错误也在这里定义，单位不认识抛 unknown-unit，跨系统硬换抛 cross-system，都带 code，消费方拿 code 分类处理，不用解析字符串。
 
 写契约的感觉，像是盖房子先画图纸，图纸上不画砖，只画承重墙在哪。
 

@@ -36,7 +36,7 @@ pnpm dsh web --patch examples/units-capability/units.patch.yml
 
 dsh 里插件互不 import，只通过 `ctx` 上扁平的服务键耦合。所以一个能力天然是**一个带三个角色的 seam**：
 
-- **Definition（`units/`）——契约**。它拥有服务键（`declare module '@deepseek-ai/cordis'` 给 `Context` 追加 `units: UnitsService`）、Request/Result 类型、结构化 `UnitsError`，以及纯换算数学 `base = (value + offset) * factor`。它没有 `apply`，永远不会进组合树——只是个普通库，Provider 和 Consumer 直接 import 它。
+- **Definition（`units/`）——契约**。它拥有服务键（`declare module '@deepseek-ai/cordis'` 给 `Context` 追加 `units: UnitsService`）、Request/Result 类型、结构化 `UnitsError`，以及纯换算逻辑 `base = (value + offset) * factor`。它没有 `apply`，永远不会进组合树——只是个普通库，Provider 和 Consumer 直接 import 它。
 - **Provider（`units-builtin/`、`units-custom/`）——数据**。各自继承抽象类 `UnitsService`，靠 `Service` 构造器（`super(ctx, 'units')`）把自己注册成 `ctx.units`。内置 provider 带一张静态表（长度/质量/温度/数据）；自定义 provider 通过 `Config` schema 从插件配置读表。因为数学在 Definition 里，provider 自身不带任何逻辑——换 `cordis.yml` 里的行只换表。
 - **Consumer（`tool-units/`）——面向模型的工具**。声明 `inject = ['tools', 'units']`，直接委托 `ctx.units.convert`。领域错误（`UnitsError`）变成 canonical 的 `{ ok: false, error }`，绝不 throw。
 

@@ -2,7 +2,7 @@
  * Service Definition of the `ctx.units` capability seam: unit conversion.
  *
  * The Definition owns the contract — the service key, the Request/Result
- * types, and the pure conversion math. Providers only supply unit tables;
+ * types, and the pure conversion logic. Providers only supply unit tables;
  * consumers (tools) only call the service. Neither depends on the other.
  * @module units-capability-definition
  */
@@ -52,7 +52,7 @@ export class UnitsError extends Error {
 }
 
 /**
- * Pure conversion math shared by every provider: both units must exist in
+ * Pure conversion logic shared by every provider: both units must exist in
  * the table and belong to the same system, else a {@link UnitsError} is
  * thrown. `base = (value + offset) * factor`, so a linear unit is just
  * `offset: 0`.

@@ -55,7 +55,7 @@ on `ctx`. A capability is therefore a **seam with three roles**:
 - **Definition** (`units/`) — the contract. It owns the service key
   (`declare module '@deepseek-ai/cordis'` augments `Context` with
   `units: UnitsService`), the Request/Result types, the structured
-  `UnitsError`, and the pure conversion math `base = (value + offset) * factor`.
+  `UnitsError`, and the pure conversion logic `base = (value + offset) * factor`.
   It has no `apply` and never enters the composition tree — it is a plain
   library that providers and consumers import directly.
 - **Provider** (`units-builtin/`, `units-custom/`) — the data. Each subclasses
