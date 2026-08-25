@@ -37,7 +37,7 @@ pnpm dsh web --patch examples/units-capability/units.patch.yml
 dsh 里插件互不 import，只通过 `ctx` 上扁平的服务键耦合。所以一个能力天然是**一个带三个角色的 seam**：
 
 - **Definition（`units/`）——契约**。它拥有服务键（`declare module '@deepseek-ai/cordis'` 给 `Context` 追加 `units: UnitsService`）、Request/Result 类型、结构化 `UnitsError`，以及纯换算逻辑 `base = (value + offset) * factor`。它没有 `apply`，永远不会进组合树——只是个普通库，Provider 和 Consumer 直接 import 它。
-- **Provider（`units-builtin/`、`units-custom/`）——数据**。各自继承抽象类 `UnitsService`，靠 `Service` 构造器（`super(ctx, 'units')`）把自己注册成 `ctx.units`。内置 provider 带一张静态表（长度/质量/温度/数据）；自定义 provider 通过 `Config` schema 从插件配置读表。因为数学在 Definition 里，provider 自身不带任何逻辑——换 `cordis.yml` 里的行只换表。
+- **Provider（`units-builtin/`、`units-custom/`）——数据**。各自继承抽象类 `UnitsService`，靠 `Service` 构造器（`super(ctx, 'units')`）把自己注册成 `ctx.units`。内置 provider 带一张静态表（长度/质量/温度/数据）；自定义 provider 通过 `Config` schema 从插件配置读表。因为换算逻辑在 Definition 里，provider 自身不带任何逻辑——换 `cordis.yml` 里的行只换表。
 - **Consumer（`tool-units/`）——面向模型的工具**。声明 `inject = ['tools', 'units']`，直接委托 `ctx.units.convert`。领域错误（`UnitsError`）变成 canonical 的 `{ ok: false, error }`，绝不 throw。
 
 > **深入：`super(ctx, 'units')` 是怎么注册服务的？**
@@ -87,7 +87,7 @@ sequenceDiagram
     participant R as tools 注册表
     participant T as unit_convert execute
     participant U as ctx.units (UnitsService)
-    participant D as convertWithTable（纯数学，在 Definition）
+    participant D as convertWithTable（纯逻辑，在 Definition）
 
     M->>R: ctx.tools.execute('unit_convert', args)
     R->>R: 自动校验参数 (JSON Schema)
@@ -123,11 +123,11 @@ units-capability/
 
 > 关系说明：本目录是 `ctx.units` 能力的完整源码 + 测试包；`notes/2026-08-22-units-capability.md` 记录它背后的学习心得。
 
-- `units/src/index.ts` — 抽象类 `UnitsService extends Service`，构造器（`super(ctx, 'units')`）就是注册服务的地方。Provider 实现 `list()` 和 `convert()`。`convertWithTable` 是共享的纯数学：`base = (value + offset) * factor` 意味着线性单位就是 `offset: 0`，仿射系统（温度 C/F）也由同一公式自然覆盖。
+- `units/src/index.ts` — 抽象类 `UnitsService extends Service`，构造器（`super(ctx, 'units')`）就是注册服务的地方。Provider 实现 `list()` 和 `convert()`。`convertWithTable` 是共享的纯逻辑：`base = (value + offset) * factor` 意味着线性单位就是 `offset: 0`，仿射系统（温度 C/F）也由同一公式自然覆盖。
 - `units-builtin/src/index.ts` — `export const BUILTIN_TABLE` + 一个很薄的 `UnitsService` 子类；`apply` 里 `await ctx.plugin(BuiltinUnits)`。
 - `units-custom/src/index.ts` — 同样的子类套路，但表来自 `Config`（镜像 `UnitInfo` 的 Schemastery schema）。在内置 provider 之后再加载它就会抛重复服务错误——测试专门断言了这种「响亮的失败」。
 - `tool-units/src/index.ts` — `defineTool` 定义 `unit_convert`；`execute` 调 `ctx.units.convert`，把 `UnitsError` 映射成 `{ ok: false, error: { type, message } }`。`presentCall` / `presentResult` 保持纯函数（它们要扛住会话日志重放）。
-- `tests/units-capability.spec.ts` — 挂真实 `SystemPrompt` + `ToolRuntime`、一个 provider、consumer 工具，经 `ctx.tools.execute()` 执行（与 agent 循环同一入口）。provider 参数就是被测的seam：同一个工具，零改动地服务内置表和配置注入的自定义表（含仿射温度偏移）。10 个用例覆盖契约与数学、两个 provider、工具行为、错误 canonical 化、自动校验、重复 provider 响亮失败、presenter 纯度、Loader 安全导出。
+- `tests/units-capability.spec.ts` — 挂真实 `SystemPrompt` + `ToolRuntime`、一个 provider、consumer 工具，经 `ctx.tools.execute()` 执行（与 agent 循环同一入口）。provider 参数就是被测的 seam：同一个工具，零改动地服务内置表和配置注入的自定义表（含仿射温度偏移）。10 个用例覆盖契约与换算逻辑、两个 provider、工具行为、错误 canonical 化、自动校验、重复 provider 响亮失败、presenter 纯度、Loader 安全导出。
 
 跑测试：
 

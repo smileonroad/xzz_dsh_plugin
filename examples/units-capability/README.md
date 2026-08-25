@@ -62,7 +62,7 @@ on `ctx`. A capability is therefore a **seam with three roles**:
   the abstract `UnitsService`; the `Service` constructor (`super(ctx, 'units')`)
   is what registers the subclass as `ctx.units`. The built-in provider ships a
   static table (length / mass / temperature / data); the custom provider loads
-  its table from plugin config via a `Config` schema. Because the math lives in
+  its table from plugin config via a `Config` schema. Because the conversion logic lives in
   the Definition, a provider carries no logic of its own — swapping the row in
   `cordis.yml` changes only the table.
 - **Consumer** (`tool-units/`) — the model-facing tool. It declares
@@ -140,7 +140,7 @@ sequenceDiagram
     participant R as tools registry
     participant T as unit_convert execute
     participant U as ctx.units (UnitsService)
-    participant D as convertWithTable (pure math, in Definition)
+    participant D as convertWithTable (pure logic, in Definition)
 
     M->>R: ctx.tools.execute('unit_convert', args)
     R->>R: auto-validate args (JSON Schema)
@@ -184,7 +184,7 @@ units-capability/
 - `units/src/index.ts` — the abstract `UnitsService extends Service`; its
   constructor is what registers the service under the `units` key. Providers
   implement `list()` and `convert()`. `convertWithTable` is the shared pure
-  math: `base = (value + offset) * factor` means a linear unit is just
+  conversion logic: `base = (value + offset) * factor` means a linear unit is just
   `offset: 0`, and affine systems (temperature C/F) fall out of the same
   formula.
 - `units-builtin/src/index.ts` — `export const BUILTIN_TABLE` plus a thin
@@ -202,7 +202,7 @@ units-capability/
   `ctx.tools.execute()` (the same boundary as the agent loop). The provider
   argument is the seam under test: the same tool serves the built-in table and
   a config-supplied custom table (including affine temperature offsets) with
-  zero tool changes. Ten cases cover the contract and math, both providers,
+  zero tool changes. Ten cases cover the contract and conversion logic, both providers,
   tool behavior, error canonicalization, automatic validation, the
   duplicate-provider loud failure, presenter purity, and Loader-safe exports.
 

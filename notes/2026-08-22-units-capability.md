@@ -48,7 +48,7 @@ export async function apply(ctx: Context) {
 }
 ```
 
-我写了两个 provider。units-builtin 带内置单位表，长度以米为基准、质量以千克、温度比较特殊（摄氏和华氏都带偏移）、数据是二进制倍数（1024 不是 1000）。units-custom 从插件配置读表，配了一个 Schemastery 的 schema，UnitInfo 有什么字段 Config 就有什么字段，镜像关系一目了然。因为数学全在 Definition 里，provider 自身不带逻辑，就是一张表。
+我写了两个 provider。units-builtin 带内置单位表，长度以米为基准、质量以千克、温度比较特殊（摄氏和华氏都带偏移）、数据是二进制倍数（1024 不是 1000）。units-custom 从插件配置读表，配了一个 Schemastery 的 schema，UnitInfo 有什么字段 Config 就有什么字段，镜像关系一目了然。因为换算逻辑全在 Definition 里，provider 自身不带逻辑，就是一张表。
 
 第三个角色，**Consumer，消费方**。一个 unit_convert 工具，inject 声明依赖 tools 和 units，直接调 ctx.units.convert。
 
@@ -100,7 +100,7 @@ async function harness(provider: ProviderPlugin, config?: unknown): Promise<Cont
 
 同一个 harness，传内置 provider 能算 5 km 到 mi，传配置 provider、同一个工具一行没改，能算 2 smoot 到 sm，连温度的仿射偏移都算得对，零度摄氏换华氏是 32 度。
 
-10 个用例，契约和数学、两个 provider、工具行为、错误 canonical 化、自动校验、重复 provider、presenter 纯度、Loader 安全导出，全绿。测试描述行为不描述正确性，这个原则系列反复说过，这次多了一层，**seam 本身就是被测对象**。provider 参数是变量，其他全是常量，一个 harness 函数换 provider 跑全套，测的是架构而不是某个函数算得对不对。
+10 个用例，契约和换算逻辑、两个 provider、工具行为、错误 canonical 化、自动校验、重复 provider、presenter 纯度、Loader 安全导出，全绿。测试描述行为不描述正确性，这个原则系列反复说过，这次多了一层，**seam 本身就是被测对象**。provider 参数是变量，其他全是常量，一个 harness 函数换 provider 跑全套，测的是架构而不是某个函数算得对不对。
 
 ## 源码里撞见同款，官方也是这么做的
 
@@ -120,9 +120,9 @@ async function harness(provider: ProviderPlugin, config?: unknown): Promise<Cont
 
 ## 接下来该干嘛
 
-想练这条缝的，可以搭一个自己的 seam，挑熟悉的领域，时区换算、货币汇率都行。先写 Definition（纯契约纯数学），再写 Provider，最后写 Consumer 工具，然后写一个测试让同一个工具服务两个 provider。
+想练这个模式的，可以搭一个自己的 seam，挑熟悉的领域，时区换算、货币汇率都行。先写 Definition（纯契约、纯换算逻辑），再写 Provider，最后写 Consumer 工具，然后写一个测试让同一个工具服务两个 provider。
 
-三个提醒。第一，Definition 别偷懒，类型和数学是整条 seam 的承重墙。第二，Provider 越薄越好，逻辑全在 Definition，provider 只是数据，薄到一张表就对了。第三，Consumer 只认键，别让它知道数据从哪来。
+三个提醒。第一，Definition 别偷懒，类型和换算逻辑是整条 seam 的承重墙。第二，Provider 越薄越好，逻辑全在 Definition，provider 只是数据，薄到一张表就对了。第三，Consumer 只认键，别让它知道数据从哪来。
 
 如果一开始把换算逻辑写进 provider 了也不用担心，测试会先发现，同一套行为换个 provider 对不上，自然就知道逻辑放错了层。
 
