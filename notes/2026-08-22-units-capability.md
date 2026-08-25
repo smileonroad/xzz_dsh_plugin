@@ -35,7 +35,7 @@ export abstract class UnitsService extends Service {
 
 `super(ctx, 'units')` 这行是整条 seam 的轴心，Service 基类的构造函数会把子类注册成 ctx.units。这个基类在 deepseek-harness 的 `vendor/cordis/src/service.ts`，11 行开始，值得翻一翻。
 
-换算数学也放在 Definition，`base = (value + offset) * factor` 一条公式，先把值归到系统基准单位，再落到目标单位。线性单位就是 offset 为零的特例，温度的仿射偏移也由同一公式覆盖。错误也在这里定义，单位不认识抛 unknown-unit，跨系统硬换抛 cross-system，都带 code，消费方拿 code 分类处理，不用解析字符串。
+换算数学就一条公式，`base = (value + offset) * factor`，先把值归到系统基准单位，再落到目标单位。线性单位就是 offset 为零的特例，温度的仿射偏移也由同一公式覆盖。错误也在这里定义，单位不认识抛 unknown-unit，跨系统硬换抛 cross-system，都带 code，消费方拿 code 分类处理，不用解析字符串。
 
 写契约的感觉，像是盖房子先画图纸，图纸上不画砖，只画承重墙在哪。
 
