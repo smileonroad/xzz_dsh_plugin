@@ -60,6 +60,8 @@ pnpm dsh web --patch examples/<项目>/<项目>.patch.yml               # 临时
 2. **提案**：探索有结论后，固化成**正式提案**再动手。提案至少包含选题依据（对应官方指引/教程章节）、实战形态（目录结构、插件角色、测试与验证方式）、风险与开放问题。本仓库未初始化 OpenSpec 时，提案写入 `docs/proposals/<日期>-<项目>.md`；初始化后走 OpenSpec change proposal。
 3. **开发**：提案经确认后才写源码、测试、README、笔记，按系列惯例收尾并提交。
 
+**提交/推送纪律**：commit 按逻辑单位一次一个（粒度照旧）；**推送不每次提交都做**，攒到一批（一个实战收尾或几次提交）再 `git push`。推送走 SSH（origin 已设为 `git@github.com:...`；沙箱下需要完整权限，因为 git/ssh 要以 pipe stdio 启动子进程）。
+
 ## 文档维护约定
 
 - **整体索引在 [docs/README.md](docs/README.md)**：`docs/*.md` 摘要目录 + 摘要↔上游 hash 配对表 + 实战/开发流程速记/deepseek-harness 关键源码。根 `README.md` 只留定位、目录结构、验证方式、什么是 dsh、许可（不单列快速导航，实践列表并入目录结构）；新增 `docs/*.md` 摘要或编辑摘要/上游同步时，更新配对表并重记 hash。
