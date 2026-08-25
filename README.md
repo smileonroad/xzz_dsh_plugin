@@ -14,9 +14,10 @@ official docs + an index into the corresponding source + complete examples).
 The `examples/` directory is the **source of truth** for plugin code (it does
 not run standalone in this repo). To run tests or load a plugin, **copy the
 `examples/<project>/` directory into the deepseek-harness source's
-`examples/<project>/`**, then operate from the deepseek-harness root. The
-exact steps per example (copy, test, web mount commands) are in each
-directory's README, e.g. [examples/helloworld-command/](examples/helloworld-command/).
+`examples/<project>/`** (overwrite; the copy over there may be stale), then
+operate from the deepseek-harness root. The exact commands per example (copy,
+test, web mount) are in each directory's README, e.g.
+[examples/helloworld-command/](examples/helloworld-command/).
 
 ## Directory layout
 
@@ -46,16 +47,13 @@ cheatsheet + key deepseek-harness sources).
 - Start from scratch: read [docs/cordis-basics.md](docs/cordis-basics.md) for
   the plugin model, then [docs/plugin-package.md](docs/plugin-package.md) for
   the package layout.
-- First practice project: `examples/helloworld-command/` (the `/helloworld`
-  command plugin, with source and tests). Second: `examples/sql-check-tool/`
-  (the `sql_check` tool plugin). Third: `examples/csv-query-tool/` (the
-  `csv_query` tool plugin, with plugin config and an installable bundle).
-  Fourth: `examples/units-capability/` (the `unit_convert` tool behind a
-  `ctx.units` service seam split into Definition/Provider/Consumer).
-  Fifth: `examples/events-demo/` (typed events on real harness events — the
-  `tools/*` waterfall interception points and `commands/change`).
-  Sixth: `examples/tea-shop-demo/` (self-declared events — a milk-tea shop
-  event family covering all five distribution modes).
+- Practice projects, in order:
+  1. `examples/helloworld-command/` — the `/helloworld` command plugin
+  2. `examples/sql-check-tool/` — the `sql_check` tool plugin
+  3. `examples/csv-query-tool/` — the `csv_query` tool plugin (config + installable bundle)
+  4. `examples/units-capability/` — the `ctx.units` service seam (Definition/Provider/Consumer)
+  5. `examples/events-demo/` — typed events on real harness events (tools waterfall + commands/change)
+  6. `examples/tea-shop-demo/` — self-declared events (milk-tea shop event family, all five modes)
 - Experience essays: see [Published notes](#published-notes) below.
 - Official first-hand tutorial: [reference/cordis-tutorial/](reference/cordis-tutorial/).
 

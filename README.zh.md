@@ -8,7 +8,7 @@
 
 ## 验证方式
 
-本仓库的 `examples/` 是插件源码的**权威来源**（不复制到其他地方独立运行）。要跑测试或加载插件，把对应的 `examples/<项目>/` **拷贝到 deepseek-harness 源码的 `examples/<项目>/`** 目录，再在 deepseek-harness 根目录运行。每个例子的具体步骤（拷贝、测试、web 挂载命令）见对应目录的 README，如 [examples/helloworld-command/](examples/helloworld-command/)。
+本仓库的 `examples/` 是插件源码的**权威来源**（在本仓库内不独立运行）。要跑测试或加载插件，把对应的 `examples/<项目>/` **拷贝到 deepseek-harness 源码的 `examples/<项目>/`**（覆盖；那边的副本可能过期），再在 deepseek-harness 根目录操作。每个例子的具体命令（拷贝、测试、web 挂载）见对应目录的 README，如 [examples/helloworld-command/](examples/helloworld-command/)。
 
 ## 目录结构
 
@@ -32,7 +32,13 @@ xzz-dsh-plugin/
 ## 快速导航
 
 - 从零开始：先读 [docs/cordis-basics.md](docs/cordis-basics.md) 了解插件模型，再读 [docs/plugin-package.md](docs/plugin-package.md) 了解包布局。
-- 第一个实战：`examples/helloworld-command/`（`/helloworld` 命令插件，含源码与测试）；第二个：`examples/sql-check-tool/`（`sql_check` 工具插件）；第三个：`examples/csv-query-tool/`（`csv_query` 工具插件，含插件配置与可安装 bundle）；第四个：`examples/units-capability/`（`unit_convert` 工具，背后是拆成 Definition/Provider/Consumer 的 `ctx.units` 服务缝）；第五个：`examples/events-demo/`（监听真实 harness 事件的类型化事件练习——`tools/*` 瀑布拦截点与 `commands/change`）；第六个：`examples/tea-shop-demo/`（自声明事件——奶茶店事件族，五种分发模式全部自有声明）。
+- 实战项目，按顺序：
+  1. `examples/helloworld-command/` — `/helloworld` 命令插件
+  2. `examples/sql-check-tool/` — `sql_check` 工具插件
+  3. `examples/csv-query-tool/` — `csv_query` 工具插件（配置 + 可安装 bundle）
+  4. `examples/units-capability/` — `ctx.units` 服务缝（Definition/Provider/Consumer）
+  5. `examples/events-demo/` — 监听真实 harness 事件的类型化事件练习（tools 瀑布 + commands/change）
+  6. `examples/tea-shop-demo/` — 自声明事件（奶茶店事件族，五种分发模式全落地）
 - 经验文章索引：见下方 [经验文章](#经验文章)。
 - 官方一手教程：[reference/cordis-tutorial/](reference/cordis-tutorial/)。
 
