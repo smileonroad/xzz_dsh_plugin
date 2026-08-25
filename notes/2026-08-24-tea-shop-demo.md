@@ -60,7 +60,7 @@ waterfall 是店规，order/request，打烊的时候 shop-policy 直接拒单�
 
 第一个是 type-only import。order-watch 里写一行 import type { OrderInfo } from './tea-shop.ts'，生产方的 Events 合并就被拉进编译了，纯类型，无运行时依赖。这是跨插件共享类型声明的正路，不 import 代码，只 import 契约。
 
-第二个是派生。order-watch 监听 order/ready，然后发出自己的事件 orders/served。监听别人的事件，吐自己的事件，事件可以喂事件，这跟 units-capability 的服务缝一个思路，契约在中间，两边各干各的。
+第二个是派生。order-watch 监听 order/ready，然后发出自己的事件 orders/served。监听别人的事件，吐自己的事件，事件可以喂事件，这跟 units-capability 的seam一个思路，契约在中间，两边各干各的。
 
 shop-policy 就更简单了，延续 events-demo 的决策者角色，监听 order/request，Config 里 closed 一开，直接拒单。这个 Config 套路是 csv-query 那篇练的，现在信手拈来。
 

@@ -4,4 +4,4 @@
 # other along and re-record with:
 #   git hash-object README.md README.zh.md
 README.md: f3c049a6a58cf93025ae3f2ec86d1eafab13e79e
-README.zh.md: f580b9a7434d6a05d4388bc1f71883765236cf91
+README.zh.md: 273d6d9aa5e8d6d02bddb530def99513b9feb9df
