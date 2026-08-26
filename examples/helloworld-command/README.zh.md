@@ -34,15 +34,15 @@ pnpm dsh web --patch examples/helloworld-command/helloworld.patch.yml
 
 ## 设计思路
 
-命令直接从人的命令行分派给处理器，不发起任何模型请求。对于确定性、由人驱动的操作，这是正确的形态——与由模型自行调用的工具不同。
+命令直接从人的命令行分派给处理器，不发起任何模型请求。对于确定性、由人驱动的操作，这个形态是对的——与由模型自行调用的工具不同。
 
-三个决定驱动了设计：
+设计的三个关键决定：
 
 - **`inject: ['commands']` 声明依赖。** Cordis 在加载插件前等待命令注册表就绪，因此 `apply` 读取 `ctx.commands` 是安全的。
-- **`register` 是一个副作用。** 销毁插件 fiber 即注销命令。注册绝不会成为比其所有者存活更久的副作用。
+- **`register` 是一个副作用。** 销毁插件 fiber 即注销命令。注册绝不会比其所有者活得更久。
 - **处理器拥有自己的语法。** `invocation.rawInput` 是命令名之后的精确文本（包含分隔空白）；`parseName` 决定什么是问候目标、什么是用法错误。没有其他包拥有问候语词汇。
 
-该命令不拥有会话事件流——生命周期（`command/run`/`command/done`）由命令注册表本身记录——因此除了域自身的行为之外，没有需要断言的包不变量。
+该命令不拥有会话事件流——生命周期（`command/run`/`command/done`）由命令注册表自己记录——所以除了命令自身的行为，没有别的包不变量需要断言。
 
 > **深入：为什么 `rawInput` 带分隔空白？**
 >
@@ -58,7 +58,7 @@ helloworld-command/
 
 > 关系说明：本目录是 `/helloworld` 插件的完整源码+测试包；`notes/2026-08-15-helloworld-command.md` 记录了背后的学习心得。
 
-- `src/index.ts` —— `name = 'helloworld-command'`，注册 `/helloworld` 命令。`CommandResult` 是直接的 UI 输出：`{ kind: 'success', text }` 或 `{ kind: 'error', text }`。
+- `src/index.ts` —— `name = 'helloworld-command'`，注册 `/helloworld` 命令。`CommandResult` 是 UI 的直接输出：`{ kind: 'success', text }` 或 `{ kind: 'error', text }`。
 - `tests/helloworld-command.spec.ts` —— 启动真实的 `CommandRuntime` 与会话存储，stub 一个 agent，并通过 `ctx.commands.execute()`（与 UI 适配器相同的边界）执行 `/helloworld`。六个用例覆盖注册、问候、命名问候、多词拒绝、生命周期事件与 admission miss。
 
 若还想验证插件挂载进**真实 Loader 组合树**（经 app bin 启动 `cordis.yml`），参照 dsh 源码中 `examples/headless-agent/tests/` 的 `runLoaderSmoke` 模式（`packages/test-support/loader-smoke`）；原先的 `tests/web-load.spec.ts` + `tests/fixtures/helloworld-driver.ts` 只是该模式的教学副本，已删除。

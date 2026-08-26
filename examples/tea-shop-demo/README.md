@@ -14,7 +14,7 @@ a real system. It pairs with the
 [events-demo](../events-demo/) example, which practiced the consumer side on
 dsh's own real events; here the shop declares all six events itself and
 dispatches them with all five distribution modes — including the three
-(first-answer, fan-out, middleware) that real harness events almost never use.
+(first-answer, concurrent broadcast, middleware) that real harness events almost never use.
 
 ## Running
 
@@ -125,10 +125,31 @@ five modes, and each mode is chosen to fit its business meaning:
 | `notify/patrons` | parallel | all listeners run concurrently, wait for all | a broadcast announcement — everyone must be told |
 | `order/request` | waterfall | listeners wrap a `next()` chain; not calling `next()` vetoes | the shop rule sits at the entrance: accept or refuse |
 
-The service methods drive them: `placeOrder(drink)` runs the `order/request`
-waterfall (a closed shop refuses), then emits `order/start`, picks a barista
-via `serial`, and finishes with `order/ready`; `announce(orderId)` fans out
-`notify/patrons`; `isOpen()` bails on `shop/open`.
+The service methods run these modes in business order. One order walks the
+whole pipeline:
+
+```
+customer orders — placeOrder(drink)
+   │
+   ▼
+① order/request (waterfall)   the shop rule sits at the entrance: closed →
+                              refuse and end here; open → call next()
+   │
+   ▼
+② order/start (emit)          announce "order accepted", one-way
+   │
+   ▼
+③ barista/pick (serial)       ask baristas in turn, first answer takes it
+   │
+   ▼
+④ order/ready (emit)          announce "order served", the family completes
+```
+
+The other two methods each take one step: `announce(orderId)` dispatches
+`notify/patrons` (parallel — every waiting patron is notified concurrently,
+and it returns only when all finish); `isOpen()`
+bails on `shop/open` (a quick "are you open" at the door: first answer wins,
+no answer means closed).
 
 > **Deeper: how does waterfall's `next()` actually flow?**
 >
@@ -155,7 +176,7 @@ via `serial`, and finishes with `order/ready`; `announce(orderId)` fans out
 
 ### The consumers
 
-Two consumer plugins show the listening side on these self-declared events:
+Two consumer plugins show how to listen to these self-declared events:
 
 - `order-watch` imports only the types — `import type { OrderInfo } from
   './tea-shop.ts'` — which pulls the event declarations into its compilation

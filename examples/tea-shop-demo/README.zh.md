@@ -4,7 +4,7 @@
 
 在 dsh 里，插件之间互不 import，只通过两种机制耦合：**服务**（「我要用你的能力，你先把东西给我」）和**事件**（「我不知道谁在听，反正我喊一嗓子」）。事件用 `ctx.emit` 发出、用 `ctx.on` 收听，两边都有类型检查。
 
-这个实战练事件的**生产方**：插件怎么自己定义类型化事件、自己发出。故事是家奶茶店——下单、制作、出杯——刻意做成玩具大小，一看就是教学样本，不是真实系统。它跟 [events-demo](../events-demo/) 配对，那个实战练的是消费方（监听 dsh 自己的真实事件）；这个实战六个事件全部自声明，五种分发模式全用上，包括真实 harness 几乎用不到的三种（先到先得、扇出、中间件）。
+这个实战练事件的**生产方**：插件怎么自己定义类型化事件、自己发出。故事是家奶茶店——下单、制作、出杯——刻意做成玩具大小，一看就是教学样本，不是真实系统。它跟 [events-demo](../events-demo/) 配对，那个实战练的是消费方（监听 dsh 自己的真实事件）；这个实战六个事件全部自声明，五种分发模式全用上，包括真实 harness 几乎用不到的三种（先到先得、并发广播、中间件）。
 
 ## 运行
 
@@ -73,13 +73,32 @@ declare module '@deepseek-ai/cordis' {
 
 | 事件 | 模式 | 会发生什么 | 为什么用这个模式 |
 |---|---|---|---|
-| `order/start` / `order/ready` | emit | 广播，不等待 | 事件族在播报阶段变化，谁都不用回话 |
+| `order/start` / `order/ready` | emit | 广播，不等待 | 事件族逐段播报订单的阶段变化（start → ready），纯单向通知：不收集返回值，听众无需应答 |
 | `barista/pick` | serial | 监听器按顺序跑，直到有人返回值 | 第一个空闲店员接单——挨个问，问到有人接 |
 | `shop/open` | bail | serial 的同步版 | 门口快速问一句「开门了吗」 |
 | `notify/patrons` | parallel | 所有监听器并发跑，全部完成才返回 | 叫号广播——每个人都必须通知到 |
 | `order/request` | waterfall | 监听器包裹一条 `next()` 链；不调 `next()` 即否决 | 店规守在入口：接单或拒单 |
 
-服务方法负责驱动：`placeOrder(drink)` 先走 `order/request` 的 waterfall（打烊时拒单），再发 `order/start`，用 `serial` 选店员，最后发 `order/ready`；`announce(orderId)` 扇出 `notify/patrons`；`isOpen()` 走 `shop/open` 的 bail。
+服务方法把这些模式按业务顺序串起来。一次下单 `placeOrder(drink)` 走完一整条流程：
+
+```
+顾客下单 placeOrder(drink)
+   │
+   ▼
+① order/request（waterfall）   店规守在入口：打烊 → 直接拒单，流程终止；
+                               营业 → 调 next() 放行
+   │
+   ▼
+② order/start（emit）          广播「已接单」，单向通知
+   │
+   ▼
+③ barista/pick（serial）       挨个问店员，第一个应声的接单
+   │
+   ▼
+④ order/ready（emit）          广播「已出杯」，事件族收尾
+```
+
+另外两个方法各走一步：`announce(orderId)` 走 `notify/patrons`（parallel——并发通知每个等单的人，全部完成才返回）；`isOpen()` 走 `shop/open`（bail——门口问「开门了吗」，先答者赢，没人答算打烊）。
 
 > **深入：waterfall 的 `next()` 到底怎么走？**
 >
@@ -99,7 +118,7 @@ declare module '@deepseek-ai/cordis' {
 
 ### 消费方
 
-两个消费方插件展示在这些自声明事件上的监听侧：
+两个消费方插件演示怎么监听这些自声明事件：
 
 - `order-watch` 只导入类型——`import type { OrderInfo } from './tea-shop.ts'`——把事件声明拉进自己的编译，无运行时依赖。它监听事件族，派生自己的 `orders/served` 事件。
 - `shop-policy` 监听 `order/request` 的 waterfall，打烊时（`Config { closed }`）不调 `next()` 直接拒单，延续 events-demo 的决策者角色。

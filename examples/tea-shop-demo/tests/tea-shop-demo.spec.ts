@@ -24,11 +24,11 @@ describe('tea-shop-demo: self-declared event family', () => {
     })
     const order = await ctx.teaShop.placeOrder('波霸奶茶')
     expect(events).toHaveLength(2)
-    expect(events[0].kind).toBe('start')
-    expect(events[1].kind).toBe('ready')
-    expect(events[0].order.orderId).toBe(order.orderId)
-    expect(events[1].order.orderId).toBe(order.orderId)
-    expect(events[0].order.drink).toBe('波霸奶茶')
+    expect(events[0]?.kind).toBe('start')
+    expect(events[1]?.kind).toBe('ready')
+    expect(events[0]?.order.orderId).toBe(order.orderId)
+    expect(events[1]?.order.orderId).toBe(order.orderId)
+    expect(events[0]?.order.drink).toBe('波霸奶茶')
   })
 
   it('every order gets a distinct identity snapshot', async () => {
@@ -119,7 +119,7 @@ describe('tea-shop-demo: self-declared event family', () => {
     })
     const order = await ctx.teaShop.placeOrder('椰椰乌龙')
     expect(served).toHaveLength(1)
-    expect(served[0].orderId).toBe(order.orderId)
+    expect(served[0]?.orderId).toBe(order.orderId)
   })
 
   it('ctx.on returns a disposer that removes the listener', async () => {
