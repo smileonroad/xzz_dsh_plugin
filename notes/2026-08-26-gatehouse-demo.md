@@ -46,9 +46,27 @@ cancelled      问题被撤回，迟到的答案作废
 unavailable    兜底，默认不放行
 ```
 
-unavailable 的来源有三种，没有应答者、应答者抛错、返回值不在词汇里，serviceAsk 看到的结果都是它。应答者异常被机制消化成 unavailable，废的是这一单问题，不是调用方的工具调用。
+unavailable 是兜底结果。没有应答者、应答者抛错、返回值不在词汇里，三种情况最后都落到它头上，serviceAsk 看到的都是它。应答者的异常被机制消化在链条内部，废的只是这一单问题，调用方的工具调用不受牵连。
 
-问问题的人只有一种姿势。tools/pre-execute 返回 { kind: 'ask' } 时，serviceAsk 调 ctx.approval.request，把 outcome 映射回放行或拒绝。facilities 插件就用这条真实路径，三个被门禁的工具在 pre-execute 里返回 ask，不另造 ask 工具。tool-bash 的沙箱升级（approveEscalation）走的也是同一个 approval 服务。
+```
+没有应答者          ┐
+应答者抛错          ├─→ unavailable → 工具执行器按拒绝处理
+返回值不在词汇里    ┘
+```
+
+问问题的人只有一种姿势。某个 tools/pre-execute 监听器说「这个工具要先问一下」，serviceAsk 就把这句话变成一次 ctx.approval.request，拿到 outcome 后映射回工具结果，allowed-once 放行，其余一律拒绝。
+
+```
+tools/pre-execute 返回 { kind: 'ask', reason }
+   │
+   ▼
+serviceAsk 调 ctx.approval.request
+   │
+   ▼
+映射回工具结果：allowed-once 放行，其余拒绝
+```
+
+走这条路的有两个。facilities 的三个被门禁工具在 pre-execute 里返回 ask，不另造 ask 工具；tool-bash 的沙箱升级也在这条路上，approveEscalation 传的是同一个 approval 服务。
 
 真实世界的应答者有两个，认领规则各不相同。
 
@@ -69,7 +87,7 @@ approval.request 有个前提，审计对必须落在开着的 turn 里。
 turn/start ── … ── approval/asked ── approval/decided ── … ── turn/end
 ```
 
-turn 是日志的提交边界。裸事件落在两个 turn 之间，重放时和 crash 尾巴无法区分，所以 turn 外询问直接抛错，在写任何东西之前就抛。
+turn 是日志的提交边界。裸事件落在两个 turn 之间，重放时和 crash 尾巴无法区分，所以 turn 外询问会在写入任何东西之前直接抛错。
 
 第一次跑挂了两个测试。
 
@@ -79,7 +97,7 @@ turn 是日志的提交边界。裸事件落在两个 turn 之间，重放时和
 
 ## 传达室的故事，一层一层剥
 
-keeper 的 Config 就是那份名单，allow、deny、prepend。每次被问到，按工具名查一遍。
+keeper 的 Config 就是那份名单，allow、deny、prepend。每次被问到，就按工具名查一遍名单。
 
 ```
 keeper 被问到，按工具名查名单
@@ -109,7 +127,7 @@ prepend: true 是 overlay 唯一能先于 UI 回答的位置。但默认是 fals
 
 还有个更硬的边界。'never' 策略在服务层分发前就判了，decide() 里先查 effectivePolicy 再进 waterfall，所以什么 prepend 都绕不过。keeper 是门，策略是锁。
 
-这个层次关系写进 README 的深挖块。user-approval 的源码注释自己就讨论过 prepend 监听器绕过 gate 的问题。
+这个层次关系写进 README 的深挖块。user-approval 的源码注释里就讨论过 prepend 监听器绕过 gate 的问题。
 
 会话策略本身也是故事的一部分，读和写分开看。
 
@@ -117,7 +135,7 @@ setApprovalPolicy 是唯一写入口，落一条 approval/policy 事件进会话
 日志里最后一条 approval/policy 就是当前策略，重放即恢复。
 模型在 runtime-context 快照里能看到当前策略。
 
-测试里切 never 再切回 ask，日志里两条 policy 事件，顺序就是历史。
+测试里切 never 再切回 ask，日志里就有两条 policy 事件，先 never 后 ask，顺序就是历史。
 
 ## 十八个用例，一次全绿
 
@@ -125,17 +143,17 @@ setApprovalPolicy 是唯一写入口，落一条 approval/policy 事件进会话
 
 十八个用例按组看。
 
-keeper 三条决策路径。allow 放行，委托链不执行。deny 拒绝，委托链不执行。不在名单，委托给 stub 应答者。
+keeper 三条决策路径。allow 命中放行，deny 命中拒绝，两边的委托链都不执行。不在名单的，委托给 stub 应答者。
 
-fail-closed 三条。无应答者 unavailable。应答者抛错 unavailable。非词汇返回归一化 unavailable。
+fail-closed 三条。没有应答者、应答者抛错、答了个不认识的词，三种情况都落到 unavailable。
 
-策略两条。never 拒绝，任何应答者都不被调用。切回 ask，分发恢复。
+策略两条。never 下任何应答者都不被调用，直接拒绝。切回 ask 后分发恢复。
 
-审计三条。asked 和 decided 同 id，callId 也在。turn 外询问抛错。abort 撤回，迟到答案丢弃。
+审计三条。asked 和 decided 同 id，callId 也在。turn 外询问直接抛错。abort 撤回后，迟到的答案作废。
 
-顺序三条。注册序决定谁先答。prepend 插队。disposer 卸载后恢复。
+顺序三条。注册序决定谁先答。prepend 可以插队。disposer 卸载后恢复原样。
 
-边界三条。门禁只罩自己的工具。无 approval 服务时 ask 降级成 deny。keeper 缺服务时休眠，根本不激活。
+边界三条。门禁只罩自己的三个工具。没有 approval 服务时，ask 降级成 deny。keeper 缺服务时休眠，根本不激活。
 
 Loader 安全导出一条。
 
