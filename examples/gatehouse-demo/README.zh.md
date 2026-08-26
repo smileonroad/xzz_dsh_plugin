@@ -44,6 +44,25 @@ pnpm dsh web --patch examples/gatehouse-demo/gatehouse.patch.yml
 - **问问题的人**：工具执行器。某个 `tools/pre-execute` 监听器说「这个工具要先问一下」，dsh-tools 就把这句话变成一次 `ctx.approval.request`。传达室的 `facilities` 插件用的就是这条现成的路，不自己发明提问方式。
 - **回答问题的人**：排成一条 waterfall 链，先被问到的先答。web UI 里有一个应答者（apiproxy，随 web-app bundle 挂载），负责弹窗问真人；传达室大爷（keeper）是加在它前面或后面的自动应答者。
 
+整条链走一遍：
+
+```
+工具想执行
+   │  tools/pre-execute 返回 { kind: 'ask', reason }
+   ▼
+ctx.approval.request（dsh-tools 的 serviceAsk）
+   │  日志先写 approval/asked
+   ▼
+approval/request waterfall，应答者按注册顺序被问到
+   ├─ 返回结果 → 认领，链条终止
+   ├─ 调 next() → 传给下一个
+   └─ 无人认领 → 默认 unavailable
+   ▼
+日志补写 approval/decided（同 id），返回 outcome
+   ▼
+工具执行器：allowed-once 放行，其余拒绝
+```
+
 ### 故事对照
 
 | 传达室 | approval 机制 |
@@ -61,6 +80,16 @@ keeper 的 Config 就是那份名单：`allow`（常客）、`deny`（通缉名�
 ### 应答者的纪律：认领或委托
 
 waterfall 的规则很简单：想回答，就直接把结果交回去，链条到此为止；不归你管，**必须调 `next()` 把问题传下去**。events-demo 给 `tools/*` 观察者立过这条规矩，这次它落在真实的决策事件上。只想记日志的监听器如果忘了 `next()`，后面所有应答者都会被无声跳过。
+
+```
+应答者被问到
+   │
+   ├─ 归我管 → 直接返回结果（认领），链条终止
+   │
+   └─ 不归我管 → 必须调 next() 传下去
+                    │
+                    └─ 没人认领 → 默认 unavailable
+```
 
 答案只有四种，而且默认不放行（fail closed）：
 

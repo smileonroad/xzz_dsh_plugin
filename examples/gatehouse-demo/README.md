@@ -73,6 +73,25 @@ Three roles meet on it:
   part of the web-app bundle) prompts the human; the keeper adds policy
   answers on top of it.
 
+One ask walks the whole chain:
+
+```
+tool wants to run
+   │  a tools/pre-execute listener returns { kind: 'ask', reason }
+   ▼
+ctx.approval.request (dsh-tools' serviceAsk)
+   │  the log gets approval/asked first
+   ▼
+approval/request waterfall, answerers asked in registration order
+   ├─ return an outcome → claim, chain ends
+   ├─ call next()      → pass it on
+   └─ nobody claims    → default 'unavailable'
+   ▼
+the log gets approval/decided (same id), the outcome resolves
+   ▼
+the tool executor maps: allowed-once runs, everything else denies
+```
+
 ### The story, mapped
 
 | Gatehouse | approval seam |
@@ -96,6 +115,16 @@ chain. A listener that does not own the question MUST call `next()` — the
 same discipline events-demo pinned on `tools/*` observers, now on a real
 decision event. Forgetting `next()` in a logging listener silently swallows
 every answerer downstream.
+
+```
+an answerer is asked
+   │
+   ├─ mine to answer → return the outcome (claim), chain ends
+   │
+   └─ not mine → must call next()
+                    │
+                    └─ nobody claims → default 'unavailable'
+```
 
 The outcome vocabulary is closed and fail-closed:
 

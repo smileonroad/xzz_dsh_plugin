@@ -17,11 +17,47 @@ interface Events {
 }
 ```
 
-waterfall 事件，应答者返回结果就是认领，调 next() 就是委托。结果词汇是闭集的，allowed-once 是唯一放行，rejected、cancelled、unavailable 全是不放行，unavailable 是 fail-closed，没有应答者、应答者抛错、返回值不在词汇里，统统归一化成 unavailable。
+waterfall 事件，应答者返回结果就是认领，调 next() 就是委托。整条链走一遍就清楚了。
 
-asker 是工具执行器。packages/core/tools/src/index.ts 的 serviceAsk，tools/pre-execute 返回 { kind: 'ask' } 时调 ctx.approval.request，把 outcome 映射回工具的放行或拒绝。所以这次不另造 ask 工具，facilities 插件注册三个被门禁的工具，pre-execute 里对这三个名字返回 ask，走的就是真实路径。tool-bash 的沙箱升级也走这条路，approveEscalation 传的是同一个 approval 服务。
+```
+工具想执行
+   │  tools/pre-execute 监听器返回 { kind: 'ask', reason }
+   ▼
+serviceAsk（dsh-tools 里的唯一问法）
+   │  ctx.approval.request(req)
+   │  日志先写 approval/asked
+   ▼
+approval/request waterfall，应答者按注册顺序被问到
+   ├─ 应答者直接返回结果 → 认领，链条终止
+   ├─ 应答者调 next()    → 传给下一个
+   └─ 无人认领           → 默认 unavailable
+   ▼
+日志补写 approval/decided（同 id），返回 outcome
+   ▼
+工具执行器映射：allowed-once 放行，其余拒绝
+```
 
-应答者有两个真实的。apiproxy 是 web UI 应答者，认领一切审计过的请求，往浏览器发弹窗然后等用户点。ACP bridge 是机器应答者，只认领自己 agent 的请求，foreign agent 的调 next() 委托。纪律是一样的，谁的问题谁回答，不是你的就 next()。
+结果词汇是闭集，一共四种。
+
+```
+allowed-once   唯一放行，只管这一次
+rejected       明确拒绝
+cancelled      问题被撤回，迟到的答案作废
+unavailable    兜底，默认不放行
+```
+
+unavailable 的来源有三种，没有应答者、应答者抛错、返回值不在词汇里，serviceAsk 看到的结果都是它。应答者异常被机制消化成 unavailable，废的是这一单问题，不是调用方的工具调用。
+
+问问题的人只有一种姿势。tools/pre-execute 返回 { kind: 'ask' } 时，serviceAsk 调 ctx.approval.request，把 outcome 映射回放行或拒绝。facilities 插件就用这条真实路径，三个被门禁的工具在 pre-execute 里返回 ask，不另造 ask 工具。tool-bash 的沙箱升级（approveEscalation）走的也是同一个 approval 服务。
+
+真实世界的应答者有两个，认领规则各不相同。
+
+```
+apiproxy    web UI 应答者，认领一切审计过的请求，往浏览器发弹窗等用户点
+ACP bridge  机器应答者，只认领自己 agent 的请求，别人的调 next() 委托
+```
+
+纪律只有一条，谁的问题谁回答，不是你的就 next()。
 
 ## 测试先立起来，fake agent 带 turn
 
@@ -33,7 +69,22 @@ asker 是工具执行器。packages/core/tools/src/index.ts 的 serviceAsk，too
 
 keeper 的 Config 就是那份名单，allow、deny、prepend。allow 命中返回 allowed-once，deny 命中返回 rejected，都不在就 next() 委托。prepend 是这次最有嚼头的设计点。
 
-patch 层序是 base、web-app、profile 自身 patch、--patch overlay，web UI 应答者随 web-app bundle 挂载。waterfall 按注册顺序跑，UI answerer 认领一切，所以 --patch 挂的 keeper 默认排在它后面，自动放行形同虚设。prepend: true 把监听器顶到链首，这是 overlay 唯一能先于 UI 回答的位置。但默认是 false，一个默认就压过真人的自动门，不该是默认。
+patch 加载顺序（先 → 后）
+
+```
+dsh-base → dsh-web-app → profile 自身 cordis.patch.yml → --patch overlay
+```
+
+waterfall 的回答顺序就是注册顺序。UI 应答者随 web-app 层挂载，先注册，认领一切，所以 --patch 层挂的 keeper 默认排在它后面，自动放行形同虚设。
+
+```
+注册顺序（先 → 后）        回答顺序
+UI 应答者（web-app 层）  →  先被问到，认领一切
+keeper（--patch 层）     →  最后被问到，轮不到
+                          prepend: true 时插到最前，抢在 UI 之前
+```
+
+prepend: true 是 overlay 唯一能先于 UI 回答的位置。但默认是 false，一个默认就压过真人的自动门，不该是默认。
 
 还有个更硬的边界。'never' 策略在服务层分发前就判了，decide() 里先查 effectivePolicy 再进 waterfall，所以什么 prepend 都绕不过。keeper 是门，策略是锁。这个层次关系写进 README 的深挖块，从源码注释里读出来的，user-approval 自己就讨论过 prepend 监听器绕过 gate 的问题。
 
