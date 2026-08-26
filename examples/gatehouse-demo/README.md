@@ -140,16 +140,28 @@ seam contains its callbacks.
 
 > **Deeper: who answers first? Layer order vs registration order.**
 >
-> `ctx.on` listeners run in registration order. The web UI answerer claims
-> EVERY audited ask — it publishes a prompt to the browser and waits — so an
-> answerer registered after it never gets to answer. Patch layers apply as
-> dsh-base → dsh-web-app → profile `cordis.patch.yml` → `--patch` overlays:
-> the UI answerer mounts with the web-app bundle, so a `--patch`-mounted
-> keeper sits BEHIND it and auto-approval stays dormant. `prepend: true`
-> unshifts the keeper to the front of the chain — the one position from
-> which a patch overlay can answer before the UI. The keeper's default is
-> `prepend: false`: an automatic gate that silently outranks a human is not
-> a default.
+> The order in which answerers are asked is the order in which plugins
+> mounted, and the mount order is the patch layer order.
+>
+> ```
+> patch layers (first → last)    mount/answer order
+> dsh-base
+> dsh-web-app                  →  the UI answerer mounts, registers and is
+>    (the UI answerer lives         asked first
+>     in this layer)
+> profile cordis.patch.yml
+> --patch overlay               →  the keeper mounts last, behind the UI
+>    (the keeper lives in           answerer
+>     this layer)
+> ```
+>
+> The UI answerer claims every audited ask — it publishes a prompt to the
+> browser and waits — so an answerer registered after it never gets to
+> answer: auto-approval stays dormant. `prepend: true` is a `ctx.on`
+> registration option that unshifts the listener to the front of the chain —
+> the one position from which a patch overlay can answer before the UI. The
+> keeper's default is `prepend: false`: an automatic gate that silently
+> outranks a human is not a default.
 >
 > But no prepend overrides the session policy. `'never'` is decided inside
 > the service, before dispatch, so even a keeper prepended tomorrow cannot

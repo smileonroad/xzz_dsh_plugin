@@ -104,9 +104,21 @@ waterfall 的规则很简单：想回答，就直接把结果交回去，链条�
 
 > **深入：应答者按什么顺序被问到？**
 >
-> `ctx.on` 注册的监听器按注册先后被问到。web UI 应答者**来者不拒**——它一接到问题就往浏览器发弹窗然后等着——所以排在它后面的应答者根本轮不到。
+> 答案者被问到的顺序，就是插件挂载的顺序，而挂载顺序由 patch 层序决定。
 >
-> patch 的加载顺序是 dsh-base → dsh-web-app → profile 自己的 `cordis.patch.yml` → `--patch` overlay。UI 应答者跟着 web-app bundle 挂载，所以 `--patch` 挂上的 keeper 天然排在它**后面**，自动放行等于没装。`prepend: true` 会把 keeper 插到链的最前面——这是 overlay 唯一能抢在 UI 之前回答的位置。keeper 默认不开 prepend：一个默认就压过真人的自动门，不该是默认。
+> ```
+> patch 层序（先 → 后）       挂载/回答顺序
+> dsh-base
+> dsh-web-app               →  UI 应答者先挂载、先注册、先被问到
+>    （UI 应答者在这层）
+> profile 自身 cordis.patch.yml
+> --patch overlay            →  keeper 最后挂载，排在 UI 后面
+>    （keeper 在这层）
+> ```
+>
+> UI 应答者来者不拒：先被问到就直接认领，往浏览器发弹窗等着。所以排在它后面的 keeper 永远轮不到，自动放行等于没装。
+>
+> `prepend: true` 是 `ctx.on` 的注册选项，注册时把监听器插到链的最前面——这是 overlay 唯一能抢在 UI 之前回答的位置。keeper 默认不开 prepend：一个默认就压过真人的自动门，不该是默认。
 >
 > 但再靠前的 prepend 也绕不过会话策略。`'never'` 在服务里、分发之前就判定了，就算 keeper 插队插到天上去也拦不住：**keeper 是门，策略是锁。**
 
