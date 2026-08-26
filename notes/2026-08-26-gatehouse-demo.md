@@ -2,9 +2,9 @@
 
 ## 事情是这样的
 
-上篇 tea-shop 把事件话题收口了，监听和声明都练完，结尾列了几个候选。approval/request 自动审批是排在第一位的，events-demo 那篇就点名过，说它是 harness 里另一个真实 waterfall，教程也点名过，策略可以代替用户作答。
+上篇 tea-shop 把事件话题收口了，监听和声明都练完，结尾列了几个候选。approval/request 自动审批排在候选第一位，events-demo 那篇就点名过，说它是 harness 里另一个真实 waterfall，教程也点名过，策略可以代替用户作答。
 
-这次的故事是传达室。老式单位门口那间小屋，访客登记，大爷翻名单，常客放行，黑名单拒之门外，陌生人打电话问人，没人接就进不去。门禁这个场景和 approval/request 的机制是天然一一对应的，不需要像报销金额那样把领域数据硬塞进 reason 里。
+这次的故事是传达室。老式单位门口那间小屋，访客登记，大爷翻名单，常客放行，黑名单拒之门外，陌生人打电话问人，没人接就进不去。门禁这个场景和 approval/request 的机制天然对应，不用像报销那样把领域数据硬塞进 reason 里。
 
 ## 先把 seam 摸清楚，三个角色
 
@@ -46,7 +46,7 @@ cancelled      问题被撤回，迟到的答案作废
 unavailable    兜底，默认不放行
 ```
 
-unavailable 是兜底结果。没有应答者、应答者抛错、返回值不在词汇里，三种情况最后都落到它头上，serviceAsk 看到的都是它。应答者的异常被机制消化在链条内部，废的只是这一单问题，调用方的工具调用不受牵连。
+unavailable 是兜底结果。没有应答者、应答者抛错、返回值不在词汇里，三种情况最后都落到它头上。应答者的异常被机制消化在链条内部，废的只是这一单问题，调用方的工具调用不受牵连。
 
 ```
 没有应答者          ┐
@@ -79,7 +79,7 @@ ACP bridge  机器应答者，只认领自己 agent 的请求，别人的调 nex
 
 ## 测试先立起来，fake agent 带 turn
 
-测试装配参考了 harness 自己的 approval 测试，core/tools 里那个 fake agent 替身，session 带一个 turn/start 就够。
+测试装配照搬了 harness 自己的 approval 测试，用 core/tools 里那个 fake agent 替身，session 里带一个 turn/start 就够。
 
 approval.request 有个前提，审计对必须落在开着的 turn 里。
 
@@ -97,7 +97,7 @@ turn 是日志的提交边界。裸事件落在两个 turn 之间，重放时和
 
 ## 传达室的故事，一层一层剥
 
-keeper 的 Config 就是那份名单，allow、deny、prepend。每次被问到，就按工具名查一遍名单。
+keeper 的 Config 就是那份名单，allow、deny、prepend。每次被问到，按工具名查一遍。
 
 ```
 keeper 被问到，按工具名查名单

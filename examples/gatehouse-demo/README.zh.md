@@ -4,7 +4,7 @@
 
 老式单位的大门口有间传达室。访客想进去，先登记；传达室大爷翻名单：常客直接放行，通缉名单上的名字当场拒之门外，陌生人就打电话问屋里管东西的人。电话没人接，就进不去。
 
-这套流程在 harness 里有一个真实的对应物：`approval/request`。工具想要执行，harness 会向一群「应答者」征询意见——也就是教程里那句 "a policy answer instead of the user"，策略可以代替用户作答。前两个实战里，events-demo 练的是监听 harness 的 `tools/*` 事件，tea-shop-demo 练的是自己声明事件；这次练这条链上没人碰过的角色：**应答者**。waterfall 的纪律——要么直接给答案，要么把问题传下去——在真实事件上再走一遍，故事里的每个环节都能在代码里对上号。
+这套流程在 harness 里有一个真实的对应物：`approval/request`。工具想要执行时，harness 会向一群「应答者」征询意见，策略可以代替用户作答（教程原话是 "a policy answer instead of the user"）。前两个实战把事件的监听和声明各练了一遍；这次轮到真实 harness 的 `approval/request`，练的是应答者这个角色。waterfall 的纪律还是那条：要么直接给答案，要么把问题传下去。故事里的每个环节，都能在代码里对上号。
 
 ## 运行
 
@@ -42,7 +42,7 @@ pnpm dsh web --patch examples/gatehouse-demo/gatehouse.patch.yml
 
 - **定义方**（`dsh-user-approval` 包，每个 profile 都带着）：把整个机制定下来——服务怎么用、结果有哪几种、会话策略是什么、每次询问留下什么记录。
 - **问问题的人**：工具执行器。某个 `tools/pre-execute` 监听器说「这个工具要先问一下」，dsh-tools 就把这句话变成一次 `ctx.approval.request`。传达室的 `facilities` 插件用的就是这条现成的路，不自己发明提问方式。
-- **回答问题的人**：排成一条 waterfall 链，先被问到的先答。web UI 里有一个应答者（apiproxy，随 web-app bundle 挂载），负责弹窗问真人；传达室大爷（keeper）是加在它前面或后面的自动应答者。
+- **回答问题的人**：排成一条 waterfall 链，按注册顺序被问到。web UI 里有一个应答者（apiproxy，随 web-app bundle 挂载），负责弹窗问真人；传达室大爷（keeper）是加在它前面或后面的自动应答者。
 
 整条链走一遍：
 
@@ -100,7 +100,7 @@ waterfall 的规则很简单：想回答，就直接把结果交回去，链条�
 | `'cancelled'` | 问题被撤回（abort 信号），迟到的答案作废 |
 | `'unavailable'` | 没人答、应答者出错、或答了个不认识的词——一律按拒绝处理 |
 
-应答者抛错，坏的只是这一次询问，调用方的工具调用不受牵连：机制把应答者的异常拦在自己这一层。
+应答者抛错，坏的只是这一次询问，调用方的工具调用不受牵连：机制把应答者的异常拦在链条内部。
 
 > **深入：应答者按什么顺序被问到？**
 >
@@ -139,7 +139,7 @@ gatehouse-demo/
 - `src/gatekeeper.ts` —— `name = 'gatehouse-keeper'`、`inject = ['approval']`。注意 inject 是门控不是报错：没有 approval 服务时 keeper 根本不会激活。Schemastery `Config`（同名导出，csv-query-tool 的套路）；监听器按工具名认领 `allow`/`deny`，其余委托。
 - `src/facilities.ts` —— `name = 'gatehouse-facilities'`、`inject = ['tools']`。三个玩具工具 + `tools/pre-execute` 的 ask 策略；别的工具一律 `next()` 放行。ask 的 reason 就是访客的故事——web UI 原样拿给真人看。
 - `tests/gatehouse-demo.spec.ts` —— 真实 `SystemPrompt` + `ToolRuntime` + `ApprovalService`，fake agent 自带开着的 turn（harness 自己的 approval 测试用同一个替身），经 `ctx.tools.execute` 派发。十八个用例按组看：
-  - keeper 三条决策路径：allow 放行、deny 拒绝、不在名单委托，委托链该不执行时不执行
+  - keeper 三条决策路径：allow 放行、deny 拒绝（都不惊动后面的应答者）、不在名单则委托
   - 默认不放行三条：没人答、应答者抛错、答了个不认识的词
   - 策略两条：`'never'` 拒绝且任何应答者都不被调用、切回 ask 恢复分发
   - 审计三条：asked/decided 同 id、轮次外询问抛错、abort 撤回且迟到答案作废
