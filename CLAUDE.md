@@ -71,6 +71,7 @@ pnpm dsh web --patch examples/<项目>/<项目>.patch.yml               # 临时
 - 实战组织方式固定为「一个源码目录（`examples/`）+ 一篇笔记（`notes/`）」。
 - **笔记写作风格见 [docs/notes-writing-style.md](docs/notes-writing-style.md)**：写 `notes/` 笔记前先读（系列结构 + 正常表达为主、卡兹克味点缀 + 硬性规则 + 自检）。
 - **README 写作风格见 [docs/readme-writing-style.md](docs/readme-writing-style.md)**：写/改 `examples/<项目>/README` 前先读（直觉先行 + 逻辑递进 + 深挖块 + 双语同步）。
+- **定稿前通读**：README 和笔记写完，以普通读者身份通读一遍，检查不通顺处并评审修改（规则见两份风格文档的「定稿前通读 / 自检」）。
 
 ## 关键源码位置（deepseek-harness 内）
 
