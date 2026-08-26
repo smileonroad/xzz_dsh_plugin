@@ -112,11 +112,16 @@ waterfall 的规则很简单：想回答，就直接把结果交回去，链条�
 
 ### 会话策略：ask 或 never
 
-每个会话有一个审批策略：`'ask'`（默认）把问题交给应答者链；`'never'` 一律拒绝，连问都不问。策略不是内存里的临时状态，而是写进会话日志的一条 `approval/policy` 事件——重放日志就能还原，不需要额外的恢复机制。改策略只有 `setApprovalPolicy(session, policy)` 一个入口；模型在每轮的系统提示里能看到当前策略，知道什么时候问了也白问。
+每个会话有一个审批策略，二选一：
+
+- `'ask'`（默认）——把问题交给应答者链
+- `'never'` ——一律拒绝，连问都不问
+
+策略写在会话日志里，生效值就是最后一条 `approval/policy` 事件，重放日志就能还原，不需要额外的恢复机制。改策略只有一个入口：`setApprovalPolicy(session, policy)`。模型在每轮的系统提示里能看到当前策略，知道什么时候问了也白问。
 
 ### 每次询问都在日志里留一对记录
 
-`ctx.approval.request` 先写一条 `approval/asked`，出结果后再写配对的 `approval/decided`，两条共享同一个 `ApprovalRequestId`——只进日志，不进模型看到的对话。这对记录必须落在一次轮次（turn）内部：轮次是日志的提交边界，在轮次外发起询问，会在写入任何东西之前直接抛错。
+`ctx.approval.request` 先写一条 `approval/asked`，出结果后再写配对的 `approval/decided`，两条共享同一个 `ApprovalRequestId`——只进日志，不进模型看到的对话。这对记录必须落在一次轮次（turn）内部，轮次是日志的提交边界。在轮次外发起询问，会在写入任何东西之前直接抛错。
 
 ## 怎么开发
 
@@ -133,7 +138,14 @@ gatehouse-demo/
 
 - `src/gatekeeper.ts` —— `name = 'gatehouse-keeper'`、`inject = ['approval']`。注意 inject 是门控不是报错：没有 approval 服务时 keeper 根本不会激活。Schemastery `Config`（同名导出，csv-query-tool 的套路）；监听器按工具名认领 `allow`/`deny`，其余委托。
 - `src/facilities.ts` —— `name = 'gatehouse-facilities'`、`inject = ['tools']`。三个玩具工具 + `tools/pre-execute` 的 ask 策略；别的工具一律 `next()` 放行。ask 的 reason 就是访客的故事——web UI 原样拿给真人看。
-- `tests/gatehouse-demo.spec.ts` —— 真实 `SystemPrompt` + `ToolRuntime` + `ApprovalService`，fake agent 自带开着的 turn（harness 自己的 approval 测试用同一个替身），经 `ctx.tools.execute` 派发。十八个用例：keeper 的三条决策路径、默认不放行（没人答 / 应答者抛错 / 答了个不认识的词）、`'never'` 策略与切回、日志里的 asked/decided 配对与轮次前提、abort 取消、注册顺序 vs prepend、卸载后恢复原样、门禁边界、没有 approval 服务时的降级、Loader 安全导出。
+- `tests/gatehouse-demo.spec.ts` —— 真实 `SystemPrompt` + `ToolRuntime` + `ApprovalService`，fake agent 自带开着的 turn（harness 自己的 approval 测试用同一个替身），经 `ctx.tools.execute` 派发。十八个用例按组看：
+  - keeper 三条决策路径：allow 放行、deny 拒绝、不在名单委托，委托链该不执行时不执行
+  - 默认不放行三条：没人答、应答者抛错、答了个不认识的词
+  - 策略两条：`'never'` 拒绝且任何应答者都不被调用、切回 ask 恢复分发
+  - 审计三条：asked/decided 同 id、轮次外询问抛错、abort 撤回且迟到答案作废
+  - 顺序三条：注册序决定谁先答、prepend 插队、卸载后恢复原样
+  - 边界三条：门禁只罩自己的工具、无 approval 服务时降级成 deny、keeper 缺服务时休眠
+  - Loader 安全导出
 
 跑测试：
 

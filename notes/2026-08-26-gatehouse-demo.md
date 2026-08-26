@@ -61,13 +61,34 @@ ACP bridge  机器应答者，只认领自己 agent 的请求，别人的调 nex
 
 ## 测试先立起来，fake agent 带 turn
 
-测试装配参考了 harness 自己的 approval 测试，core/tools 里那个 fake agent 替身，session 带一个 turn/start 就够。approval.request 有个前提，审计对必须被开着的 turn 包住，turn 外询问直接抛错，这是日志的提交边界，裸事件在 turn 之间追加，重放时和 crash 尾巴无法区分。
+测试装配参考了 harness 自己的 approval 测试，core/tools 里那个 fake agent 替身，session 带一个 turn/start 就够。
 
-第一次跑挂了两个测试。一个是卸载方式，ctx.plugin 返回的是 fiber，dispose 是 fiber 上的方法，不是 plugin 返回的 disposer，写测试的时候先探了一下 cordis 源码才改对。另一个更有意思，我以为 keeper 缺 approval 服务时会 loud fail，实测发现 inject 是激活门控，服务不在时回调根本不激活，plugin() 照样 resolve，静默休眠。这是 cordis 的机制不是 bug，测试改成断言休眠行为，README 里也写清楚。
+approval.request 有个前提，审计对必须落在开着的 turn 里。
+
+```
+turn/start ── … ── approval/asked ── approval/decided ── … ── turn/end
+```
+
+turn 是日志的提交边界。裸事件落在两个 turn 之间，重放时和 crash 尾巴无法区分，所以 turn 外询问直接抛错，在写任何东西之前就抛。
+
+第一次跑挂了两个测试。
+
+一个是卸载方式。ctx.plugin 返回的是 fiber，dispose 在 fiber 上，不在 plugin 的返回值里。探了一下 cordis 源码才改对。
+
+另一个更有意思。我以为 keeper 缺 approval 服务时会 loud fail，实测不是。inject 是激活门控，服务不在时回调根本不激活，plugin() 照样 resolve，静默休眠。这是 cordis 的机制不是 bug，测试改成断言休眠行为，README 里也写清楚。
 
 ## 传达室的故事，一层一层剥
 
-keeper 的 Config 就是那份名单，allow、deny、prepend。allow 命中返回 allowed-once，deny 命中返回 rejected，都不在就 next() 委托。prepend 是这次最有嚼头的设计点。
+keeper 的 Config 就是那份名单，allow、deny、prepend。每次被问到，按工具名查一遍。
+
+```
+keeper 被问到，按工具名查名单
+   ├─ 在 allow 里 → allowed-once，认领
+   ├─ 在 deny 里  → rejected，认领
+   └─ 都不在      → next()，委托
+```
+
+prepend 是这次最有嚼头的设计点。
 
 patch 加载顺序（先 → 后）
 
@@ -86,15 +107,37 @@ keeper（--patch 层）     →  最后被问到，轮不到
 
 prepend: true 是 overlay 唯一能先于 UI 回答的位置。但默认是 false，一个默认就压过真人的自动门，不该是默认。
 
-还有个更硬的边界。'never' 策略在服务层分发前就判了，decide() 里先查 effectivePolicy 再进 waterfall，所以什么 prepend 都绕不过。keeper 是门，策略是锁。这个层次关系写进 README 的深挖块，从源码注释里读出来的，user-approval 自己就讨论过 prepend 监听器绕过 gate 的问题。
+还有个更硬的边界。'never' 策略在服务层分发前就判了，decide() 里先查 effectivePolicy 再进 waterfall，所以什么 prepend 都绕不过。keeper 是门，策略是锁。
 
-会话策略本身也是故事的一部分。approval/policy 事件写进会话日志，重放就是状态，setApprovalPolicy 是唯一写路径，模型在 runtime-context 快照里能看到当前策略。测试里切 never 再切回 ask，日志里两条 policy 事件，顺序就是历史。
+这个层次关系写进 README 的深挖块。user-approval 的源码注释自己就讨论过 prepend 监听器绕过 gate 的问题。
+
+会话策略本身也是故事的一部分，读和写分开看。
+
+setApprovalPolicy 是唯一写入口，落一条 approval/policy 事件进会话日志。
+日志里最后一条 approval/policy 就是当前策略，重放即恢复。
+模型在 runtime-context 快照里能看到当前策略。
+
+测试里切 never 再切回 ask，日志里两条 policy 事件，顺序就是历史。
 
 ## 十八个用例，一次全绿
 
 进程内装配，SystemPrompt 加 ToolRuntime 加 ApprovalService，fake agent 经 ctx.tools.execute 派发，和 sql_check 那篇同一套姿势。
 
-十八个用例。keeper 三条决策路径，allow 放行且委托链不执行，deny 拒绝且委托链不执行，不在名单委托给 stub 应答者。fail-closed 三条，无应答者 unavailable，应答者抛错 unavailable，非词汇返回归一化 unavailable。策略两条，never 拒绝且任何应答者都不被调用，切回 ask 恢复分发。审计对一条，asked 和 decided 同 id，callId 也在。turn 前提一条。abort 一条，迟到答案丢弃。注册序和 prepend 两条。disposer 恢复一条。门禁边界一条，别的工具直接放行不触发 ask。无 approval 服务的降级一条。Loader 安全导出一条。
+十八个用例按组看。
+
+keeper 三条决策路径。allow 放行，委托链不执行。deny 拒绝，委托链不执行。不在名单，委托给 stub 应答者。
+
+fail-closed 三条。无应答者 unavailable。应答者抛错 unavailable。非词汇返回归一化 unavailable。
+
+策略两条。never 拒绝，任何应答者都不被调用。切回 ask，分发恢复。
+
+审计三条。asked 和 decided 同 id，callId 也在。turn 外询问抛错。abort 撤回，迟到答案丢弃。
+
+顺序三条。注册序决定谁先答。prepend 插队。disposer 卸载后恢复。
+
+边界三条。门禁只罩自己的工具。无 approval 服务时 ask 降级成 deny。keeper 缺服务时休眠，根本不激活。
+
+Loader 安全导出一条。
 
 一次全绿。测试钉的是传达室的决策逻辑和链组合，服务自身的行为不重复测，那是 user-approval 自己的测试范围。
 

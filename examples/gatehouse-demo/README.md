@@ -157,13 +157,15 @@ seam contains its callbacks.
 
 ### Session policy: ask or never
 
-`ApprovalPolicy` is per-session and durable: `'ask'` (the default) delegates
-to the answerer chain; `'never'` rejects every ask deterministically without
-dispatching anyone. The effective value is the last `approval/policy` event
-in the session log — replay reconstructs it, no catch-up machinery.
-`setApprovalPolicy(session, policy)` is the single write path, and the model
-sees the current policy in its runtime-context snapshot, so it knows when
-asking is pointless.
+`ApprovalPolicy` is per-session and durable — one of two:
+
+- `'ask'` (the default) — delegates to the answerer chain
+- `'never'` — rejects every ask deterministically without dispatching anyone
+
+The effective value is the last `approval/policy` event in the session log —
+replay reconstructs it, no catch-up machinery. `setApprovalPolicy(session,
+policy)` is the single write path, and the model sees the current policy in
+its runtime-context snapshot, so it knows when asking is pointless.
 
 ### Every ask leaves an audit pair
 
