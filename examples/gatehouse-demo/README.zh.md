@@ -4,7 +4,7 @@
 
 老式单位的大门口有间传达室。访客想进去，先登记；传达室大爷翻名单：常客直接放行，通缉名单上的名字当场拒之门外，陌生人就打电话问屋里管东西的人。电话没人接，就进不去。
 
-这套流程在 harness 里有一个真实的对应物：`approval/request`。工具想要执行，harness 会向一群「答案者」征询意见——也就是教程里那句 "a policy answer instead of the user"，策略可以代替用户作答。前两个实战里，events-demo 练的是监听 harness 的 `tools/*` 事件，tea-shop-demo 练的是自己声明事件；这次练这条链上没人碰过的角色：**答案者**。waterfall 的纪律——要么直接给答案，要么把问题传下去——在真实事件上再走一遍，故事里的每个环节都能在代码里对上号。
+这套流程在 harness 里有一个真实的对应物：`approval/request`。工具想要执行，harness 会向一群「应答者」征询意见——也就是教程里那句 "a policy answer instead of the user"，策略可以代替用户作答。前两个实战里，events-demo 练的是监听 harness 的 `tools/*` 事件，tea-shop-demo 练的是自己声明事件；这次练这条链上没人碰过的角色：**应答者**。waterfall 的纪律——要么直接给答案，要么把问题传下去——在真实事件上再走一遍，故事里的每个环节都能在代码里对上号。
 
 ## 运行
 
@@ -32,7 +32,7 @@ pnpm dsh web --patch examples/gatehouse-demo/gatehouse.patch.yml
 >
 > 不想用 junction，就改成绝对 `file:///` URL（规则见该文件顶部注释；同盘设 DSH_HOME 相对跳转和 bundle 安装是另外两种做法）。
 
-在 web 对话框里让模型开储物柜（`use_locker`）：keeper 的 allow 名单直接放行，工具照常执行。试试金库（`open_vault`）：当场拒绝。再试试实验室（`use_lab`）：不在名单上，web UI 答案者在浏览器里弹窗问真人。
+在 web 对话框里让模型开储物柜（`use_locker`）：keeper 的 allow 名单直接放行，工具照常执行。试试金库（`open_vault`）：当场拒绝。再试试实验室（`use_lab`）：不在名单上，web UI 应答者在浏览器里弹窗问真人。
 
 ## 设计
 
@@ -42,14 +42,14 @@ pnpm dsh web --patch examples/gatehouse-demo/gatehouse.patch.yml
 
 - **定义方**（`dsh-user-approval` 包，每个 profile 都带着）：把整个机制定下来——服务怎么用、结果有哪几种、会话策略是什么、每次询问留下什么记录。
 - **问问题的人**：工具执行器。某个 `tools/pre-execute` 监听器说「这个工具要先问一下」，dsh-tools 就把这句话变成一次 `ctx.approval.request`。传达室的 `facilities` 插件用的就是这条现成的路，不自己发明提问方式。
-- **回答问题的人**：排成一条 waterfall 链，先被问到的先答。web UI 里有一个答案者（apiproxy，随 web-app bundle 挂载），负责弹窗问真人；传达室大爷（keeper）是加在它前面或后面的自动答案者。
+- **回答问题的人**：排成一条 waterfall 链，先被问到的先答。web UI 里有一个应答者（apiproxy，随 web-app bundle 挂载），负责弹窗问真人；传达室大爷（keeper）是加在它前面或后面的自动应答者。
 
 ### 故事对照
 
 | 传达室 | approval 机制 |
 |---|---|
 | 访客要进去 | `tools/pre-execute` 说「要问一下」→ `ctx.approval.request` |
-| 大爷翻名单 | `approval/request` 的答案者 waterfall 链 |
+| 大爷翻名单 | `approval/request` 的应答者 waterfall 链 |
 | 常客 → 直接放行 | 返回 `'allowed-once'`（认领） |
 | 通缉名单 → 拒之门外 | 返回 `'rejected'`（认领） |
 | 陌生人 → 打电话问人 | 调 `next()` 委托（web 里是 UI answerer） |
@@ -58,9 +58,9 @@ pnpm dsh web --patch examples/gatehouse-demo/gatehouse.patch.yml
 
 keeper 的 Config 就是那份名单：`allow`（常客）、`deny`（通缉名单）、`prepend`（自动规则排在链上哪个位置，见下）。不在名单上的是陌生人，keeper 委托。
 
-### 答案者的纪律：认领或委托
+### 应答者的纪律：认领或委托
 
-waterfall 的规则很简单：想回答，就直接把结果交回去，链条到此为止；不归你管，**必须调 `next()` 把问题传下去**。events-demo 给 `tools/*` 观察者立过这条规矩，这次它落在真实的决策事件上。只想记日志的监听器如果忘了 `next()`，后面所有答案者都会被无声跳过。
+waterfall 的规则很简单：想回答，就直接把结果交回去，链条到此为止；不归你管，**必须调 `next()` 把问题传下去**。events-demo 给 `tools/*` 观察者立过这条规矩，这次它落在真实的决策事件上。只想记日志的监听器如果忘了 `next()`，后面所有应答者都会被无声跳过。
 
 答案只有四种，而且默认不放行（fail closed）：
 
@@ -69,21 +69,21 @@ waterfall 的规则很简单：想回答，就直接把结果交回去，链条�
 | `'allowed-once'` | 唯一放行——只管这一次动作 |
 | `'rejected'` | 明确拒绝，工具调用带着原因失败 |
 | `'cancelled'` | 问题被撤回（abort 信号），迟到的答案作废 |
-| `'unavailable'` | 没人答、答案者出错、或答了个不认识的词——一律按拒绝处理 |
+| `'unavailable'` | 没人答、应答者出错、或答了个不认识的词——一律按拒绝处理 |
 
-答案者抛错，坏的只是这一次询问，调用方的工具调用不受牵连：机制把答案者的异常拦在自己这一层。
+应答者抛错，坏的只是这一次询问，调用方的工具调用不受牵连：机制把应答者的异常拦在自己这一层。
 
-> **深入：答案者按什么顺序被问到？**
+> **深入：应答者按什么顺序被问到？**
 >
-> `ctx.on` 注册的监听器按注册先后被问到。web UI 答案者**来者不拒**——它一接到问题就往浏览器发弹窗然后等着——所以排在它后面的答案者根本轮不到。
+> `ctx.on` 注册的监听器按注册先后被问到。web UI 应答者**来者不拒**——它一接到问题就往浏览器发弹窗然后等着——所以排在它后面的应答者根本轮不到。
 >
-> patch 的加载顺序是 dsh-base → dsh-web-app → profile 自己的 `cordis.patch.yml` → `--patch` overlay。UI 答案者跟着 web-app bundle 挂载，所以 `--patch` 挂上的 keeper 天然排在它**后面**，自动放行等于没装。`prepend: true` 会把 keeper 插到链的最前面——这是 overlay 唯一能抢在 UI 之前回答的位置。keeper 默认不开 prepend：一个默认就压过真人的自动门，不该是默认。
+> patch 的加载顺序是 dsh-base → dsh-web-app → profile 自己的 `cordis.patch.yml` → `--patch` overlay。UI 应答者跟着 web-app bundle 挂载，所以 `--patch` 挂上的 keeper 天然排在它**后面**，自动放行等于没装。`prepend: true` 会把 keeper 插到链的最前面——这是 overlay 唯一能抢在 UI 之前回答的位置。keeper 默认不开 prepend：一个默认就压过真人的自动门，不该是默认。
 >
 > 但再靠前的 prepend 也绕不过会话策略。`'never'` 在服务里、分发之前就判定了，就算 keeper 插队插到天上去也拦不住：**keeper 是门，策略是锁。**
 
 ### 会话策略：ask 或 never
 
-每个会话有一个审批策略：`'ask'`（默认）把问题交给答案者链；`'never'` 一律拒绝，连问都不问。策略不是内存里的临时状态，而是写进会话日志的一条 `approval/policy` 事件——重放日志就能还原，不需要额外的恢复机制。改策略只有 `setApprovalPolicy(session, policy)` 一个入口；模型在每轮的系统提示里能看到当前策略，知道什么时候问了也白问。
+每个会话有一个审批策略：`'ask'`（默认）把问题交给应答者链；`'never'` 一律拒绝，连问都不问。策略不是内存里的临时状态，而是写进会话日志的一条 `approval/policy` 事件——重放日志就能还原，不需要额外的恢复机制。改策略只有 `setApprovalPolicy(session, policy)` 一个入口；模型在每轮的系统提示里能看到当前策略，知道什么时候问了也白问。
 
 ### 每次询问都在日志里留一对记录
 
@@ -93,18 +93,18 @@ waterfall 的规则很简单：想回答，就直接把结果交回去，链条�
 
 ```
 gatehouse-demo/
-├── src/gatekeeper.ts    # 答案者：allow/deny/prepend Config，认领或委托
+├── src/gatekeeper.ts    # 应答者：allow/deny/prepend Config，认领或委托
 ├── src/facilities.ts    # 三个被门禁的工具（use_locker/open_vault/use_lab）+ ask 策略
 ├── tests/gatehouse-demo.spec.ts  # 18 个用例，进程内，真实 ApprovalService + ToolRuntime
 ├── cordis.yml           # 组合：approval 服务 + facilities + keeper
 └── gatehouse.patch.yml  # web overlay 入口
 ```
 
-> 关系说明：本目录是审批答案者实战的完整源码 + 测试包；`notes/2026-08-26-gatehouse-demo.md` 记录它背后的学习心得，成形它的提案在 `docs/proposals/2026-08-26-gatehouse-demo.md`。
+> 关系说明：本目录是审批应答者实战的完整源码 + 测试包；`notes/2026-08-26-gatehouse-demo.md` 记录它背后的学习心得，成形它的提案在 `docs/proposals/2026-08-26-gatehouse-demo.md`。
 
 - `src/gatekeeper.ts` —— `name = 'gatehouse-keeper'`、`inject = ['approval']`。注意 inject 是门控不是报错：没有 approval 服务时 keeper 根本不会激活。Schemastery `Config`（同名导出，csv-query-tool 的套路）；监听器按工具名认领 `allow`/`deny`，其余委托。
 - `src/facilities.ts` —— `name = 'gatehouse-facilities'`、`inject = ['tools']`。三个玩具工具 + `tools/pre-execute` 的 ask 策略；别的工具一律 `next()` 放行。ask 的 reason 就是访客的故事——web UI 原样拿给真人看。
-- `tests/gatehouse-demo.spec.ts` —— 真实 `SystemPrompt` + `ToolRuntime` + `ApprovalService`，fake agent 自带开着的 turn（harness 自己的 approval 测试用同一个替身），经 `ctx.tools.execute` 派发。十八个用例：keeper 的三条决策路径、默认不放行（没人答 / 答案者抛错 / 答了个不认识的词）、`'never'` 策略与切回、日志里的 asked/decided 配对与轮次前提、abort 取消、注册顺序 vs prepend、卸载后恢复原样、门禁边界、没有 approval 服务时的降级、Loader 安全导出。
+- `tests/gatehouse-demo.spec.ts` —— 真实 `SystemPrompt` + `ToolRuntime` + `ApprovalService`，fake agent 自带开着的 turn（harness 自己的 approval 测试用同一个替身），经 `ctx.tools.execute` 派发。十八个用例：keeper 的三条决策路径、默认不放行（没人答 / 应答者抛错 / 答了个不认识的词）、`'never'` 策略与切回、日志里的 asked/decided 配对与轮次前提、abort 取消、注册顺序 vs prepend、卸载后恢复原样、门禁边界、没有 approval 服务时的降级、Loader 安全导出。
 
 跑测试：
 
