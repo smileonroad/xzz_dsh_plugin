@@ -1,0 +1,54 @@
+# Web overlay: load the gatehouse demo into the web profile
+# (dsh-base + dsh-web-app bundle layers). Applied from the deepseek-harness root:
+#   pnpm dsh web --patch examples/gatehouse-demo/gatehouse.patch.yml
+#
+# The approval service and the web UI answerer are already composed by the
+# bundles — this patch only adds the keeper and the gated facilities.
+#
+# LAYER ORDER vs REGISTRATION ORDER (the keeper's `prepend` story):
+# patch layers apply as dsh-base → dsh-web-app → profile cordis.patch.yml →
+# this --patch overlay, so rows here register AFTER the web-app bundle's UI
+# answerer (apiproxy). The UI answerer claims every audited ask by publishing
+# a prompt to the browser, so a keeper registered behind it never answers:
+# auto-approval stays dormant. `prepend: true` unshifts the keeper to the
+# FRONT of the answerer chain — the one position from which a patch overlay
+# can answer before the UI. The session-level 'never' policy still wins: it
+# is decided by the service before dispatch, no prepend can override it.
+#
+# HOW the entry `name` resolves (vendor/loader/src/config/tree.ts):
+#   - `cordis:` prefix   → builtin
+#   - starts with `.`    → resolved against the Loader's baseUrl, which is THE
+#                          PROFILE DIRECTORY (~/.dsh/profiles/web/), NOT this
+#                          patch file and NOT the current working directory.
+#   - anything else      → passed to import() as-is: an absolute file:// URL
+#                          or a bare package name.
+# The baseUrl anchors at the profile directory because bundle plugins install
+# their dependencies there; a patch overlay cannot change it. So a local
+# plugin source has three options:
+#
+# 1. RELATIVE PATH + junction (used below, no absolute path in this file).
+#    Point the profile directory at the source with a Windows directory
+#    junction (no admin rights needed):
+#      cmd //c "mklink /J %USERPROFILE%\.dsh\profiles\web\examples <deepseek-harness>\examples"
+#    The `./examples/gatehouse-demo/...` below then resolves through the
+#    junction. Re-create the junction on each new machine.
+# 2. RELATIVE PATH + same drive: set DSH_HOME to a directory on the same
+#    drive as the deepseek-harness checkout; the relative hop then crosses
+#    only directories, e.g. ../../deepseek-harness/examples/... .
+# 3. ABSOLUTE file:// URL (works everywhere, machine-specific):
+#    name: 'file:///D:/path/to/deepseek-harness/examples/gatehouse-demo/src/gatekeeper.ts'
+#    The `file:///` prefix is mandatory on Windows (a bare `D:/...` is read as
+#    the URL scheme `d:` and rejected by the ESM loader).
+# For portable distribution, promote the example to a bundle and
+# `dsh plugin add` it instead of using --patch.
+- insert:
+    - id: gatehouse-facilities
+      name: './examples/gatehouse-demo/src/facilities.ts'
+    - id: gatehouse-keeper
+      name: './examples/gatehouse-demo/src/gatekeeper.ts'
+      config:
+        allow:
+          - use_locker
+        deny:
+          - open_vault
+        prepend: true

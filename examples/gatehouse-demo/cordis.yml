@@ -1,0 +1,20 @@
+# gatehouse composition: the approval service (real harness), the gated
+# facilities (three tools + the ask policy), and the keeper (answerer).
+# The test suite mounts the same services in-process and passes keeper
+# config directly (see the spec); this file shows the Loader path, where
+# config comes from the `config:` field.
+- id: approval
+  name: '@deepseek-ai/dsh-user-approval'
+
+- id: gatehouse-facilities
+  name: './src/facilities.ts'
+
+- id: gatehouse-keeper
+  name: './src/gatekeeper.ts'
+  config:
+    allow:
+      - use_locker
+    deny:
+      - open_vault
+    # prepend: true — put the automatic rule in front of the web UI
+    # answerer (see gatehouse.patch.yml for the layer-order story)
