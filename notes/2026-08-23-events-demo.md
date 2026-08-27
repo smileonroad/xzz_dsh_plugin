@@ -98,7 +98,7 @@ async function toolHarness(plugins: unknown[]): Promise<Context> {
 
 装配里有个值得记的细节，插件是**按顺序**传进 harness 的。因为 waterfall 最外层先跑，先挂的插件就是外层，这决定了观察者和决策者谁先看到事件。测试里把 tool-observer 挂前面、tool-policy 挂后面，语义就是观察者先路过、决策者再拍板。
 
-10 个用例。真实的 commands/change emit 事件、ctx.on 的 disposer 手动摘监听、policy 拒绝与放行、好观察者委托后决策者依然生效、坏观察者绕过决策者，然后是四种分发模式（serial 短路、serial 全跑、bail 同步短路、parallel 并发等待），最后四个用的是测试夹具事件。
+10 个用例。真实的 commands/change emit 事件、ctx.on 的 disposer 手动摘监听、policy 拒绝与放行、好观察者委托后决策者依然生效、坏观察者绕过决策者，然后是三种分发模式的四个用例（serial 短路、serial 全跑、bail 同步短路、parallel 并发等待），用的是测试夹具事件。
 
 这里需要如实说明，serial、bail、parallel 在真实 harness 里极少见，基本活在 Cordis 内部事件里。真实世界的事件要么是 emit，要么是 waterfall。所以这三种模式用夹具事件练，不假装它们是日常产品事件。这个判断是探索阶段定下来的，提案里写了。
 

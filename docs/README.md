@@ -29,10 +29,11 @@
 | ---------- | ---------------------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | 2026-08-15 | `/helloworld` 命令插件实战：命令 vs 工具、三个坑、测试哲学 | [notes/2026-08-15-helloworld-command.md](../notes/2026-08-15-helloworld-command.md) | [examples/helloworld-command/](../examples/helloworld-command/) |
 | 2026-08-16 | `sql_check` 工具插件实战：defineTool 契约、canonical value、presenters 纯函数、零依赖 node:sqlite | [notes/2026-08-16-sql-check-tool.md](../notes/2026-08-16-sql-check-tool.md) | [examples/sql-check-tool/](../examples/sql-check-tool/)       |
-| 2026-08-18 | `csv_query` 工具插件实战：Config schema、参数覆盖配置分层、手写 CSV 解析器、bundle 打包分发 | [notes/2026-08-16-csv-query-tool.md](../notes/2026-08-16-csv-query-tool.md) | [examples/csv-query-tool/](../examples/csv-query-tool/)       |
-| 2026-08-22 | `ctx.units` seam实战：Definition/Provider/Consumer 三角色、服务键命名空间、inject 依赖驱动、config 换表 | [notes/2026-08-22-units-capability.md](../notes/2026-08-22-units-capability.md) | [examples/units-capability/](../examples/units-capability/) |
+| 2026-08-16 | `csv_query` 工具插件实战：Config schema、参数覆盖配置分层、手写 CSV 解析器、bundle 打包分发 | [notes/2026-08-16-csv-query-tool.md](../notes/2026-08-16-csv-query-tool.md) | [examples/csv-query-tool/](../examples/csv-query-tool/)       |
+| 2026-08-22 | `ctx.units` seam 实战：Definition/Provider/Consumer 三角色、服务键命名空间、inject 依赖驱动、config 换表 | [notes/2026-08-22-units-capability.md](../notes/2026-08-22-units-capability.md) | [examples/units-capability/](../examples/units-capability/) |
 | 2026-08-23 | 事件实战：监听真实 harness 事件（tools 瀑布 + commands/change）、waterfall 观察者/决策者纪律、五种分发模式（serial/bail/parallel 用夹具） | [notes/2026-08-23-events-demo.md](../notes/2026-08-23-events-demo.md) | [examples/events-demo/](../examples/events-demo/) |
 | 2026-08-24 | 自声明事件实战：奶茶店事件族（declare module + @mode 契约）、五种分发模式全自有声明（serial/bail/parallel 真实语义）、type-only import、事件派生 | [notes/2026-08-24-tea-shop-demo.md](../notes/2026-08-24-tea-shop-demo.md) | [examples/tea-shop-demo/](../examples/tea-shop-demo/) |
+| 2026-08-26 | approval 应答者实战：传达室自动审批（allow/deny 名单 + prepend 层序）、approval/request 三角色与 fail-closed、审计对与会话策略 | [notes/2026-08-26-gatehouse-demo.md](../notes/2026-08-26-gatehouse-demo.md) | [examples/gatehouse-demo/](../examples/gatehouse-demo/) |
 
 ## 开发流程速记（helloworld / sql-check-tool 实战印证）
 

@@ -30,7 +30,7 @@ pnpm dsh web --patch examples/events-demo/events.patch.yml
 
 ## 设计
 
-服务是「我要用你的能力，你先把东西给我」；**事件是「我不知道谁在听，反正我喊一嗓子」**：一个插件用 `ctx.emit` 发出，谁关心谁用 `ctx.on` 收听。harness 自己就跑在事件上——`tools/pre-execute` 是策略在工具执行前放行/拒绝/询问的入口，`tools/post-execute` 是包装器接受/替换/阻断结果的入口（两者都是 **waterfall** 事件：一条中间件链，每个监听器包裹一个 `next()` 调用），`commands/change` 是普通 **emit** 事件，命令注册表一变就触发。本实战监听这些真实事件，不自声明——声明并发出自己的事件是下一个实战，[tea-shop-demo](../tea-shop-demo/)。
+harness 自己就跑在事件上。`tools/pre-execute` 是策略在工具执行前放行/拒绝/询问的入口，`tools/post-execute` 是包装器接受/替换/阻断结果的入口——两者都是 **waterfall** 事件，一条中间件链，每个监听器包裹一个 `next()` 调用；`commands/change` 则是普通 **emit** 事件，命令注册表一变就触发。
 
 两个插件正好是 waterfall 链条允许的两种角色：
 

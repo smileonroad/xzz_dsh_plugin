@@ -44,16 +44,12 @@ pnpm dsh web --patch examples/events-demo/events.patch.yml
 
 ## Design
 
-Services are "I need your capability, give it to me". **Events are "I don't
-know who is listening, I just shout"**: one plugin emits with `ctx.emit`,
-anyone who cares listens with `ctx.on`. The harness itself runs on events —
-`tools/pre-execute` is where a policy allows / denies / asks before a tool
-runs, `tools/post-execute` is where a wrapper accepts / replaces / blocks a
-result (both are **waterfall** events: a middleware chain where each listener
-wraps a `next()` call), and `commands/change` is a plain **emit** event that
-fires whenever the command registry mutates. This example listens to those
-real events instead of declaring its own — declaring and emitting your own
-events is the next practice, [tea-shop-demo](../tea-shop-demo/).
+The harness itself runs on events. `tools/pre-execute` is where a policy
+allows / denies / asks before a tool runs, `tools/post-execute` is where a
+wrapper accepts / replaces / blocks a result — both are **waterfall**
+events, a middleware chain where each listener wraps a `next()` call;
+`commands/change` is a plain **emit** event that fires whenever the command
+registry mutates.
 
 The two plugins are the two roles a waterfall chain allows:
 

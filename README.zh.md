@@ -24,7 +24,8 @@ xzz-dsh-plugin/
     ├── csv-query-tool/           # 实战③：csv_query 工具插件（配置 + bundle）
     ├── units-capability/         # 实战④：ctx.units seam（Definition/Provider/Consumer）
     ├── events-demo/              # 实战⑤：监听真实 harness 事件（tools 瀑布 + commands/change）
-    └── tea-shop-demo/            # 实战⑥：自声明事件（奶茶店事件族，五种分发模式全落地）
+    ├── tea-shop-demo/            # 实战⑥：自声明事件（奶茶店事件族，五种分发模式全落地）
+    └── gatehouse-demo/           # 实战⑦：approval/request 应答者（传达室，自动审批 + prepend 层序故事）
 ```
 
 **整体索引：[docs/README.md](docs/README.md)**（摘要目录 + 摘要↔上游 hash 配对 + 实战 + 开发流程速记 + deepseek-harness 关键源码）。
@@ -37,10 +38,11 @@ xzz-dsh-plugin/
 | ---- | ---- | ---- |
 | 2026-08-15 | `/helloworld` 命令插件实战：命令 vs 工具、三个坑、测试哲学 | [2026-08-15-helloworld-command.md](notes/2026-08-15-helloworld-command.md) |
 | 2026-08-16 | `sql_check` 工具插件实战：defineTool 契约、canonical value、presenters 纯函数、零依赖 node:sqlite | [2026-08-16-sql-check-tool.md](notes/2026-08-16-sql-check-tool.md) |
-| 2026-08-18 | `csv_query` 工具插件实战：Config schema、参数覆盖配置分层、手写 CSV 解析器、bundle 打包分发 | [2026-08-16-csv-query-tool.md](notes/2026-08-16-csv-query-tool.md) |
-| 2026-08-22 | `ctx.units` seam实战：Definition/Provider/Consumer 三角色、服务键命名空间、inject 依赖驱动、config 换表 | [2026-08-22-units-capability.md](notes/2026-08-22-units-capability.md) |
+| 2026-08-16 | `csv_query` 工具插件实战：Config schema、参数覆盖配置分层、手写 CSV 解析器、bundle 打包分发 | [2026-08-16-csv-query-tool.md](notes/2026-08-16-csv-query-tool.md) |
+| 2026-08-22 | `ctx.units` seam 实战：Definition/Provider/Consumer 三角色、服务键命名空间、inject 依赖驱动、config 换表 | [2026-08-22-units-capability.md](notes/2026-08-22-units-capability.md) |
 | 2026-08-23 | 事件实战：监听真实 harness 事件（tools 瀑布 + commands/change）、waterfall 观察者/决策者纪律、五种分发模式 | [2026-08-23-events-demo.md](notes/2026-08-23-events-demo.md) |
 | 2026-08-24 | 自声明事件实战：奶茶店事件族（declare module + @mode 契约）、五种分发模式全自有声明（serial/bail/parallel 真实语义）、type-only import、事件派生 | [2026-08-24-tea-shop-demo.md](notes/2026-08-24-tea-shop-demo.md) |
+| 2026-08-26 | approval 应答者实战：传达室自动审批（allow/deny 名单 + prepend 层序）、approval/request 三角色与 fail-closed、审计对与会话策略 | [2026-08-26-gatehouse-demo.md](notes/2026-08-26-gatehouse-demo.md) |
 
 ## 什么是 DeepSeek Harness（dsh）
 

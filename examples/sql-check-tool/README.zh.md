@@ -2,7 +2,7 @@
 
 [English](README.md) | 中文
 
-一个面向模型的工具插件：`sql_check` 用 Node 内置的 `node:sqlite` 调用**真实 SQLite 解析器**校验 SQL——零第三方依赖。它演示了 [`ctx.tools`](../../packages/core/tools/README.md) 扩展点，契约比斜杠命令刻意更丰富。
+一个面向模型的工具插件：`sql_check` 用 Node 内置的 `node:sqlite` 调用**真实 SQLite 解析器**校验 SQL——零第三方依赖。它演示了 [`ctx.tools`](../../packages/core/tools/README.md) 扩展点，契约比斜杠命令更丰富，这是刻意的——工具要伺候模型。
 
 ## 运行
 

@@ -35,7 +35,8 @@ xzz-dsh-plugin/
     ├── csv-query-tool/           # practice #3: csv_query tool plugin (config + bundle)
     ├── units-capability/         # practice #4: ctx.units capability seam (Definition/Provider/Consumer)
     ├── events-demo/              # practice #5: typed events on real harness events (tools waterfall + commands/change)
-    └── tea-shop-demo/            # practice #6: self-declared events (milk-tea shop event family, all five modes)
+    ├── tea-shop-demo/            # practice #6: self-declared events (milk-tea shop event family, all five modes)
+    └── gatehouse-demo/           # practice #7: approval/request answerer (gatehouse auto-approval + prepend layer story)
 ```
 
 **Master index: [docs/README.md](docs/README.md)** (summary catalog +
@@ -52,10 +53,11 @@ with its source package under `examples/` (see the practice table in
 | ---- | ----- | ---- |
 | 2026-08-15 | `/helloworld` command plugin: commands vs tools, three pitfalls, test philosophy | [2026-08-15-helloworld-command.md](notes/2026-08-15-helloworld-command.md) |
 | 2026-08-16 | `sql_check` tool plugin: defineTool contract, canonical values, pure presenters, zero-dependency node:sqlite | [2026-08-16-sql-check-tool.md](notes/2026-08-16-sql-check-tool.md) |
-| 2026-08-18 | `csv_query` tool plugin: Config schema, config/argument layering, hand-written CSV parser, bundle distribution | [2026-08-16-csv-query-tool.md](notes/2026-08-16-csv-query-tool.md) |
+| 2026-08-16 | `csv_query` tool plugin: Config schema, config/argument layering, hand-written CSV parser, bundle distribution | [2026-08-16-csv-query-tool.md](notes/2026-08-16-csv-query-tool.md) |
 | 2026-08-22 | `ctx.units` capability seam: Definition/Provider/Consumer roles, flat service-key namespace, inject-driven loading, config-swapped tables | [2026-08-22-units-capability.md](notes/2026-08-22-units-capability.md) |
 | 2026-08-23 | typed events on real harness events: tools/* waterfall observer/decider discipline, five distribution modes (serial/bail/parallel via fixtures) | [2026-08-23-events-demo.md](notes/2026-08-23-events-demo.md) |
 | 2026-08-24 | self-declared events: milk-tea shop event family (declare module + @mode contract), all five modes with real semantics, type-only import, event derivation | [2026-08-24-tea-shop-demo.md](notes/2026-08-24-tea-shop-demo.md) |
+| 2026-08-26 | approval answerer: gatehouse auto-approval (allow/deny lists + prepend layer order), the approval/request roles and fail-closed outcomes, audit pair and session policy | [2026-08-26-gatehouse-demo.md](notes/2026-08-26-gatehouse-demo.md) |
 
 ## What is DeepSeek Harness (dsh)
 

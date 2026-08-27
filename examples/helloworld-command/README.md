@@ -104,9 +104,7 @@ helloworld-command/
 If you also want to verify the plugin mounting into the **real Loader
 composition tree** (booting a `cordis.yml` via the app bin), follow the
 `runLoaderSmoke` pattern in the dsh source's `examples/headless-agent/tests/`
-(`packages/test-support/loader-smoke`); the earlier
-`tests/web-load.spec.ts` + `tests/fixtures/helloworld-driver.ts` were only a
-teaching copy of that pattern and have been deleted.
+(`packages/test-support/loader-smoke`).
 
 Run the tests:
 

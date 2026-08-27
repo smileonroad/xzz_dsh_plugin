@@ -61,7 +61,7 @@ helloworld-command/
 - `src/index.ts` —— `name = 'helloworld-command'`，注册 `/helloworld` 命令。`CommandResult` 是 UI 的直接输出：`{ kind: 'success', text }` 或 `{ kind: 'error', text }`。
 - `tests/helloworld-command.spec.ts` —— 启动真实的 `CommandRuntime` 与会话存储，stub 一个 agent，并通过 `ctx.commands.execute()`（与 UI 适配器相同的边界）执行 `/helloworld`。六个用例覆盖注册、问候、命名问候、多词拒绝、生命周期事件与 admission miss。
 
-若还想验证插件挂载进**真实 Loader 组合树**（经 app bin 启动 `cordis.yml`），参照 dsh 源码中 `examples/headless-agent/tests/` 的 `runLoaderSmoke` 模式（`packages/test-support/loader-smoke`）；原先的 `tests/web-load.spec.ts` + `tests/fixtures/helloworld-driver.ts` 只是该模式的教学副本，已删除。
+若还想验证插件挂载进**真实 Loader 组合树**（经 app bin 启动 `cordis.yml`），参照 dsh 源码中 `examples/headless-agent/tests/` 的 `runLoaderSmoke` 模式（`packages/test-support/loader-smoke`）。
 
 运行测试：
 

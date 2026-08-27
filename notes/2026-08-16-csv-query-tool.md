@@ -54,7 +54,7 @@ const delimiter = args.delimiter ?? config.defaultDelimiter
 
 csv_query 的核心是个手写的 CSV 解析器，零依赖。写之前我以为 CSV 简单，写了才发现坑都在引号里。
 
-单元格可以带引号，引号里的逗号、换行都不是分隔符，两个连续引号表示一个转义引号。经典三连：
+单元格可以带引号，引号里的逗号、换行都不是分隔符，两个连续引号表示一个转义引号。经典三连长这样。
 
 ```csv
 id,note
@@ -70,13 +70,13 @@ c,"say ""hi"""
 
 ## 测试，13 个用例钉死行为
 
-装配和 sql_check 一模一样，真实 SystemPrompt + ToolRuntime，走 ctx.tools.execute。区别在挂载插件时传配置：
+装配和 sql_check 一模一样，真实 SystemPrompt + ToolRuntime，走 ctx.tools.execute。区别在挂载插件时传配置。
 
 ```ts
 await ctx.plugin(csvQueryTool, { defaultDelimiter: ';', maxRows: 5 })
 ```
 
-13 个用例覆盖：注册和 Config schema、基本解析、引号字段、空行和 BOM、选列（忽略不存在的列名）、limit 截断（totalRows 报真实数）、行列不一致、空输入、配置分隔符生效、参数覆盖配置、maxRows 上限、缺参校验、presenter 纯函数。
+13 个用例，覆盖注册和 Config schema、基本解析、引号字段、空行和 BOM、选列（忽略不存在的列名）、limit 截断（totalRows 报真实数）、行列不一致、空输入、配置分隔符生效、参数覆盖配置、maxRows 上限、缺参校验、presenter 纯函数。
 
 有两个行为设计值得记一下。
 

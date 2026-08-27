@@ -4,5 +4,5 @@
 #   git hash-object README.md README.zh.md
 # (Not gated by dsh's verify-translation-pairing in this repo; kept for
 # consistency with examples/helloworld-command/.)
-README.md: 4f7f0d24757dac8d02992644fe3508a4a5e9072f
-README.zh.md: d304b6c3c6da4b2caf48ee8ccbeb82ab5c3533e8
+README.md: aa1b34fadf5238ad04bca45fa848d41bed996a6f
+README.zh.md: 8bdbfb39abc30a89bcb3deaa246e2161e52ebea9
