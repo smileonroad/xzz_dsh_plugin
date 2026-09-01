@@ -1,0 +1,9 @@
+# Overlay for the headless profile: swap the default model.
+#   node demo/run-headless.mjs --patch demo/model.patch.yml "<task>"
+# The default model comes from the base bundle's `agent-default-model` entry;
+# this patch replaces its config (the model id passes through verbatim — the
+# gateway must know it).
+- id: agent-default-model
+  config:
+    provider: deepseek-official
+    model: deepseek-v4-flash   # ← change to the target model id
