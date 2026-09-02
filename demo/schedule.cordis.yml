@@ -1,0 +1,45 @@
+# Schedule demo composition: the jsonrpc minimal combination PLUS the
+# schedule capability. stdout stays reserved for JSON-RPC.
+- id: sdk-jsonrpc-server
+  name: '@deepseek-ai/dsh-sdk-jsonrpc-server'
+
+# thinking: disabled is the fix for the reasoning-only output trap: with
+# thinking enabled, deepseek-v4-flash puts simple greetings entirely into the
+# reasoning channel and the text payload stays empty.
+- id: llm-deepseek
+  name: '@deepseek-ai/dsh-llm-deepseek'
+  config:
+    thinking: disabled
+    reasoningEffort: off
+
+- id: subprocess
+  name: '@deepseek-ai/dsh-subprocess-local'
+
+- id: bash
+  name: '@deepseek-ai/dsh-bash-local'
+  config:
+    cwd: !!js process.cwd()
+    timeoutMs: 60000
+
+- id: agent-spine
+  name: '@deepseek-ai/dsh-agent-spine-demo'
+  config:
+    persona: 'You are a coding agent.'
+    workspaceContext: false
+    skills:
+      enabled: false
+    toolBash:
+      enableRunInBackground: false
+    toolJobs: false
+
+- id: sessions
+  name: '@deepseek-ai/dsh-session-persistence-jsonl'
+  config:
+    root: !!js process.env.DSH_SESSION_ROOT ?? './.sessions'
+    compression: 'zstd'
+
+# Schedule capability: appended LAST so it loads after its prerequisites
+# (agent spine, sessions). Its three tools ride the same live root agent;
+# reminders live in the session log and fold from it.
+- id: schedule
+  name: '@deepseek-ai/dsh-schedule'
