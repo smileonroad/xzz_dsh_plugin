@@ -12,11 +12,28 @@
  */
 
 import { spawn } from 'node:child_process'
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, resolve } from 'node:path'
+import { homedir } from 'node:os'
 
 const here = dirname(fileURLToPath(import.meta.url))
+
+/**
+ * Borrow DEEPSEEK_API_KEY from the global dsh credential store when the
+ * launching environment has none (the jsonrpc composition mounts no
+ * credentials service). A PLACEHOLDER key is still forbidden — loadEnv does
+ * not overwrite existing env vars, so a fake key would shadow the real one.
+ */
+function globalApiKey() {
+  if (process.env.DEPSEEK_API_KEY) return undefined
+  try {
+    const text = readFileSync(resolve(homedir(), '.dsh/.credentials.yaml'), 'utf8')
+    return text.match(/DEEPSEEK_API_KEY:\s*["']?([^"'\s]+)/)?.[1]
+  } catch {
+    return undefined
+  }
+}
 
 /** The jsonrpc-demo server bin (adjacent deepseek-harness checkout). */
 const BIN = process.env.JSONRPC_BIN
@@ -38,6 +55,8 @@ const child = spawn(process.execPath, ['--import', 'tsx', BIN, CONFIG], {
     ...process.env,
     DEEPSEEK_BASE_URL: process.env.DEEPSEEK_BASE_URL, // bootstrap-only, provided by the launching environment
     DSH_PERMISSION_MODE: 'danger-full-access',
+    // Real key only when the environment lacks one; never a placeholder.
+    ...(globalApiKey() ? { DEEPSEEK_API_KEY: globalApiKey() } : {}),
   },
   stdio: ['pipe', 'pipe', 'inherit'],
 })
@@ -63,23 +82,10 @@ function request(method, params) {
 
 const SESSION_ID = `demo-${Math.random().toString(16).slice(2, 8)}`
 
-// 2) The 3-method protocol. Model routing is an initialize PARAM.
-const init = await request('initialize', {
-  cwd: process.cwd(),
-  provider: 'deepseek-official',
-  model,
-})
-console.log(`① initialize → 服务器: ${init.serverInfo.name} v${init.serverInfo.version}`)
-console.log(`   sessionId = ${SESSION_ID}（客户端自选，惰性创建）`)
-
-const prompt = await request('session/prompt', {
-  sessionId: SESSION_ID,
-  contentBlocks: [{ type: 'text', text: task }],
-})
-console.log(`② session/prompt → 「${task}」（model=${model}）`)
-
-// 3) Assemble the answer from the event stream. Line-framed JSON over stdout,
-//    buffered manually (no readline dependency).
+// 2) Frame handler FIRST, before the first await: stdout data arriving while
+//    no 'data' listener is attached stays buffered in paused mode, and the
+//    first response would only be replayed after the initialize await times
+//    out. Registering early keeps the protocol fully live from byte zero.
 let buffer = ''
 let finished = false
 
@@ -117,6 +123,22 @@ child.stdout.on('data', chunk => {
     handleFrame(frame)
   }
 })
+
+// 3) The 3-method protocol. Model routing is an initialize PARAM.
+const init = await request('initialize', {
+  cwd: process.cwd(),
+  provider: 'deepseek-official',
+  model,
+})
+console.log(`① initialize → 服务器: ${init.serverInfo.name} v${init.serverInfo.version}`)
+console.log(`   sessionId = ${SESSION_ID}（客户端自选，惰性创建）`)
+
+const prompt = await request('session/prompt', {
+  sessionId: SESSION_ID,
+  contentBlocks: [{ type: 'text', text: task }],
+})
+console.log(`② session/prompt → 「${task}」（model=${model}）`)
+console.log('   模型回答（从事件流组装）: ')
 
 // Wait for the turn to finish, then shut down cleanly.
 while (!finished) await new Promise(r => setTimeout(r, 50))
