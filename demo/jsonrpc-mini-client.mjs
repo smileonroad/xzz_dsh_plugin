@@ -13,7 +13,6 @@
 
 import { spawn } from 'node:child_process'
 import { existsSync } from 'node:fs'
-import readline from 'node:readline'
 import { fileURLToPath } from 'node:url'
 import { dirname, resolve } from 'node:path'
 
@@ -43,15 +42,21 @@ const child = spawn(process.execPath, ['--import', 'tsx', BIN, CONFIG], {
   stdio: ['pipe', 'pipe', 'inherit'],
 })
 
-const lines = readline.createInterface({ input: child.stdout })
 const pending = new Map()
 let nextId = 1
 
-/** Send one request, resolve on the matching response id. */
+/** Send one request, resolve on the matching response id (60s cap for boot). */
 function request(method, params) {
   const id = nextId++
   return new Promise((resolvePromise, reject) => {
-    pending.set(id, { resolvePromise, reject })
+    const timer = setTimeout(() => {
+      pending.delete(id)
+      reject(new Error(`request ${method} timed out`))
+    }, 120000)
+    pending.set(id, {
+      resolvePromise: value => { clearTimeout(timer); resolvePromise(value) },
+      reject: error => { clearTimeout(timer); reject(error) },
+    })
     child.stdin.write(JSON.stringify({ jsonrpc: '2.0', id, method, params }) + '\n')
   })
 }
@@ -73,10 +78,12 @@ const prompt = await request('session/prompt', {
 })
 console.log(`② session/prompt → 「${task}」（model=${model}）`)
 
-// 3) Assemble the answer from the event stream.
+// 3) Assemble the answer from the event stream. Line-framed JSON over stdout,
+//    buffered manually (no readline dependency).
+let buffer = ''
 let finished = false
-lines.on('line', raw => {
-  const frame = JSON.parse(raw)
+
+function handleFrame(frame) {
   if (frame.id !== undefined && pending.has(frame.id)) {
     const { resolvePromise, reject } = pending.get(frame.id)
     pending.delete(frame.id)
@@ -95,6 +102,19 @@ lines.on('line', raw => {
       console.log(`\n③ 完成信号: turn/end (reason=${ev.data.reason.kind})`)
       finished = true
     }
+  }
+}
+
+child.stdout.on('data', chunk => {
+  buffer += chunk
+  let nl
+  while ((nl = buffer.indexOf('\n')) !== -1) {
+    const raw = buffer.slice(0, nl)
+    buffer = buffer.slice(nl + 1)
+    if (raw.trim() === '') continue
+    let frame
+    try { frame = JSON.parse(raw) } catch { continue } // ignore non-protocol noise
+    handleFrame(frame)
   }
 })
 

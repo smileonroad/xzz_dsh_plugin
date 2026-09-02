@@ -1,0 +1,11 @@
+# Local overlay for the web demo: pin the port off the default 3080.
+#
+# The upstream examples/web-cordis/cordis.yml also inserts cordis-host-runner
+# and tool-cordis, but the current dsh-web-app bundle already ships both rows —
+# inserting them again fails loud with "duplicate loader entry id". This
+# trimmed copy keeps only the port pin; the self-referential Cordis tools are
+# available in the UI out of the box.
+- id: webserver
+  config:
+    host: 127.0.0.1
+    port: 3081
