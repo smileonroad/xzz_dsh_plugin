@@ -1,0 +1,11 @@
+# laundromat composition: the Host half (laundry_start tool recording the
+# session event family) and the Client half (Definition + chat card renderer).
+# The test suite mounts the same services in-process (see the specs); this
+# file shows the Loader path. The Client half is a browser plugin — mounting
+# it in a real web page requires building it as a clientBundle package (see
+# the README's distribution note); the Host half mounts via --patch directly.
+- id: laundry-machine
+  name: './src/machine.ts'
+
+- id: laundry-node
+  name: './src/client/index.ts'

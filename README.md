@@ -36,7 +36,8 @@ xzz-dsh-plugin/
     ├── units-capability/         # practice #4: ctx.units capability seam (Definition/Provider/Consumer)
     ├── events-demo/              # practice #5: typed events on real harness events (tools waterfall + commands/change)
     ├── tea-shop-demo/            # practice #6: self-declared events (milk-tea shop event family, all five modes)
-    └── gatehouse-demo/           # practice #7: approval/request answerer (gatehouse auto-approval + prepend layer story)
+    ├── gatehouse-demo/           # practice #7: approval/request answerer (gatehouse auto-approval + prepend layer story)
+    └── laundry-demo/             # practice #8: Client conversation node (laundromat card — session events folded by a browser Definition)
 ```
 
 **Master index: [docs/README.md](docs/README.md)** (summary catalog +
@@ -47,7 +48,9 @@ cheatsheet + key deepseek-harness sources).
 
 Experience essays, one per practice project, written in Chinese. Each pairs
 with its source package under `examples/` (see the practice table in
-[docs/README.md](docs/README.md)).
+[docs/README.md](docs/README.md)). A second series walks the dsh access
+surfaces (headless / acp / jsonrpc / web / schedule) and is indexed at
+[notes/README.md](notes/README.md).
 
 | Date | Topic | Note |
 | ---- | ----- | ---- |
@@ -58,6 +61,7 @@ with its source package under `examples/` (see the practice table in
 | 2026-08-23 | typed events on real harness events: tools/* waterfall observer/decider discipline, five distribution modes (serial/bail/parallel via fixtures) | [2026-08-23-events-demo.md](notes/2026-08-23-events-demo.md) |
 | 2026-08-24 | self-declared events: milk-tea shop event family (declare module + @mode contract), all five modes with real semantics, type-only import, event derivation | [2026-08-24-tea-shop-demo.md](notes/2026-08-24-tea-shop-demo.md) |
 | 2026-08-26 | approval answerer: gatehouse auto-approval (allow/deny lists + prepend layer order), the approval/request roles and fail-closed outcomes, audit pair and session policy | [2026-08-26-gatehouse-demo.md](notes/2026-08-26-gatehouse-demo.md) |
+| 2026-09-02 | Client conversation node: laundromat card (durable session events + Conversation Node Definition + keyed chat renderer, pure-projection tests) | [2026-09-02-laundry-demo.md](notes/2026-09-02-laundry-demo.md) |
 
 ## What is DeepSeek Harness (dsh)
 

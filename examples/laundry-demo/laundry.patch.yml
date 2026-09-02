@@ -1,0 +1,21 @@
+# Web overlay: load the laundromat's Host half into a dsh profile.
+# Applied from the deepseek-harness root:
+#   pnpm dsh web --patch examples/laundry-demo/laundry.patch.yml
+#
+# Only the Host half (the tool that records the laundry/* session events)
+# mounts here — it needs no build. The Client half (src/client/, the chat
+# card) is browser code; a real page serves it through the client module
+# system only when the package is built as a clientBundle with a `dsh.client`
+# declaration and a `./client` export (distribution path, see the README).
+# In-process, the Client half is verified by driving the real
+# ConversationNodeAssembler with fixture events (laundry-definition spec) and
+# pinning the renderer's React-free pure projection (laundry-view spec).
+#
+# Entry `name` resolution: a leading `.` resolves against the Loader baseUrl,
+# which is THE PROFILE DIRECTORY (~/.dsh/profiles/<profile>/), not this file.
+# The junction trick (see gatehouse.patch.yml for the three options) points
+# the profile at the deepseek-harness checkout:
+#   cmd //c "mklink /J %USERPROFILE%\.dsh\profiles\web\examples <deepseek-harness>\examples"
+- insert:
+    - id: laundry-machine
+      name: './examples/laundry-demo/src/machine.ts'

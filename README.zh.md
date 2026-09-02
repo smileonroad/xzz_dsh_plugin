@@ -25,14 +25,15 @@ xzz-dsh-plugin/
     ├── units-capability/         # 实战④：ctx.units seam（Definition/Provider/Consumer）
     ├── events-demo/              # 实战⑤：监听真实 harness 事件（tools 瀑布 + commands/change）
     ├── tea-shop-demo/            # 实战⑥：自声明事件（奶茶店事件族，五种分发模式全落地）
-    └── gatehouse-demo/           # 实战⑦：approval/request 应答者（传达室，自动审批 + prepend 层序故事）
+    ├── gatehouse-demo/           # 实战⑦：approval/request 应答者（传达室，自动审批 + prepend 层序故事）
+    └── laundry-demo/             # 实战⑧：Client 对话节点（洗衣店卡片，浏览器 Definition 折叠 session 事件）
 ```
 
 **整体索引：[docs/README.md](docs/README.md)**（摘要目录 + 摘要↔上游 hash 配对 + 实战 + 开发流程速记 + deepseek-harness 关键源码）。
 
 ## 经验文章
 
-对外发布的经验笔记，一个实战对应一篇，每篇与其 `examples/` 下的源码包配对（实战表见 [docs/README.md](docs/README.md)）。
+对外发布的经验笔记，一个实战对应一篇，每篇与其 `examples/` 下的源码包配对（实战表见 [docs/README.md](docs/README.md)）。另有「surface 系列」讲 dsh 的接入形态（headless / acp / jsonrpc / web / schedule），索引见 [notes/README.md](notes/README.md)。
 
 | 日期 | 主题 | 笔记 |
 | ---- | ---- | ---- |
@@ -43,6 +44,7 @@ xzz-dsh-plugin/
 | 2026-08-23 | 事件实战：监听真实 harness 事件（tools 瀑布 + commands/change）、waterfall 观察者/决策者纪律、五种分发模式 | [2026-08-23-events-demo.md](notes/2026-08-23-events-demo.md) |
 | 2026-08-24 | 自声明事件实战：奶茶店事件族（declare module + @mode 契约）、五种分发模式全自有声明（serial/bail/parallel 真实语义）、type-only import、事件派生 | [2026-08-24-tea-shop-demo.md](notes/2026-08-24-tea-shop-demo.md) |
 | 2026-08-26 | approval 应答者实战：传达室自动审批（allow/deny 名单 + prepend 层序）、approval/request 三角色与 fail-closed、审计对与会话策略 | [2026-08-26-gatehouse-demo.md](notes/2026-08-26-gatehouse-demo.md) |
+| 2026-09-02 | Client 对话节点实战：洗衣店卡片（可重放 session 事件 + Conversation Node Definition + keyed 聊天渲染器，纯投影测试） | [2026-09-02-laundry-demo.md](notes/2026-09-02-laundry-demo.md) |
 
 ## 什么是 DeepSeek Harness（dsh）
 

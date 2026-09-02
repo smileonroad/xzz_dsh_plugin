@@ -11,8 +11,8 @@
 | 添加模型工具（工具 vs 命令、执行扩展点） | [adding-a-tool.md](adding-a-tool.md)                         |
 | 插件配置（Schemastery、同名导出、分层）  | [plugin-config.md](plugin-config.md)                         |
 | Client 插件（Web UI 侧）                 | [client-plugin.md](client-plugin.md)                         |
-| 实战源码 + 测试（含装配模式）            | [../examples/helloworld-command/](../examples/helloworld-command/) / [../examples/sql-check-tool/](../examples/sql-check-tool/) / [../examples/csv-query-tool/](../examples/csv-query-tool/) / [../examples/units-capability/](../examples/units-capability/) / [../examples/events-demo/](../examples/events-demo/) / [../examples/tea-shop-demo/](../examples/tea-shop-demo/) |
-| 经验笔记（对外文章，含坑与测试哲学）     | [../notes/2026-08-15-helloworld-command.md](../notes/2026-08-15-helloworld-command.md) / [../notes/2026-08-16-sql-check-tool.md](../notes/2026-08-16-sql-check-tool.md) / [../notes/2026-08-16-csv-query-tool.md](../notes/2026-08-16-csv-query-tool.md) / [../notes/2026-08-22-units-capability.md](../notes/2026-08-22-units-capability.md) / [../notes/2026-08-23-events-demo.md](../notes/2026-08-23-events-demo.md) / [../notes/2026-08-24-tea-shop-demo.md](../notes/2026-08-24-tea-shop-demo.md) |
+| 实战源码 + 测试（含装配模式）            | [../examples/helloworld-command/](../examples/helloworld-command/) / [../examples/sql-check-tool/](../examples/sql-check-tool/) / [../examples/csv-query-tool/](../examples/csv-query-tool/) / [../examples/units-capability/](../examples/units-capability/) / [../examples/events-demo/](../examples/events-demo/) / [../examples/tea-shop-demo/](../examples/tea-shop-demo/) / [../examples/gatehouse-demo/](../examples/gatehouse-demo/) / [../examples/laundry-demo/](../examples/laundry-demo/) |
+| 经验笔记（对外文章，含坑与测试哲学）     | [../notes/2026-08-15-helloworld-command.md](../notes/2026-08-15-helloworld-command.md) / [../notes/2026-08-16-sql-check-tool.md](../notes/2026-08-16-sql-check-tool.md) / [../notes/2026-08-16-csv-query-tool.md](../notes/2026-08-16-csv-query-tool.md) / [../notes/2026-08-22-units-capability.md](../notes/2026-08-22-units-capability.md) / [../notes/2026-08-23-events-demo.md](../notes/2026-08-23-events-demo.md) / [../notes/2026-08-24-tea-shop-demo.md](../notes/2026-08-24-tea-shop-demo.md) / [../notes/2026-08-26-gatehouse-demo.md](../notes/2026-08-26-gatehouse-demo.md) / [../notes/2026-09-02-laundry-demo.md](../notes/2026-09-02-laundry-demo.md) |
 | 官方一手教程/手册                        | [../reference/](../reference/)                               |
 | 关键源码位置（deepseek-harness 内）      | 见下文                                                       |
 
@@ -34,6 +34,7 @@
 | 2026-08-23 | 事件实战：监听真实 harness 事件（tools 瀑布 + commands/change）、waterfall 观察者/决策者纪律、五种分发模式（serial/bail/parallel 用夹具） | [notes/2026-08-23-events-demo.md](../notes/2026-08-23-events-demo.md) | [examples/events-demo/](../examples/events-demo/) |
 | 2026-08-24 | 自声明事件实战：奶茶店事件族（declare module + @mode 契约）、五种分发模式全自有声明（serial/bail/parallel 真实语义）、type-only import、事件派生 | [notes/2026-08-24-tea-shop-demo.md](../notes/2026-08-24-tea-shop-demo.md) | [examples/tea-shop-demo/](../examples/tea-shop-demo/) |
 | 2026-08-26 | approval 应答者实战：传达室自动审批（allow/deny 名单 + prepend 层序）、approval/request 三角色与 fail-closed、审计对与会话策略 | [notes/2026-08-26-gatehouse-demo.md](../notes/2026-08-26-gatehouse-demo.md) | [examples/gatehouse-demo/](../examples/gatehouse-demo/) |
+| 2026-09-02 | Client 对话节点实战：洗衣店卡片（可重放 session 事件 + Conversation Node Definition + keyed 聊天渲染器，纯投影测试） | [notes/2026-09-02-laundry-demo.md](../notes/2026-09-02-laundry-demo.md) | [examples/laundry-demo/](../examples/laundry-demo/) |
 
 ## 开发流程速记（helloworld / sql-check-tool 实战印证）
 
