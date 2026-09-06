@@ -5,6 +5,7 @@ import type { Agent, AgentStatus } from '@deepseek-ai/dsh-agent'
 import CommandRuntime from '@deepseek-ai/dsh-commands'
 import SessionStore, { Session, SessionId } from '@deepseek-ai/dsh-session'
 import { SessionSeq } from '@deepseek-ai/dsh-session/types'
+import type { SessionEvent } from '@deepseek-ai/dsh-session/types'
 import * as helloworldCommand from '../src/index.ts'
 
 /** Build a live idle agent the command executor can log lifecycle events on. */
@@ -104,7 +105,11 @@ describe('helloworld-command example plugin', () => {
     await run(test, ' Claude')
     // The log is read back through the indexed face: seq is the append count,
     // eventAt(seq) returns the event at that position.
-    const logged = Array.from({ length: test.session.seq }, (_, i) => test.session.eventAt(SessionSeq(i))!)
+    const logged: SessionEvent[] = []
+    for (let i = 0; i < test.session.seq; i += 1) {
+      const event = test.session.eventAt(SessionSeq(i))
+      if (event !== undefined) logged.push(event)
+    }
     const types = logged.filter(e => e.type === 'command/run' || e.type === 'command/done')
     expect(types).toHaveLength(2)
     // The payload lives in `event.data`; the envelope carries type/seq/time.

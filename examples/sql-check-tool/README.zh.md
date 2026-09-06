@@ -2,21 +2,21 @@
 
 [English](README.md) | 中文
 
-一个面向模型的工具插件：`sql_check` 用 Node 内置的 `node:sqlite` 调用**真实 SQLite 解析器**校验 SQL——零第三方依赖。它演示了 [`ctx.tools`](../../packages/core/tools/README.md) 扩展点，契约比斜杠命令更丰富，这是刻意的——工具要伺候模型。
+一个面向模型的工具插件：`sql_check` 用 Node 内置的 `node:sqlite` 调用**真实 SQLite 解析器**校验 SQL——零第三方依赖。它演示了 [`ctx.tools`](../../packages/core/tools/README.zh.md) 扩展点，契约比斜杠命令更丰富，这是刻意的——工具要伺候模型。
 
 ## 运行
 
 本目录是插件源码的**权威来源**。要运行，先把它拷贝到 deepseek-harness 源码的 `examples/`（那边的同名目录可能不同步），再在 deepseek-harness 根目录操作：
 
 ```sh
-# 1. 拷贝到 deepseek-harness 源码（本仓库是权威来源）
+# 1. Copy into the deepseek-harness source (this repo is the source of truth)
 cp -r examples/sql-check-tool ../deepseek-harness/examples/sql-check-tool
 
-# 2a. 跑测试（harness 的 vitest 工作区已不含 examples/，用随目录分发的临时配置）
+# 2a. Run the tests (the harness vitest workspace no longer covers examples/; use the config shipped in this directory)
 cd ../deepseek-harness
 pnpm exec vitest run --config examples/sql-check-tool/vitest.examples.config.ts examples/sql-check-tool/tests/sql-check-tool.spec.ts
 
-# 2b. 或挂载进 web UI（临时，用 patch 层）
+# 2b. Or mount it into the web UI (temporary, via the patch layer)
 pnpm dsh web --patch examples/sql-check-tool/sql-check.patch.yml
 ```
 
@@ -52,10 +52,10 @@ pnpm dsh web --patch examples/sql-check-tool/sql-check.patch.yml
 
 ```
 sql-check-tool/
-├── src/index.ts                 # 插件：name / inject / apply
-├── tests/sql-check-tool.spec.ts # 8 个用例，真实 ToolRuntime + SystemPrompt
-├── cordis.yml                   # 测试组合（system-prompt + tools + 插件）
-└── sql-check.patch.yml          # web overlay 入口
+├── src/index.ts                 # the plugin: name / inject / apply
+├── tests/sql-check-tool.spec.ts # 8 cases, real ToolRuntime + SystemPrompt
+├── cordis.yml                   # test composition (system-prompt + tools + plugin)
+└── sql-check.patch.yml          # web overlay entry
 ```
 
 > 关系说明：本目录是 `sql_check` 工具的完整源码+测试包；`notes/2026-08-16-sql-check-tool.md` 记录了背后的学习心得。
@@ -71,4 +71,4 @@ pnpm exec vitest run --config examples/sql-check-tool/vitest.examples.config.ts 
 
 ## 如何发布应用
 
-与 helloworld-command 示例同一条路：本目录是**教学示例**，不是可安装的包。要分发，把它提升到 `packages/` 下作为标准 bundle，遵循[打包教程](../../docs/user/develop/basic/publish.md)，再用 `dsh plugin --profile <name> add <package>` 安装。本示例消费端不需要任何构建步骤（`node:sqlite` 随 Node 自带）。
+与 helloworld-command 示例同一条路：本目录是**教学示例**，不是可安装的包。要分发，把它提升到 `packages/` 下作为标准 bundle，遵循[打包教程](../../docs/user/develop/basic/publish.zh.md)，再用 `dsh plugin --profile <name> add <package>` 安装。本示例消费端不需要任何构建步骤（`node:sqlite` 随 Node 自带）。

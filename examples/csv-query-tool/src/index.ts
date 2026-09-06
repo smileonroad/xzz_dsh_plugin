@@ -256,19 +256,22 @@ export function apply(ctx: Context, config: Config) {
         throw error
       }
 
-      const selectedIndexes = args.select === undefined
+      const select = args.select
+      const selectedIndexes = select === undefined
         ? parsed.columns.map((_, index) => index)
         : parsed.columns
-          .map((name, index) => args.select!.includes(name) ? index : -1)
+          .map((name, index) => select.includes(name) ? index : -1)
           .filter(index => index >= 0)
-      const columns = selectedIndexes.map(index => parsed.columns[index]!)
+      const columnNames = parsed.columns
+      const columns = selectedIndexes.map(index => columnNames[index] ?? '')
       const limited = args.limit === undefined
         ? parsed.rows
         : parsed.rows.slice(0, args.limit)
-      const rows = limited.map(row => {
+      const rows = limited.map((row) => {
         const out: Record<string, string> = {}
         for (const index of selectedIndexes) {
-          out[parsed.columns[index]!] = row[index] ?? ''
+          const name = columnNames[index]
+          if (name !== undefined) out[name] = row[index] ?? ''
         }
         return out
       })

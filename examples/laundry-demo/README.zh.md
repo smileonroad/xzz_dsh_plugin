@@ -11,10 +11,10 @@
 本目录是**权威源码**。先把它拷进 deepseek-harness 源码树（那边的同名目录可能过时），再到 deepseek-harness 根目录操作：
 
 ```sh
-# 1. 拷进 deepseek-harness 源码（本仓库是权威来源）
+# 1. Copy into the deepseek-harness source (this repository is authoritative)
 cp -r examples/laundry-demo ../deepseek-harness/examples/laundry-demo
 
-# 2. 跑测试（3 个 spec，21 个用例，进程内）
+# 2. Run the tests (3 specs, 21 cases, in-process)
 cd ../deepseek-harness
 pnpm exec vitest run --config examples/laundry-demo/vitest.examples.config.ts examples/laundry-demo
 ```
@@ -27,7 +27,7 @@ pnpm exec vitest run --config examples/laundry-demo/vitest.examples.config.ts ex
 pnpm dsh web --patch examples/laundry-demo/laundry.patch.yml
 ```
 
-让模型洗点什么：工具把循环记进 session 日志（web 的轨迹面板可见，headless 可重放），里面就是完整 `laundry/*` 事件族。想在浏览器里亲眼看到卡片，需要把 Client 半侧打成 bundle——见[分发](#分发)。
+让模型洗点什么：工具把循环记进 session 日志（web 的轨迹面板可见，headless 可重放），里面就是完整 `laundry/*` 事件族。想在浏览器里亲眼看到卡片，需要把 Client 半侧打成 bundle——见[分发](#how-to-distribute)。
 
 ## Design
 
@@ -101,7 +101,7 @@ declare module '@deepseek-ai/dsh-client-ui-conversation/client' {
 渲染器（`view.tsx`）只读 `node.data`，把每个决定都交给 React-free 的投影函数（`presentation.ts`）：
 
 ```ts
-projectLaundry(data) // → { line, barWidth } 或 { line, barWidth: null }
+projectLaundry(data) // → { line, barWidth } or { line, barWidth: null }
 ```
 
 卡片没有别的逻辑：一行文字，外加滚筒条（只在还在洗的时候有）。测试钉的就是这个投影——Definition 能产出的每一种 data 形状都断言一遍，不依赖组件运行时。
@@ -115,19 +115,19 @@ projectLaundry(data) // → { line, barWidth } 或 { line, barWidth: null }
 ```
 laundry-demo/
 ├── src/
-│   ├── events.ts           # 生产方类型：SessionEventMap 合并 + payload（纯类型导出）
-│   ├── machine.ts          # Host 半侧：laundry_start 工具，定时器驱动循环，可取消
+│   ├── events.ts           # producer types: SessionEventMap merge + payloads (pure type export)
+│   ├── machine.ts          # Host half: laundry_start tool, timer-driven cycle, cancellable
 │   └── client/
-│       ├── definition.ts   # Client 半侧：ConversationNodeDefinition + ChatNodeDataMap 合并
-│       ├── presentation.ts # 纯卡片投影（React-free，examples 里可测）
-│       ├── view.tsx        # 薄渲染器：node.data → projectLaundry → 标记
-│       └── index.ts        # apply：注册 Definition + keyed 槽位渲染器
+│       ├── definition.ts   # Client half: ConversationNodeDefinition + ChatNodeDataMap merge
+│       ├── presentation.ts # pure card projection (React-free, testable from examples)
+│       ├── view.tsx        # thin renderer: node.data → projectLaundry → markup
+│       └── index.ts        # apply: register Definition + keyed slot renderer
 ├── tests/
-│   ├── laundry-machine.host.spec.ts      # 8 用例——真实 ToolRuntime + fake agent
-│   ├── laundry-definition.client.spec.ts # 8 用例——真实 ConversationNodeAssembler
-│   └── laundry-view.client.spec.ts       # 5 用例——纯投影，每种 data 形状
-├── cordis.yml            # 组合：Host 半侧 + Client 半侧
-└── laundry.patch.yml     # profile overlay（只有 Host 半侧）
+│   ├── laundry-machine.host.spec.ts      # 8 cases — real ToolRuntime + fake agent
+│   ├── laundry-definition.client.spec.ts # 8 cases — real ConversationNodeAssembler
+│   └── laundry-view.client.spec.ts       # 5 cases — pure projection, every data shape
+├── cordis.yml            # composition: Host half + Client half
+└── laundry.patch.yml     # profile overlay (Host half only)
 ```
 
 - `src/events.ts`——只有类型。`declare module '@deepseek-ai/dsh-session/types'` 这个合并让两半侧的 `session.append('laundry/start', …)` 和 `event.type === 'laundry/start'` 都有类型。Client 文件用 `import type {}` 引它——和 cookbook 在真实包边界处规定的仅类型副作用导入是同一个动作。
@@ -146,7 +146,7 @@ pnpm exec vitest run --config examples/laundry-demo/vitest.examples.config.ts ex
 
 > 关联说明：本目录是 Client 对话节点实战的完整源码 + 测试包；`notes/2026-09-02-laundry-demo.md` 记录背后的学习过程，成形提案在 `docs/proposals/2026-09-02-laundry-demo.md`。
 
-## 分发
+## 分发 <a id="how-to-distribute"></a>
 
 与其他实战一致：这是**教学示例**，不是可安装的包。两个半侧，两条分发故事：
 

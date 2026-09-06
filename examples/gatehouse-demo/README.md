@@ -1,6 +1,6 @@
 # gatehouse-demo
 
-[English](README.md) | 中文
+English | [中文](README.zh.md)
 
 In an old-fashioned compound, the gatehouse sits at the entrance. A visitor
 who wants in registers first; the gatekeeper checks the list: regulars are
@@ -214,11 +214,21 @@ gatehouse-demo/
 - `tests/gatehouse-demo.spec.ts` — real `SystemPrompt` + `ToolRuntime` +
   `ApprovalService`, a fake agent with a seeded open turn (the same stand-in
   the harness's own approval tests use), dispatched through
-  `ctx.tools.execute`. Eighteen cases: the keeper's three decision paths,
-  fail-closed (no answerer / throwing / rogue return), the `'never'` policy
-  and its switch back, the audit pair and the open-turn precondition, abort
-  cancellation, registration order vs `prepend`, disposer restore, the gated
-  set boundary, the no-approval degrade, and Loader-safe exports.
+  `ctx.tools.execute`. Eighteen cases, by group:
+  - the keeper's three decision paths: allow passes, deny rejects (neither
+    disturbs the answerers behind), unlisted tools are delegated
+  - fail-closed three: nobody answers, an answerer throws, an unknown word
+    comes back
+  - policy two: `'never'` rejects without calling any answerer, switching
+    back to ask restores dispatch
+  - audit three: asked/decided share one id, asking outside a turn throws,
+    abort cancels and a late answer is void
+  - order three: registration order decides who answers first, `prepend`
+    cuts in, unmounting restores
+  - boundary three: the gate covers only its own tools, the ask degrades to
+    deny without the approval service, the keeper sleeps when its service is
+    missing
+  - Loader-safe exports
 
 Run the tests:
 

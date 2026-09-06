@@ -9,14 +9,14 @@
 本目录是实战源码的**权威来源**。要运行，先把它拷贝到 deepseek-harness 源码的 `examples/`（那边的副本可能过期），再在 deepseek-harness 根目录操作：
 
 ```sh
-# 1. 拷贝到 deepseek-harness 源码（本仓库是权威来源）
+# 1. Copy into the deepseek-harness source (this repo is the source of truth)
 cp -r examples/events-demo ../deepseek-harness/examples/events-demo
 
-# 2a. 跑测试（harness 的 vitest 工作区已不含 examples/，用随目录分发的临时配置）
+# 2a. Run the tests (the harness vitest workspace no longer covers examples/; use the config shipped in this directory)
 cd ../deepseek-harness
 pnpm exec vitest run --config examples/events-demo/vitest.examples.config.ts examples/events-demo/tests/events-demo.spec.ts
 
-# 2b. 或挂进 web UI（临时，走 patch 层）
+# 2b. Or mount it into the web UI (temporary, via the patch layer)
 pnpm dsh web --patch examples/events-demo/events.patch.yml
 ```
 
@@ -35,18 +35,18 @@ harness 自己就跑在事件上。`tools/pre-execute` 是策略在工具执行�
 两个插件正好是 waterfall 链条允许的两种角色：
 
 ```
-tools/pre-execute（waterfall，最外层监听器先跑）
+tools/pre-execute (waterfall, outermost listener runs first)
     │
     ▼
 ┌───────────────────────────────┐
-│ tool-observer（观察者）        │  必须调 next()——它只记录。
-│    │ return next()            │  忘了 next() 会静默绕过后面所有
-│    ▼                          │  决策者。
-│ tool-policy（决策者）          │  可以不调 next() 直接返回——那就
-│    │ 放行？→ next()           │  否决整条链，工具不会跑。
-│    │ 拒绝？→ {kind:'deny'}    │
+│ tool-observer (observer)      │  MUST call next() — it only records.
+│    │ return next()            │  Forgetting next() silently bypasses
+│    ▼                          │  every downstream decider.
+│ tool-policy (decider)         │  MAY return without next() — that vetoes
+│    │ allow? → next()          │  the chain and the tool never runs.
+│    │ deny?  → {kind:'deny'}   │
 │    ▼                          │
-│ 工具本体执行（或被拒绝）        │
+│ tool body runs (or is denied) │
 └───────────────────────────────┘
 ```
 
@@ -71,11 +71,11 @@ tools/pre-execute（waterfall，最外层监听器先跑）
 
 ```
 events-demo/
-├── src/tool-observer.ts      # 观察者：tools/pre-execute + post-execute，始终 next()
-├── src/tool-policy.ts        # 决策者：tools/pre-execute，拒绝封锁名单
-├── tests/events-demo.spec.ts # 10 个用例，真实 ToolRuntime + CommandRuntime
-├── cordis.yml                # 组合：observer + policy
-└── events.patch.yml          # web overlay 入口
+├── src/tool-observer.ts      # observer: tools/pre-execute + post-execute, always next()
+├── src/tool-policy.ts        # decider: tools/pre-execute, denies a block list
+├── tests/events-demo.spec.ts # 10 cases, real ToolRuntime + CommandRuntime
+├── cordis.yml                # composition: observer + policy
+└── events.patch.yml          # web overlay entry
 ```
 
 > 关系说明：本目录是类型化事件实战的完整源码 + 测试包；`notes/2026-08-23-events-demo.md` 记录它背后的学习心得。成形它的提案在 `docs/proposals/2026-08-22-events-demo.md`。
@@ -92,4 +92,4 @@ pnpm exec vitest run --config examples/events-demo/vitest.examples.config.ts exa
 
 ## 怎么分发
 
-与其他实战一致：本目录是**教学示例**，不是可安装包。要分发，按[打包教程](../../docs/user/develop/basic/publish.md)升级成 `packages/` 下的标准 bundle，再用 `dsh plugin --profile <name> add <package>` 安装。
+与其他实战一致：本目录是**教学示例**，不是可安装包。要分发，按[打包教程](../../docs/user/develop/basic/publish.zh.md)升级成 `packages/` 下的标准 bundle，再用 `dsh plugin --profile <name> add <package>` 安装。

@@ -11,14 +11,14 @@
 本目录是实战源码的**权威来源**。要运行，先把它拷贝到 deepseek-harness 源码的 `examples/`（那边的副本可能过期），再在 deepseek-harness 根目录操作：
 
 ```sh
-# 1. 拷贝到 deepseek-harness 源码（本仓库是权威来源）
+# 1. Copy into the deepseek-harness source (this repo is the source of truth)
 cp -r examples/tea-shop-demo ../deepseek-harness/examples/tea-shop-demo
 
-# 2a. 跑测试（harness 的 vitest 工作区已不含 examples/，用随目录分发的临时配置）
+# 2a. Run the tests (the harness vitest workspace no longer covers examples/; use the config shipped in this directory)
 cd ../deepseek-harness
 pnpm exec vitest run --config examples/tea-shop-demo/vitest.examples.config.ts examples/tea-shop-demo/tests/tea-shop-demo.spec.ts
 
-# 2b. 或挂进 web UI（临时，走 patch 层）
+# 2b. Or mount it into the web UI (temporary, via the patch layer)
 pnpm dsh web --patch examples/tea-shop-demo/tea-shop.patch.yml
 ```
 
@@ -82,20 +82,20 @@ declare module '@deepseek-ai/cordis' {
 服务方法把这些模式按业务顺序串起来。一次下单 `placeOrder(drink)` 走完一整条流程：
 
 ```
-顾客下单 placeOrder(drink)
+customer orders — placeOrder(drink)
    │
    ▼
-① order/request（waterfall）   店规守在入口：打烊 → 直接拒单，流程终止；
-                               营业 → 调 next() 放行
+① order/request (waterfall)   the shop rule sits at the entrance: closed →
+                              refuse and end here; open → call next()
    │
    ▼
-② order/start（emit）          广播「已接单」，单向通知
+② order/start (emit)          announce "order accepted", one-way
    │
    ▼
-③ barista/pick（serial）       挨个问店员，第一个应声的接单
+③ barista/pick (serial)       ask baristas in turn, first answer takes it
    │
    ▼
-④ order/ready（emit）          广播「已出杯」，事件族收尾
+④ order/ready (emit)          announce "order served", the family completes
 ```
 
 另外两个方法各走一步：`announce(orderId)` 走 `notify/patrons`（parallel——并发通知每个等单的人，全部完成才返回）；`isOpen()` 走 `shop/open`（bail——门口问「开门了吗」，先答者赢，没人答算打烊）。
@@ -107,11 +107,11 @@ declare module '@deepseek-ai/cordis' {
 > 奶茶店的 `order/request` 就是一根这样的链：
 >
 > ```
-> 最外层 → shop-policy（店规）
->            │ 打烊？→ 返回 refuse，不调 next()，链条终止 → 订单被拒
->            │ 营业？→ 调 next()，接力棒传给默认行为
->            ▼
->          默认行为 → 返回 accept → 订单被接
+> outermost → shop-policy (the shop rule)
+>              │ closed? → return refuse, no next() → chain ends → order refused
+>              │ open?   → call next(), baton passes to the default
+>              ▼
+>             default → return accept → order accepted
 > ```
 >
 > 这解释了 events-demo 里那条纪律：**只观察的监听器必须调 `next()`**——忘调等于你无声地吞掉了整条链，后面的决策者全都轮不到。
@@ -131,12 +131,12 @@ declare module '@deepseek-ai/cordis' {
 
 ```
 tea-shop-demo/
-├── src/tea-shop.ts      # 生产方：TeaShopService 声明并分发全部六个事件
-├── src/order-watch.ts   # 消费方：监听事件族，派生 orders/served
-├── src/shop-policy.ts   # 消费方：order/request waterfall 决策者（Config { closed }）
-├── tests/tea-shop-demo.spec.ts # 12 个用例，进程内、零外部依赖
-├── cordis.yml           # 组合：生产方 + 两个消费方
-└── tea-shop.patch.yml   # web overlay 入口
+├── src/tea-shop.ts      # producer: TeaShopService declares + dispatches all six events
+├── src/order-watch.ts   # consumer: listens the family, derives orders/served
+├── src/shop-policy.ts   # consumer: order/request waterfall decider (Config { closed })
+├── tests/tea-shop-demo.spec.ts # 12 cases, in-process, zero external deps
+├── cordis.yml           # composition: producer + two consumers
+└── tea-shop.patch.yml   # web overlay entry
 ```
 
 > 关系说明：本目录是自声明事件实战的完整源码 + 测试包；`notes/2026-08-24-tea-shop-demo.md` 记录它背后的学习心得，成形它的提案在 `docs/proposals/2026-08-22-tea-shop-demo.md`。
@@ -154,4 +154,4 @@ pnpm exec vitest run --config examples/tea-shop-demo/vitest.examples.config.ts e
 
 ## 怎么分发
 
-与其他实战一致：本目录是**教学示例**，不是可安装包。要分发，按[打包教程](../../docs/user/develop/basic/publish.md)升级成 `packages/` 下的标准 bundle，再用 `dsh plugin --profile <name> add <package>` 安装。
+与其他实战一致：本目录是**教学示例**，不是可安装包。要分发，按[打包教程](../../docs/user/develop/basic/publish.zh.md)升级成 `packages/` 下的标准 bundle，再用 `dsh plugin --profile <name> add <package>` 安装。

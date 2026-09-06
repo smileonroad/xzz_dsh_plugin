@@ -4,21 +4,21 @@
 
 老式单位的大门口有间传达室。访客想进去，先登记；传达室大爷翻名单：常客直接放行，通缉名单上的名字当场拒之门外，陌生人就打电话问屋里管东西的人。电话没人接，就进不去。
 
-这套流程在 harness 里有一个真实的对应物：`approval/request`。工具想要执行时，harness 会向一群「应答者」征询意见，策略可以代替用户作答（教程原话是 "a policy answer instead of the user"）。前两个实战把事件的监听和声明各练了一遍；这次轮到真实 harness 的 `approval/request`，练的是应答者这个角色。waterfall 的纪律还是那条：要么直接给答案，要么把问题传下去。故事里的每个环节，都能在代码里对上号。
+这套流程在 harness 里有一个真实的对应物：[`approval/request`](../../docs/subsystems/approval.zh.md)。工具想要执行时，harness 会向一群「应答者」征询意见，策略可以代替用户作答（教程原话是 "a policy answer instead of the user"）。前两个实战把事件的监听和声明各练了一遍；这次轮到真实 harness 的 `approval/request`，练的是应答者这个角色。waterfall 的纪律还是那条：要么直接给答案，要么把问题传下去。故事里的每个环节，都能在代码里对上号。
 
 ## 运行
 
 本目录是实战源码的**权威来源**。要运行，先把它拷贝到 deepseek-harness 源码的 `examples/`（那边的副本可能过期），再在 deepseek-harness 根目录操作：
 
 ```sh
-# 1. 拷贝到 deepseek-harness 源码（本仓库是权威来源）
+# 1. Copy into the deepseek-harness source (this repository is authoritative)
 cp -r examples/gatehouse-demo ../deepseek-harness/examples/gatehouse-demo
 
-# 2a. 跑测试（harness 的 vitest 工作区已不含 examples/，用随目录分发的临时配置）
+# 2a. Run the tests (the harness vitest workspace no longer covers examples/; use the config shipped in this directory)
 cd ../deepseek-harness
 pnpm exec vitest run --config examples/gatehouse-demo/vitest.examples.config.ts examples/gatehouse-demo/tests/gatehouse-demo.spec.ts
 
-# 2b. 或挂进 web UI（临时，走 patch 层）
+# 2b. Or mount it into the web UI (temporary, via the patch layer)
 pnpm dsh web --patch examples/gatehouse-demo/gatehouse.patch.yml
 ```
 
@@ -47,20 +47,20 @@ pnpm dsh web --patch examples/gatehouse-demo/gatehouse.patch.yml
 整条链走一遍：
 
 ```
-工具想执行
-   │  tools/pre-execute 返回 { kind: 'ask', reason }
+tool wants to run
+   │  a tools/pre-execute listener returns { kind: 'ask', reason }
    ▼
-ctx.approval.request（dsh-tools 的 serviceAsk）
-   │  日志先写 approval/asked
+ctx.approval.request (dsh-tools' serviceAsk)
+   │  the log gets approval/asked first
    ▼
-approval/request waterfall，应答者按注册顺序被问到
-   ├─ 返回结果 → 认领，链条终止
-   ├─ 调 next() → 传给下一个
-   └─ 无人认领 → 默认 unavailable
+approval/request waterfall, answerers asked in registration order
+   ├─ return an outcome → claim, chain ends
+   ├─ call next()      → pass it on
+   └─ nobody claims    → default 'unavailable'
    ▼
-日志补写 approval/decided（同 id），返回 outcome
+the log gets approval/decided (same id), the outcome resolves
    ▼
-工具执行器：allowed-once 放行，其余拒绝
+the tool executor maps: allowed-once runs, everything else denies
 ```
 
 ### 故事对照
@@ -82,13 +82,13 @@ keeper 的 Config 就是那份名单：`allow`（常客）、`deny`（通缉名�
 waterfall 的规则很简单：想回答，就直接把结果交回去，链条到此为止；不归你管，**必须调 `next()` 把问题传下去**。events-demo 给 `tools/*` 观察者立过这条规矩，这次它落在真实的决策事件上。只想记日志的监听器如果忘了 `next()`，后面所有应答者都会被无声跳过。
 
 ```
-应答者被问到
+an answerer is asked
    │
-   ├─ 归我管 → 直接返回结果（认领），链条终止
+   ├─ mine to answer → return the outcome (claim), chain ends
    │
-   └─ 不归我管 → 必须调 next() 传下去
+   └─ not mine → must call next()
                     │
-                    └─ 没人认领 → 默认 unavailable
+                    └─ nobody claims → default 'unavailable'
 ```
 
 答案只有四种，而且默认不放行（fail closed）：
@@ -107,13 +107,15 @@ waterfall 的规则很简单：想回答，就直接把结果交回去，链条�
 > 答案者被问到的顺序，就是插件挂载的顺序，而挂载顺序由 patch 层序决定。
 >
 > ```
-> patch 层序（先 → 后）       挂载/回答顺序
+> patch layers (first → last)    mount/answer order
 > dsh-base
-> dsh-web-app               →  UI 应答者先挂载、先注册、先被问到
->    （UI 应答者在这层）
-> profile 自身 cordis.patch.yml
-> --patch overlay            →  keeper 最后挂载，排在 UI 后面
->    （keeper 在这层）
+> dsh-web-app                  →  the UI answerer mounts, registers and is
+>    (the UI answerer lives         asked first
+>     in this layer)
+> profile cordis.patch.yml
+> --patch overlay               →  the keeper mounts last, behind the UI
+>    (the keeper lives in           answerer
+>     this layer)
 > ```
 >
 > UI 应答者来者不拒：先被问到就直接认领，往浏览器发弹窗等着。所以排在它后面的 keeper 永远轮不到，自动放行等于没装。
@@ -139,11 +141,11 @@ waterfall 的规则很简单：想回答，就直接把结果交回去，链条�
 
 ```
 gatehouse-demo/
-├── src/gatekeeper.ts    # 应答者：allow/deny/prepend Config，认领或委托
-├── src/facilities.ts    # 三个被门禁的工具（use_locker/open_vault/use_lab）+ ask 策略
-├── tests/gatehouse-demo.spec.ts  # 18 个用例，进程内，真实 ApprovalService + ToolRuntime
-├── cordis.yml           # 组合：approval 服务 + facilities + keeper
-└── gatehouse.patch.yml  # web overlay 入口
+├── src/gatekeeper.ts    # answerer: allow/deny/prepend Config, claim or delegate
+├── src/facilities.ts    # three gated tools (use_locker/open_vault/use_lab) + the ask policy
+├── tests/gatehouse-demo.spec.ts  # 18 cases, in-process, real ApprovalService + ToolRuntime
+├── cordis.yml           # composition: approval service + facilities + keeper
+└── gatehouse.patch.yml  # web overlay entry
 ```
 
 > 关系说明：本目录是审批应答者实战的完整源码 + 测试包；`notes/2026-08-26-gatehouse-demo.md` 记录它背后的学习心得，成形它的提案在 `docs/proposals/2026-08-26-gatehouse-demo.md`。
@@ -167,4 +169,4 @@ pnpm exec vitest run --config examples/gatehouse-demo/vitest.examples.config.ts 
 
 ## 怎么分发
 
-与其他实战一致：本目录是**教学示例**，不是可安装包。要分发，按[打包教程](../../docs/user/develop/basic/publish.md)升级成 `packages/` 下的标准 bundle，再用 `dsh plugin --profile <name> add <package>` 安装。
+与其他实战一致：本目录是**教学示例**，不是可安装包。要分发，按[打包教程](../../docs/user/develop/basic/publish.zh.md)升级成 `packages/` 下的标准 bundle，再用 `dsh plugin --profile <name> add <package>` 安装。

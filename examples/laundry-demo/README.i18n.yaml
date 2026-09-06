@@ -1,7 +1,6 @@
-# Bilingual-pair consistency record (docs/i18n/README.md in deepseek-harness):
-# the git blob hash of each side as of the last confirmed-consistent state.
-# Both languages carry equal authority; after editing either side, bring the
-# other along and re-record with:
-#   git hash-object README.md README.zh.md
-README.md: 3030a68275610b0fd978ba784f3a3bab4307ddac
-README.zh.md: 01080773fd1e1aa9cd443ee6da460af2e4aa0178
+# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
+# side as of the last confirmed-consistent state. Both languages carry equal authority;
+# after editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write examples/laundry-demo/README.md
+README.md: 25fcab891dcce55006f79491fd4b149e4b5b2d69
+README.zh.md: 7f23610a6474b2595d66dc9aa4a3ae480ff3e033

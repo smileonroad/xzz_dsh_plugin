@@ -2,21 +2,21 @@
 
 [English](README.md) | 中文
 
-一个最小的人机交互斜杠命令插件：`/helloworld [<name>]` 问候用户，不经过模型轮次。它演示了 [`ctx.commands`](../../packages/interaction/commands/README.md) 扩展点——仓库中最小的完整命令插件。
+一个最小的人机交互斜杠命令插件：`/helloworld [<name>]` 问候用户，不经过模型轮次。它演示了 [`ctx.commands`](../../packages/interaction/commands/README.zh.md) 扩展点——仓库中最小的完整命令插件。
 
 ## 运行
 
 本目录是插件源码的**权威来源**。要运行，先把它拷贝到 deepseek-harness 源码的 `examples/`（那边的同名目录可能不同步），再在 deepseek-harness 根目录操作：
 
 ```sh
-# 1. 拷贝到 deepseek-harness 源码（本仓库是权威来源）
+# 1. Copy into the deepseek-harness source (this repo is the source of truth)
 cp -r examples/helloworld-command ../deepseek-harness/examples/helloworld-command
 
-# 2a. 跑测试（harness 的 vitest 工作区已不含 examples/，用随目录分发的临时配置）
+# 2a. Run the tests (the harness vitest workspace no longer covers examples/; use the config shipped in this directory)
 cd ../deepseek-harness
 pnpm exec vitest run --config examples/helloworld-command/vitest.examples.config.ts examples/helloworld-command/tests/helloworld-command.spec.ts
 
-# 2b. 或挂载进 web UI（临时，用 patch 层）
+# 2b. Or mount it into the web UI (temporary, via the patch layer)
 pnpm dsh web --patch examples/helloworld-command/helloworld.patch.yml
 ```
 
@@ -52,7 +52,7 @@ pnpm dsh web --patch examples/helloworld-command/helloworld.patch.yml
 
 ```
 helloworld-command/
-├── src/index.ts                 # 插件：name / inject / apply
+├── src/index.ts                 # the plugin: name / inject / apply
 └── tests/helloworld-command.spec.ts
 ```
 
@@ -71,11 +71,11 @@ pnpm exec vitest run --config examples/helloworld-command/vitest.examples.config
 
 ## 如何发布应用
 
-该目录当前是一个**教学示例**，不是可安装的包：它没有 `package.json`，因此无法被 `dsh plugin add` 消费。要把它分发给其他用户，需要把它提升到 `packages/` 中作为标准 bundle，并遵循[打包教程](../../docs/user/develop/basic/publish.md)：
+该目录当前是一个**教学示例**，不是可安装的包：它没有 `package.json`，因此无法被 `dsh plugin add` 消费。要把它分发给其他用户，需要把它提升到 `packages/` 中作为标准 bundle，并遵循[打包教程](../../docs/user/develop/basic/publish.zh.md)：
 
 1. **创建包**，位于 `packages/interaction/helloworld-command/`，包含 `package.json`（名称为 `@deepseek-ai/dsh-helloworld-command`、`private: true`、`dsh.bundle.patch`）、`tsconfig.json`、`src/invariant.ts` 和双语 README。
 2. **添加 `cordis.patch.yml`**，按包名插入插件行，使 profile 挂载它。
 3. **分发构建产物。** git 安装拉取的是源码而非 `lib/` 输出——添加自包含构建的 `prepare` 脚本，或发布到 npm / tarball，使安装无需构建权限。
 4. 然后用户通过 `dsh plugin --profile <name> add github:you/helloworld-command#<sha>`（git）或 `dsh plugin --profile <name> add @deepseek-ai/dsh-helloworld-command`（npm）安装，profile 的 `cordis.patch.yml` 应用该 bundle 层。
 
-完整的 bundle 契约与构建脚本陷阱见[打包并安装插件](../../docs/user/develop/basic/publish.md)。
+完整的 bundle 契约与构建脚本陷阱见[打包并安装插件](../../docs/user/develop/basic/publish.zh.md)。

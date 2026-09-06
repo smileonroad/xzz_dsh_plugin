@@ -1,6 +1,6 @@
 # laundry-demo
 
-[English](README.md) | 中文
+English | [中文](README.zh.md)
 
 A coin laundromat. When the model decides to wash something it calls
 `laundry_start`; the machine starts to spin and a laundry card appears in the

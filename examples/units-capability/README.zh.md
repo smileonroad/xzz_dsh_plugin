@@ -9,14 +9,14 @@
 本目录是实战源码的**权威来源**。要运行，先把它拷贝到 deepseek-harness 源码的 `examples/`（那边的副本可能过期），再在 deepseek-harness 根目录操作：
 
 ```sh
-# 1. 拷贝到 deepseek-harness 源码（本仓库是权威来源）
+# 1. Copy into the deepseek-harness source (this repo is the source of truth)
 cp -r examples/units-capability ../deepseek-harness/examples/units-capability
 
-# 2a. 跑测试（harness 的 vitest 工作区已不含 examples/，用随目录分发的临时配置）
+# 2a. Run the tests (the harness vitest workspace no longer covers examples/; use the config shipped in this directory)
 cd ../deepseek-harness
 pnpm exec vitest run --config examples/units-capability/vitest.examples.config.ts examples/units-capability/tests/units-capability.spec.ts
 
-# 2b. 或挂进 web UI（临时，走 patch 层）
+# 2b. Or mount it into the web UI (temporary, via the patch layer)
 pnpm dsh web --patch examples/units-capability/units.patch.yml
 ```
 
@@ -62,18 +62,18 @@ sequenceDiagram
     autonumber
     participant L as Loader (cordis.yml)
     participant P as units-builtin (Provider)
-    participant S as Service 基类 (super(ctx, 'units'))
+    participant S as Service base class (super(ctx, 'units'))
     participant C as tool-units (Consumer)
-    participant R as tools 注册表
+    participant R as tools registry
 
-    Note over L: 启动，按依赖调度插件
-    L->>P: apply(ctx)，无 inject，先执行
+    Note over L: boot starts, plugins scheduled by dependency
+    L->>P: apply(ctx), no inject so it runs first
     P->>S: new BuiltinUnits(ctx)
-    S-->>L: 注册 ctx.units
-    Note over L: tool-units 声明 inject ['tools', 'units']<br/>cordis 等两个服务都就绪
+    S-->>L: registers ctx.units
+    Note over L: tool-units injects ['tools', 'units']<br/>cordis waits until both exist
     L->>C: apply(ctx)
     C->>R: ctx.tools.register(unit_convert)
-    Note over R: 工具 schema 流入系统提示词
+    Note over R: tool schema flows into the system prompt
 ```
 
 注意 Definition（`units/`）**没有**出现在这张图里，因为它没有 `apply`，永远不会进组合树。它就是被 Provider 和 Consumer import 的普通库，契约一直在那，不需要「加载」。自定义 provider（`units-custom/`）走的是完全一样的路径，只是表来自配置而不是常量。
@@ -83,27 +83,27 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     autonumber
-    participant M as 模型 / agent 循环
-    participant R as tools 注册表
+    participant M as model / agent loop
+    participant R as tools registry
     participant T as unit_convert execute
     participant U as ctx.units (UnitsService)
-    participant D as convertWithTable（纯逻辑，在 Definition）
+    participant D as convertWithTable (pure logic, in Definition)
 
     M->>R: ctx.tools.execute('unit_convert', args)
-    R->>R: 自动校验参数 (JSON Schema)
+    R->>R: auto-validate args (JSON Schema)
     R->>T: execute(args)
     T->>U: ctx.units.convert({ value, from, to })
     U->>D: convertWithTable(value, from, to, table)
-    alt 领域错误（未知单位 / 跨系统）
-        D-->>U: 抛 UnitsError
-        U-->>T: 错误继续传播，服务层不接
+    alt domain error (unknown unit / cross-system)
+        D-->>U: throws UnitsError
+        U-->>T: error propagates, service does not catch
         T-->>R: { ok: false, error: { type, message } }
-    else 正常
+    else ok
         D-->>U: number
         U-->>T: { value, from, to }
         T-->>R: { ok: true, value, from, to }
     end
-    R-->>M: 渲染后的 ToolExecutionResult
+    R-->>M: rendered ToolExecutionResult
 ```
 
 Consumer 的 `execute` 是唯一接住 `UnitsError` 的地方——服务层让它继续传播（这是领域错误，不是基础设施故障）——工具把它映射成 canonical 的 `{ ok: false, error }`，绝不 throw。
@@ -112,13 +112,13 @@ Consumer 的 `execute` 是唯一接住 `UnitsError` 的地方——服务层让�
 
 ```
 units-capability/
-├── units/src/index.ts            # Definition：抽象 UnitsService + convertWithTable + 类型（无 apply）
-├── units-builtin/src/index.ts    # Provider：内置单位表（长度/质量/温度/数据）
-├── units-custom/src/index.ts     # Provider：同一个 seam，表来自插件配置
-├── tool-units/src/index.ts       # Consumer：unit_convert 工具（inject: ['tools', 'units']）
-├── tests/units-capability.spec.ts # 10 个用例，真实 ToolRuntime + SystemPrompt
-├── cordis.yml                    # 组合：一个 provider + 工具；换 provider 行即换数据
-└── units.patch.yml               # web overlay 入口
+├── units/src/index.ts            # Definition: abstract UnitsService + convertWithTable + types (no apply)
+├── units-builtin/src/index.ts    # Provider: built-in unit table (length/mass/temperature/data)
+├── units-custom/src/index.ts     # Provider: same seam, table from plugin config
+├── tool-units/src/index.ts       # Consumer: unit_convert tool (inject: ['tools', 'units'])
+├── tests/units-capability.spec.ts # 10 cases, real ToolRuntime + SystemPrompt
+├── cordis.yml                    # composition: ONE provider + the tool; swap the provider row to change data
+└── units.patch.yml               # web overlay entry
 ```
 
 > 关系说明：本目录是 `ctx.units` 能力的完整源码 + 测试包；`notes/2026-08-22-units-capability.md` 记录它背后的学习心得。
@@ -137,4 +137,4 @@ pnpm exec vitest run --config examples/units-capability/vitest.examples.config.t
 
 ## 怎么分发
 
-与其他实战一致：本目录是**教学示例**，不是可安装包。要分发，按[打包教程](../../docs/user/develop/basic/publish.md)升级成 `packages/` 下的标准 bundle，再用 `dsh plugin --profile <name> add <package>` 安装。Definition 随各 bundle（或作为独立包）一起分发——Provider 和 Consumer 直接 import 它。
+与其他实战一致：本目录是**教学示例**，不是可安装包。要分发，按[打包教程](../../docs/user/develop/basic/publish.zh.md)升级成 `packages/` 下的标准 bundle，再用 `dsh plugin --profile <name> add <package>` 安装。Definition 随各 bundle（或作为独立包）一起分发——Provider 和 Consumer 直接 import 它。
