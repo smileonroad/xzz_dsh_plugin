@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { Context } from '@deepseek-ai/cordis'
-import { CallId } from '@deepseek-ai/dsh-llm'
+import { ToolCallId } from '@deepseek-ai/dsh-llm'
 import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
 import ToolRuntime, { defineTool } from '@deepseek-ai/dsh-tools'
 import type { ToolExecutionResult, ToolResult } from '@deepseek-ai/dsh-tools'
@@ -26,7 +26,7 @@ async function query(
 ): Promise<ToolExecutionResult> {
   return ctx.tools.execute({
     signal,
-    callId: CallId('call-1'),
+    callId: ToolCallId('call-1'),
     name: 'csv_query',
     arguments: args,
   })

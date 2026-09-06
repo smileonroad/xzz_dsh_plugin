@@ -28,7 +28,7 @@ cp -r examples/laundry-demo ../deepseek-harness/examples/laundry-demo
 
 # 2. Run the tests (3 specs, 21 cases, in-process)
 cd ../deepseek-harness
-pnpm exec vitest run examples/laundry-demo
+pnpm exec vitest run --config examples/laundry-demo/vitest.examples.config.ts examples/laundry-demo
 ```
 
 The tests are the behavioral gate: they drive the **real**
@@ -240,7 +240,7 @@ laundry-demo/
 Run the tests:
 
 ```sh
-pnpm exec vitest run examples/laundry-demo
+pnpm exec vitest run --config examples/laundry-demo/vitest.examples.config.ts examples/laundry-demo
 ```
 
 > Relation note: this directory is the complete source + test package of the

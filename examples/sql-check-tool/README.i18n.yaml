@@ -3,5 +3,5 @@
 # Both languages carry equal authority; after editing either side, bring the
 # other along and re-record with:
 #   git hash-object README.md README.zh.md
-README.md: 950621d6322f0899adf67ede0ae3ec83e1f3f131
-README.zh.md: e9faaf471729fc4f3a27d76e76616b105b9e513d
+README.md: 0fc532dbf0b0bbf8dc63c6b69038179f77362dc0
+README.zh.md: a527bd086c14080c4ef8b19c219fed97346b5bb5

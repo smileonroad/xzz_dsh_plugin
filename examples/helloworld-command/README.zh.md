@@ -12,9 +12,9 @@
 # 1. 拷贝到 deepseek-harness 源码（本仓库是权威来源）
 cp -r examples/helloworld-command ../deepseek-harness/examples/helloworld-command
 
-# 2a. 跑测试
+# 2a. 跑测试（harness 的 vitest 工作区已不含 examples/，用随目录分发的临时配置）
 cd ../deepseek-harness
-pnpm exec vitest run examples/helloworld-command/tests/helloworld-command.spec.ts
+pnpm exec vitest run --config examples/helloworld-command/vitest.examples.config.ts examples/helloworld-command/tests/helloworld-command.spec.ts
 
 # 2b. 或挂载进 web UI（临时，用 patch 层）
 pnpm dsh web --patch examples/helloworld-command/helloworld.patch.yml
@@ -66,7 +66,7 @@ helloworld-command/
 运行测试：
 
 ```sh
-pnpm exec vitest run examples/helloworld-command/tests/helloworld-command.spec.ts
+pnpm exec vitest run --config examples/helloworld-command/vitest.examples.config.ts examples/helloworld-command/tests/helloworld-command.spec.ts
 ```
 
 ## 如何发布应用

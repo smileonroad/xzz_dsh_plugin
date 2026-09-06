@@ -29,9 +29,9 @@ be stale), then operate from the deepseek-harness root:
 rm -rf ../deepseek-harness/examples/csv-query-tool   # cp -r nests into an existing dir
 cp -r examples/csv-query-tool ../deepseek-harness/examples/csv-query-tool
 
-# 2a. Run the tests
+# 2a. Run the tests (the harness vitest workspace no longer covers examples/; use the config shipped in this directory)
 cd ../deepseek-harness
-pnpm exec vitest run examples/csv-query-tool/tests/csv-query-tool.spec.ts
+pnpm exec vitest run --config examples/csv-query-tool/vitest.examples.config.ts examples/csv-query-tool/tests/csv-query-tool.spec.ts
 
 # 2b. Or mount it into the web UI (temporary, via the patch layer)
 pnpm dsh web --patch examples/csv-query-tool/csv-query.patch.yml

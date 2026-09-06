@@ -8,7 +8,7 @@
  * @module laundry-node-view
  */
 
-import type { ChatNodeViewProps } from '@deepseek-ai/dsh-client-ui-conversation/client'
+import type { ChatNodeViewProps } from '@deepseek-ai/dsh-client-ui-chat/client'
 import { projectLaundry } from './presentation.ts'
 
 /** Render one durable laundry cycle card from its projected data. */

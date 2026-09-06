@@ -16,9 +16,9 @@ be stale), then operate from the deepseek-harness root:
 # 1. Copy into the deepseek-harness source (this repo is the source of truth)
 cp -r examples/helloworld-command ../deepseek-harness/examples/helloworld-command
 
-# 2a. Run the tests
+# 2a. Run the tests (the harness vitest workspace no longer covers examples/; use the config shipped in this directory)
 cd ../deepseek-harness
-pnpm exec vitest run examples/helloworld-command/tests/helloworld-command.spec.ts
+pnpm exec vitest run --config examples/helloworld-command/vitest.examples.config.ts examples/helloworld-command/tests/helloworld-command.spec.ts
 
 # 2b. Or mount it into the web UI (temporary, via the patch layer)
 pnpm dsh web --patch examples/helloworld-command/helloworld.patch.yml
@@ -109,7 +109,7 @@ composition tree** (booting a `cordis.yml` via the app bin), follow the
 Run the tests:
 
 ```sh
-pnpm exec vitest run examples/helloworld-command/tests/helloworld-command.spec.ts
+pnpm exec vitest run --config examples/helloworld-command/vitest.examples.config.ts examples/helloworld-command/tests/helloworld-command.spec.ts
 ```
 
 ## How to ship

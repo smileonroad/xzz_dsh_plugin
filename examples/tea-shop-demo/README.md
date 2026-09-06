@@ -26,9 +26,9 @@ be stale), then operate from the deepseek-harness root:
 # 1. Copy into the deepseek-harness source (this repo is the source of truth)
 cp -r examples/tea-shop-demo ../deepseek-harness/examples/tea-shop-demo
 
-# 2a. Run the tests
+# 2a. Run the tests (the harness vitest workspace no longer covers examples/; use the config shipped in this directory)
 cd ../deepseek-harness
-pnpm exec vitest run examples/tea-shop-demo/tests/tea-shop-demo.spec.ts
+pnpm exec vitest run --config examples/tea-shop-demo/vitest.examples.config.ts examples/tea-shop-demo/tests/tea-shop-demo.spec.ts
 
 # 2b. Or mount it into the web UI (temporary, via the patch layer)
 pnpm dsh web --patch examples/tea-shop-demo/tea-shop.patch.yml
@@ -232,7 +232,7 @@ tea-shop-demo/
 Run the tests:
 
 ```sh
-pnpm exec vitest run examples/tea-shop-demo/tests/tea-shop-demo.spec.ts
+pnpm exec vitest run --config examples/tea-shop-demo/vitest.examples.config.ts examples/tea-shop-demo/tests/tea-shop-demo.spec.ts
 ```
 
 ## How to ship

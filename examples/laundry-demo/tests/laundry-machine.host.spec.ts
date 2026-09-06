@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { Context } from '@deepseek-ai/cordis'
-import { CallId } from '@deepseek-ai/dsh-llm'
+import { ToolCallId } from '@deepseek-ai/dsh-llm'
 import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
 import ToolRuntime, { type ToolExecutionResult } from '@deepseek-ai/dsh-tools'
 import type { Agent } from '@deepseek-ai/dsh-agent'
@@ -44,7 +44,7 @@ async function run(
   args: Record<string, unknown> = {},
   agent: Agent = fakeAgent(),
 ): Promise<ToolExecutionResult> {
-  return ctx.tools.execute({ signal, callId: CallId('c1'), name: 'laundry_start', arguments: args, agent })
+  return ctx.tools.execute({ signal, callId: ToolCallId('c1'), name: 'laundry_start', arguments: args, agent })
 }
 
 describe('laundry-machine: the Host half', () => {
@@ -119,7 +119,7 @@ describe('laundry-machine: the Host half', () => {
     const { ctx } = await harness()
     const result = await ctx.tools.execute({
       signal,
-      callId: CallId('c1'),
+      callId: ToolCallId('c1'),
       name: 'laundry_start',
       arguments: {},
       agent: undefined,

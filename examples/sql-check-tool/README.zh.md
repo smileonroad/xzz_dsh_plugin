@@ -12,9 +12,9 @@
 # 1. 拷贝到 deepseek-harness 源码（本仓库是权威来源）
 cp -r examples/sql-check-tool ../deepseek-harness/examples/sql-check-tool
 
-# 2a. 跑测试
+# 2a. 跑测试（harness 的 vitest 工作区已不含 examples/，用随目录分发的临时配置）
 cd ../deepseek-harness
-pnpm exec vitest run examples/sql-check-tool/tests/sql-check-tool.spec.ts
+pnpm exec vitest run --config examples/sql-check-tool/vitest.examples.config.ts examples/sql-check-tool/tests/sql-check-tool.spec.ts
 
 # 2b. 或挂载进 web UI（临时，用 patch 层）
 pnpm dsh web --patch examples/sql-check-tool/sql-check.patch.yml
@@ -66,7 +66,7 @@ sql-check-tool/
 运行测试：
 
 ```sh
-pnpm exec vitest run examples/sql-check-tool/tests/sql-check-tool.spec.ts
+pnpm exec vitest run --config examples/sql-check-tool/vitest.examples.config.ts examples/sql-check-tool/tests/sql-check-tool.spec.ts
 ```
 
 ## 如何发布应用

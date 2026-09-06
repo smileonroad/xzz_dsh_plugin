@@ -16,7 +16,7 @@ cp -r examples/laundry-demo ../deepseek-harness/examples/laundry-demo
 
 # 2. 跑测试（3 个 spec，21 个用例，进程内）
 cd ../deepseek-harness
-pnpm exec vitest run examples/laundry-demo
+pnpm exec vitest run --config examples/laundry-demo/vitest.examples.config.ts examples/laundry-demo
 ```
 
 测试是行为门槛：用 fixture session 事件（工具真正追加的那批 `laundry/*` 事件）驱动**真实的** `ConversationNodeAssembler`，把 Definition 钉死在官方 cookbook 的 6 点验证上；Host 工具则走真实的 `ToolRuntime`。不开浏览器、不需要模型 key。
@@ -141,7 +141,7 @@ laundry-demo/
 跑测试：
 
 ```sh
-pnpm exec vitest run examples/laundry-demo
+pnpm exec vitest run --config examples/laundry-demo/vitest.examples.config.ts examples/laundry-demo
 ```
 
 > 关联说明：本目录是 Client 对话节点实战的完整源码 + 测试包；`notes/2026-09-02-laundry-demo.md` 记录背后的学习过程，成形提案在 `docs/proposals/2026-09-02-laundry-demo.md`。

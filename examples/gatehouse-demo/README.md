@@ -26,9 +26,9 @@ the deepseek-harness root:
 # 1. Copy into the deepseek-harness source (this repository is authoritative)
 cp -r examples/gatehouse-demo ../deepseek-harness/examples/gatehouse-demo
 
-# 2a. Run the tests
+# 2a. Run the tests (the harness vitest workspace no longer covers examples/; use the config shipped in this directory)
 cd ../deepseek-harness
-pnpm exec vitest run examples/gatehouse-demo/tests/gatehouse-demo.spec.ts
+pnpm exec vitest run --config examples/gatehouse-demo/vitest.examples.config.ts examples/gatehouse-demo/tests/gatehouse-demo.spec.ts
 
 # 2b. Or mount it into the web UI (temporary, via the patch layer)
 pnpm dsh web --patch examples/gatehouse-demo/gatehouse.patch.yml
@@ -223,7 +223,7 @@ gatehouse-demo/
 Run the tests:
 
 ```sh
-pnpm exec vitest run examples/gatehouse-demo/tests/gatehouse-demo.spec.ts
+pnpm exec vitest run --config examples/gatehouse-demo/vitest.examples.config.ts examples/gatehouse-demo/tests/gatehouse-demo.spec.ts
 ```
 
 ## How to distribute

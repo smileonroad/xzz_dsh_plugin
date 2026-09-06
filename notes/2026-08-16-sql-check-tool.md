@@ -124,7 +124,7 @@ async function harness() {
 // 执行走 ctx.tools.execute，跟 agent 循环同一个入口
 await ctx.tools.execute({
   signal,
-  callId: CallId('call-1'),
+  callId: ToolCallId('call-1'),
   name: 'sql_check',
   arguments: { sql: 'SELECT FROM WHERE' },
 })

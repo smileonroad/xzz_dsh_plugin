@@ -18,9 +18,9 @@ be stale), then operate from the deepseek-harness root:
 # 1. Copy into the deepseek-harness source (this repo is the source of truth)
 cp -r examples/sql-check-tool ../deepseek-harness/examples/sql-check-tool
 
-# 2a. Run the tests
+# 2a. Run the tests (the harness vitest workspace no longer covers examples/; use the config shipped in this directory)
 cd ../deepseek-harness
-pnpm exec vitest run examples/sql-check-tool/tests/sql-check-tool.spec.ts
+pnpm exec vitest run --config examples/sql-check-tool/vitest.examples.config.ts examples/sql-check-tool/tests/sql-check-tool.spec.ts
 
 # 2b. Or mount it into the web UI (temporary, via the patch layer)
 pnpm dsh web --patch examples/sql-check-tool/sql-check.patch.yml
@@ -120,7 +120,7 @@ sql-check-tool/
 Run the tests:
 
 ```sh
-pnpm exec vitest run examples/sql-check-tool/tests/sql-check-tool.spec.ts
+pnpm exec vitest run --config examples/sql-check-tool/vitest.examples.config.ts examples/sql-check-tool/tests/sql-check-tool.spec.ts
 ```
 
 ## How to ship

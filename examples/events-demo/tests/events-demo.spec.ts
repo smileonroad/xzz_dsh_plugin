@@ -4,7 +4,7 @@ import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
 import CommandRuntime from '@deepseek-ai/dsh-commands'
 import ToolRuntime, { defineTool } from '@deepseek-ai/dsh-tools'
 import type { ToolExecutionResult } from '@deepseek-ai/dsh-tools'
-import { CallId } from '@deepseek-ai/dsh-llm'
+import { ToolCallId } from '@deepseek-ai/dsh-llm'
 import * as toolPolicy from '../src/tool-policy.ts'
 import * as toolObserver from '../src/tool-observer.ts'
 
@@ -52,7 +52,7 @@ async function execute(
   name: string,
   args: Record<string, unknown> = {},
 ): Promise<ToolExecutionResult> {
-  return ctx.tools.execute({ signal, callId: CallId('call-1'), name, arguments: args })
+  return ctx.tools.execute({ signal, callId: ToolCallId('call-1'), name, arguments: args })
 }
 
 describe('events-demo: real harness events', () => {

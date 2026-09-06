@@ -14,9 +14,9 @@
 # 1. 拷贝到 deepseek-harness 源码（本仓库是权威来源）
 cp -r examples/tea-shop-demo ../deepseek-harness/examples/tea-shop-demo
 
-# 2a. 跑测试
+# 2a. 跑测试（harness 的 vitest 工作区已不含 examples/，用随目录分发的临时配置）
 cd ../deepseek-harness
-pnpm exec vitest run examples/tea-shop-demo/tests/tea-shop-demo.spec.ts
+pnpm exec vitest run --config examples/tea-shop-demo/vitest.examples.config.ts examples/tea-shop-demo/tests/tea-shop-demo.spec.ts
 
 # 2b. 或挂进 web UI（临时，走 patch 层）
 pnpm dsh web --patch examples/tea-shop-demo/tea-shop.patch.yml
@@ -149,7 +149,7 @@ tea-shop-demo/
 跑测试：
 
 ```sh
-pnpm exec vitest run examples/tea-shop-demo/tests/tea-shop-demo.spec.ts
+pnpm exec vitest run --config examples/tea-shop-demo/vitest.examples.config.ts examples/tea-shop-demo/tests/tea-shop-demo.spec.ts
 ```
 
 ## 怎么分发

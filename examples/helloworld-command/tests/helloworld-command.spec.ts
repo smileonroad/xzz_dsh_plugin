@@ -4,6 +4,7 @@ import AgentRegistry, { Inbox } from '@deepseek-ai/dsh-agent'
 import type { Agent, AgentStatus } from '@deepseek-ai/dsh-agent'
 import CommandRuntime from '@deepseek-ai/dsh-commands'
 import SessionStore, { Session, SessionId } from '@deepseek-ai/dsh-session'
+import { SessionSeq } from '@deepseek-ai/dsh-session/types'
 import * as helloworldCommand from '../src/index.ts'
 
 /** Build a live idle agent the command executor can log lifecycle events on. */
@@ -101,7 +102,10 @@ describe('helloworld-command example plugin', () => {
   it('logs command/run and command/done lifecycle events', async () => {
     const test = await harness()
     await run(test, ' Claude')
-    const types = test.session.events.filter(e => e.type === 'command/run' || e.type === 'command/done')
+    // The log is read back through the indexed face: seq is the append count,
+    // eventAt(seq) returns the event at that position.
+    const logged = Array.from({ length: test.session.seq }, (_, i) => test.session.eventAt(SessionSeq(i))!)
+    const types = logged.filter(e => e.type === 'command/run' || e.type === 'command/done')
     expect(types).toHaveLength(2)
     // The payload lives in `event.data`; the envelope carries type/seq/time.
     expect(types[0]).toMatchObject({ type: 'command/run', data: { name: 'helloworld', args: ' Claude' } })
@@ -112,6 +116,6 @@ describe('helloworld-command example plugin', () => {
     const test = await harness()
     const missing = await test.ctx.commands.execute(test.agent, '/nope', [], new AbortController().signal)
     expect(missing).toBeUndefined()
-    expect(test.session.events).toHaveLength(0)
+    expect(test.session.seq).toBe(0)
   })
 })

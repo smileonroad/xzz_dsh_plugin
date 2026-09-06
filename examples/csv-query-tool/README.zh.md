@@ -16,9 +16,9 @@
 rm -rf ../deepseek-harness/examples/csv-query-tool
 cp -r examples/csv-query-tool ../deepseek-harness/examples/csv-query-tool
 
-# 2a. 跑测试
+# 2a. 跑测试（harness 的 vitest 工作区已不含 examples/，用随目录分发的临时配置）
 cd ../deepseek-harness
-pnpm exec vitest run examples/csv-query-tool/tests/csv-query-tool.spec.ts
+pnpm exec vitest run --config examples/csv-query-tool/vitest.examples.config.ts examples/csv-query-tool/tests/csv-query-tool.spec.ts
 
 # 2b. 或挂载进 web UI（临时，用 patch 层）
 pnpm dsh web --patch examples/csv-query-tool/csv-query.patch.yml

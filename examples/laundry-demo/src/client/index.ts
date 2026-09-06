@@ -6,15 +6,15 @@
  * @module laundry-node
  */
 
-import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
+import type { Context as ClientContext } from '@deepseek-ai/cordis'
 import { laundryDefinition } from './definition.ts'
 import { LaundryNodeView } from './view.tsx'
 
 export const name = 'laundry-node'
-export const inject = ['conversationEvents', 'slots']
+export const inject = ['uiConversation', 'slots']
 
 export function apply(ctx: ClientContext): void {
-  ctx.conversationEvents.register(laundryDefinition)
+  ctx.uiConversation.events.register(laundryDefinition)
   ctx.slots.inject('conversation.chat.node', () => ctx.slots.register({
     name: 'conversation.chat.node',
     key: 'laundry-job',

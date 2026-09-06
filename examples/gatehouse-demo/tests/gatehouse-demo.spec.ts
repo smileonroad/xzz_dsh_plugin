@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { Context } from '@deepseek-ai/cordis'
-import { CallId } from '@deepseek-ai/dsh-llm'
+import { ToolCallId } from '@deepseek-ai/dsh-llm'
 import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
 import ToolRuntime, { defineTool } from '@deepseek-ai/dsh-tools'
 import type { ToolExecutionResult } from '@deepseek-ai/dsh-tools'
@@ -25,6 +25,10 @@ function fakeAgent(openTurn = true): Agent {
   return {
     session: {
       events: events as unknown as Agent['session']['events'],
+      // Indexed read face: the approval service scans backwards through
+      // eventAt() to enforce its open-turn precondition.
+      get seq() { return events.length },
+      eventAt: (seq: number) => events[seq],
       append: (type: string, data: Record<string, unknown>) => { events.push({ type, data }) },
     },
   } as unknown as Agent
@@ -58,7 +62,7 @@ async function run(
   args: Record<string, unknown> = {},
   agent: Agent = fakeAgent(),
 ): Promise<ToolExecutionResult> {
-  return ctx.tools.execute({ signal, callId: CallId('c1'), name, arguments: args, agent })
+  return ctx.tools.execute({ signal, callId: ToolCallId('c1'), name, arguments: args, agent })
 }
 
 describe('gatehouse-demo: approval answerer chain', () => {

@@ -9,10 +9,8 @@
  * @module laundry-node
  */
 
-import type {
-  ChatConversationViewNode,
-  ConversationNodeDefinition,
-} from '@deepseek-ai/dsh-client-runtime/client'
+import type { ChatConversationViewNode } from '@deepseek-ai/dsh-client-ui-chat/client'
+import type { ConversationNodeDefinition } from '@deepseek-ai/dsh-client-ui-conversation/client'
 // Type-only side-effect import: pulls the producer's SessionEventMap merge
 // (../events.ts) into this compilation so `event.type === 'laundry/start'`
 // narrows `event.data` to the typed payload. In a real package split the
@@ -28,7 +26,7 @@ export interface LaundryChatData {
   readonly summary?: string
 }
 
-declare module '@deepseek-ai/dsh-client-ui-conversation/client' {
+declare module '@deepseek-ai/dsh-client-ui-chat/client' {
   interface ChatNodeDataMap {
     /** One durable laundry cycle rendered as a chat card. */
     'laundry-job': LaundryChatData

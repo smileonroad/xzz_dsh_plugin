@@ -79,7 +79,7 @@ ACP bridge  机器应答者，只认领自己 agent 的请求，别人的调 nex
 
 ## 测试先立起来，fake agent 带 turn
 
-测试装配照搬了 harness 自己的 approval 测试，用 core/tools 里那个 fake agent 替身，session 里带一个 turn/start 就够。
+测试装配照搬了 harness 自己的 approval 测试，用 core/tools 里那个 fake agent 替身，session 里带一个 turn/start 就够。有一个新坑要注意，会话日志的读面现在是 seq 加 eventAt 的索引式，不再是裸数组，替身得把这两样也实现出来，approval 服务靠它们往回扫描 turn 边界。
 
 approval.request 有个前提，审计对必须落在开着的 turn 里。
 

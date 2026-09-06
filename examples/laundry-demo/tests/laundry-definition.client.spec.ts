@@ -1,10 +1,13 @@
 import { describe, expect, it, vi } from 'vitest'
-import type { SessionEvent } from '@deepseek-ai/dsh-session/types'
-import { ConversationNodeAssembler } from '@deepseek-ai/dsh-client-runtime/client'
+import type { SessionEventLikeEntry } from '@deepseek-ai/dsh-api-session-controller/client'
+import {
+  ConversationNodeAssembler,
+} from '@deepseek-ai/dsh-client-ui-conversation/client'
 import type {
-  ConversationEventInput, ConversationNodeDefinition, ConversationViewDefinition,
-  ConversationViewNode,
-} from '@deepseek-ai/dsh-client-runtime/client'
+  ConversationNodeDefinition, ConversationViewDefinition, ConversationViewNode,
+} from '@deepseek-ai/dsh-client-ui-conversation/client'
+import { SessionSeq } from '@deepseek-ai/dsh-session/types'
+import type { SessionEvent } from '@deepseek-ai/dsh-session/types'
 import { laundryDefinition } from '../src/client/definition.ts'
 
 interface TestSnapshot {
@@ -62,11 +65,24 @@ function testView(
 }
 
 function at(seq: number, type: string, data: unknown): SessionEvent {
-  return { seq, time: 1_700_000_000_000 + seq, type, data } as SessionEvent
+  return { seq: SessionSeq(seq), time: 1_700_000_000_000 + seq, type, data } as SessionEvent
 }
 
-function input(event: SessionEvent): ConversationEventInput {
-  return { event, view: undefined }
+function input(event: SessionEvent): SessionEventLikeEntry {
+  return { type: 'event', event }
+}
+
+/** An assembler with the chat target activated, the way the real shell does. */
+function makeAssembler(
+  definition: ConversationNodeDefinition = laundryDefinition,
+  view = testView(),
+): ConversationNodeAssembler {
+  const assembler = new ConversationNodeAssembler(
+    new TestEventDefinitions([definition]),
+    new TestViewDefinitions([view]),
+  )
+  assembler.activateTarget('chat')
+  return assembler
 }
 
 function chatSnapshot(assembler: ConversationNodeAssembler): TestSnapshot | undefined {
@@ -74,10 +90,7 @@ function chatSnapshot(assembler: ConversationNodeAssembler): TestSnapshot | unde
 }
 
 function assemble(events: SessionEvent[], hasMore = false): ConversationNodeAssembler {
-  const assembler = new ConversationNodeAssembler(
-    new TestEventDefinitions([laundryDefinition]),
-    new TestViewDefinitions([testView()]),
-  )
+  const assembler = makeAssembler()
   assembler.replaceWindow(events.map(input), hasMore)
   assembler.flush()
   return assembler
@@ -112,10 +125,7 @@ describe('laundry-definition: the Client Definition', () => {
   })
 
   it('an updates-only window stays pending; prepend the start yields the full result', () => {
-    const assembler = new ConversationNodeAssembler(
-      new TestEventDefinitions([laundryDefinition]),
-      new TestViewDefinitions([testView()]),
-    )
+    const assembler = makeAssembler()
     assembler.replaceWindow([
       input(at(4, 'laundry/progress', { laundryId: 'a', completed: 45 })),
       input(at(5, 'laundry/done', { laundryId: 'a', summary: '洗好了' })),
@@ -136,10 +146,7 @@ describe('laundry-definition: the Client Definition', () => {
   })
 
   it('realtime append equals a full merged replay', () => {
-    const live = new ConversationNodeAssembler(
-      new TestEventDefinitions([laundryDefinition]),
-      new TestViewDefinitions([testView()]),
-    )
+    const live = makeAssembler()
     live.replaceWindow(cycleA().slice(0, 3).map(input), false)
     live.flush()
     for (const event of cycleA().slice(3)) {
@@ -190,10 +197,7 @@ describe('laundry-definition: the Client Definition', () => {
 
   it('publication: progress asks animation-frame, start/done immediate; one flush applies once', () => {
     const apply = vi.fn()
-    const assembler = new ConversationNodeAssembler(
-      new TestEventDefinitions([laundryDefinition]),
-      new TestViewDefinitions([testView(apply)]),
-    )
+    const assembler = makeAssembler(laundryDefinition, testView(apply))
     assembler.replaceWindow(cycleA().slice(0, 3).map(input), false)
     assembler.flush()
 
@@ -214,10 +218,7 @@ describe('laundry-definition: the Client Definition', () => {
   it('match is an identity extractor — exactly once per event, no history access', () => {
     const matchSpy = vi.fn(laundryDefinition.match)
     const definition: ConversationNodeDefinition = { ...laundryDefinition, match: matchSpy }
-    const assembler = new ConversationNodeAssembler(
-      new TestEventDefinitions([definition]),
-      new TestViewDefinitions([testView()]),
-    )
+    const assembler = makeAssembler(definition)
     assembler.replaceWindow(cycleA().map(input), false)
     expect(matchSpy).toHaveBeenCalledTimes(5)
 
@@ -251,7 +252,7 @@ describe('laundry-definition: the Client Definition', () => {
     // start is a fail-loud tripwire for a mis-wired Definition.
     expect(() => laundryDefinition.start(
       { key: 'x', kind: 'laundry-job', id: 'a', matches: [], start: undefined, state: undefined, current: new Map() },
-      { event: at(4, 'laundry/progress', { laundryId: 'a', completed: 45 }), view: undefined, role: 'update', location: { kind: 'unresolved' } },
+      { event: at(4, 'laundry/progress', { laundryId: 'a', completed: 45 }), role: 'update', location: { kind: 'unresolved' } },
       { previous: () => undefined },
     )).toThrow(/requires laundry\/start/)
   })

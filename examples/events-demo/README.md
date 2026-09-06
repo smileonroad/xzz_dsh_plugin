@@ -19,9 +19,9 @@ be stale), then operate from the deepseek-harness root:
 # 1. Copy into the deepseek-harness source (this repo is the source of truth)
 cp -r examples/events-demo ../deepseek-harness/examples/events-demo
 
-# 2a. Run the tests
+# 2a. Run the tests (the harness vitest workspace no longer covers examples/; use the config shipped in this directory)
 cd ../deepseek-harness
-pnpm exec vitest run examples/events-demo/tests/events-demo.spec.ts
+pnpm exec vitest run --config examples/events-demo/vitest.examples.config.ts examples/events-demo/tests/events-demo.spec.ts
 
 # 2b. Or mount it into the web UI (temporary, via the patch layer)
 pnpm dsh web --patch examples/events-demo/events.patch.yml
@@ -140,7 +140,7 @@ events-demo/
 Run the tests:
 
 ```sh
-pnpm exec vitest run examples/events-demo/tests/events-demo.spec.ts
+pnpm exec vitest run --config examples/events-demo/vitest.examples.config.ts examples/events-demo/tests/events-demo.spec.ts
 ```
 
 ## How to ship
