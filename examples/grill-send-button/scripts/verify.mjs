@@ -7,8 +7,10 @@
  * installable bundle: manifest shape (dsh.bundle + dsh.client), exports point
  * at built files, the shipped bundle layer, the runtime contract of the
  * mounted "." entry (a Cordis plugin — the empty Host half) and of the
- * ./client entry (name / inject / apply and the product constants the tests
- * pin).
+ * ./client entry in the dsh client-modules factory format
+ * (window.__ModuleLoader__.load({ id, factory }) — the shape the in-box
+ * tsdown client preset emits; a plain ESM module never registers and the
+ * loader rejects the whole phase batch).
  */
 import { existsSync, readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
@@ -68,23 +70,60 @@ if (host) {
   else ok('"." exports apply (Cordis plugin shape)')
 }
 
-let client
-try {
-  client = await import(new URL('../lib/client.js', import.meta.url).href)
-} catch (error) {
-  fail(`./client entry imports as ESM (${error instanceof Error ? error.message : error})`)
+// ./client is a dsh client-plugin bundle: one top-level __ModuleLoader__.load
+// registration. Static shape first, then a behavioural run of the factory.
+const clientSource = readFileSync(join(root, 'lib', 'client.js'), 'utf8')
+const clientShape = [
+  ['registers via window.__ModuleLoader__.load', clientSource.includes('window.__ModuleLoader__.load({')],
+  [`registers the package id ${pkg.name}`, clientSource.includes(`id: ${JSON.stringify(pkg.name)}`)],
+  ['factory requires react from the module table', clientSource.includes('const React = require("react")')],
+  ['export map carries GRILL_TRIGGER', /\bGRILL_TRIGGER:\s*\(\) => GRILL_TRIGGER/.test(clientSource)],
+  ['export map carries buildGrillSend', /\bbuildGrillSend:\s*\(\) => buildGrillSend/.test(clientSource)],
+  ['export map carries apply', /\bapply:\s*\(\) => apply/.test(clientSource)],
+  ['export map carries inject', /\binject:\s*\(\) => inject/.test(clientSource)],
+  ['export map carries name', /\bname:\s*\(\) => name/.test(clientSource)],
+]
+for (const [label, passes] of clientShape) {
+  if (passes) ok(`./client ${label}`)
+  else fail(`./client ${label}`)
 }
-if (client) {
-  if (typeof client.name !== 'string') fail('./client exports name')
-  else ok(`./client name ${client.name}`)
-  if (!Array.isArray(client.inject) || !client.inject.includes('slots')) fail('./client inject includes slots')
-  else ok('./client inject slots')
-  if (typeof client.apply !== 'function') fail('./client exports apply')
-  else ok('./client exports apply')
-  if (client.GRILL_TRIGGER !== 'grill me') fail('./client GRILL_TRIGGER contract')
-  else ok('./client GRILL_TRIGGER "grill me"')
-  if (typeof client.buildGrillSend !== 'function') fail('./client exports buildGrillSend')
-  else ok('./client exports buildGrillSend')
+
+let registration
+globalThis.window = { __ModuleLoader__: { load: (value) => { registration = value } } }
+try {
+  await import(new URL('../lib/client.js', import.meta.url).href)
+} catch (error) {
+  fail(`./client bundle evaluates (${error instanceof Error ? error.message : error})`)
+}
+if (!registration) {
+  fail('./client calls __ModuleLoader__.load at evaluation')
+} else {
+  ok('./client calls __ModuleLoader__.load at evaluation')
+  let client
+  try {
+    client = registration.factory((spec) => {
+      if (spec === 'react') return { createElement: () => null }
+      throw new Error(`unexpected require("${spec}")`)
+    })
+  } catch (error) {
+    fail(`./client factory materializes (${error instanceof Error ? error.message : error})`)
+  }
+  if (client) {
+    if (typeof client.name !== 'string') fail('./client exports name')
+    else ok(`./client name ${client.name}`)
+    if (!Array.isArray(client.inject) || !client.inject.includes('slots')) fail('./client inject includes slots')
+    else ok('./client inject slots')
+    if (typeof client.apply !== 'function') fail('./client exports apply')
+    else ok('./client exports apply')
+    if (client.GRILL_TRIGGER !== 'grill me') fail('./client GRILL_TRIGGER contract')
+    else ok('./client GRILL_TRIGGER "grill me"')
+    if (typeof client.buildGrillSend !== 'function') fail('./client exports buildGrillSend')
+    else ok('./client exports buildGrillSend')
+    if (client.buildGrillSend(false) !== 'grill me') fail('./client buildGrillSend(false) → trigger')
+    else ok('./client buildGrillSend(false) → trigger')
+    if (client.buildGrillSend(true) !== null) fail('./client buildGrillSend(true) → null (busy)')
+    else ok('./client buildGrillSend(true) → null (busy)')
+  }
 }
 
 if (failures.length > 0) {

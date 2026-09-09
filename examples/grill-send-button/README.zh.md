@@ -73,6 +73,8 @@ export function buildGrillSend(busy: boolean): string | null {
 
 这个文件要同时伺候两个世界。下面动态流程里，`apply` 主体被当成纯 JS（`code.client`）贴进 GUI，模块 import 在那里无法解析，所以干脆没有；连 `React.createElement` 都是直接用而不是 import。静态打包时，同一个主体加上标准的 `name` / `inject` / `apply` 导出就变成仓库 Client 插件的 `apply`。你在 `src/index.ts` 里读到的，就是两个世界里真正跑的那份。
 
+静态包把这同一个主体包成 dsh 浏览器插件加载器（client-modules）唯一认得的产物：`window.__ModuleLoader__.load({ id, factory })` 工厂格式，同一批 combo 脚本靠它逐个登记插件；裸 ESM 模块从不调用 `load`，整批会报 "loaded without registering"，插件就装不上（安装实测踩过的坑）。所以 `build.mjs` 先把主体用 esbuild 编成 CJS，再包进 `load()` 调用，工厂里 `require("react")` 从加载器的模块表拿 React。动态与静态共用同一份 src，只是外壳不同。
+
 ## 在 GUI 里实测
 
 浏览器那一半靠运行中的 dsh web 会话走动态 Cordis 插件流程证明：

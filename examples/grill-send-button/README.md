@@ -125,6 +125,16 @@ directly instead of an import. For a static package, the same body becomes the
 repo Client plugin's `apply` under the standard `name` / `inject` / `apply`
 exports. What you read in `src/index.ts` is exactly what runs in both worlds.
 
+A static package wraps that same body in the only artifact the dsh browser
+plugin loader (client-modules) accepts: the `window.__ModuleLoader__.load({ id,
+factory })` factory form, through which every member of a combo script batch
+registers itself. A bare ESM module never calls `load`, so the whole batch
+fails with "loaded without registering" and the plugin never installs (the
+pitfall this practice hit during real install testing). `build.mjs` therefore
+compiles the body to CJS with esbuild and wraps it in the `load()` call, where
+the factory's `require("react")` takes React from the loader's module table.
+Dynamic and static share the same `src`; only the shell differs.
+
 ## Verify live in the GUI
 
 The browser half is proved by the dynamic Cordis plugin flow in a running dsh
