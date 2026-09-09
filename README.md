@@ -64,8 +64,8 @@ surfaces (headless / acp / jsonrpc / web / schedule) and is indexed at
 | 2026-08-24 | self-declared events: milk-tea shop event family (declare module + @mode contract), all five modes with real semantics, type-only import, event derivation | [2026-08-24-tea-shop-demo.md](notes/2026-08-24-tea-shop-demo.md) |
 | 2026-08-26 | approval answerer: gatehouse auto-approval (allow/deny lists + prepend layer order), the approval/request roles and fail-closed outcomes, audit pair and session policy | [2026-08-26-gatehouse-demo.md](notes/2026-08-26-gatehouse-demo.md) |
 | 2026-09-02 | Client conversation node: laundromat card (durable session events + Conversation Node Definition + keyed chat renderer, pure-projection tests) | [2026-09-02-laundry-demo.md](notes/2026-09-02-laundry-demo.md) |
-| 2026-09-07 | pure Client plugin: composer button (list-slot add vs replace, slots.inject, inputActions submit path, busy pure guard, dynamic-plugin verification) | [2026-09-07-grill-send-button.md](notes/2026-09-07-grill-send-button.md) |
-| 2026-09-09 | Client+Host pair: Recommend toggle + LLM follow-up pills (private RPC, readSession content, session.running-edge refresh, thinking-off generation, stale-cache and junk-tip guards) | [2026-09-09-reply-tips.md](notes/2026-09-09-reply-tips.md) |
+| 2026-09-07 | one-click send button: a clickable button beside the chat input that sends a preset phrase (adding a control to the composer tool row, sending through the official path, auto-disabled while a message is in flight) | [2026-09-07-grill-send-button.md](notes/2026-09-07-grill-send-button.md) |
+| 2026-09-09 | auto suggestions after each answer: a Recommend toggle beside the send button; when on, a row of clickable follow-up questions appears above the input after every answer, and clicking one sends it (the UI only displays while the server remembers the toggle and generates suggestions from the latest question and answer) | [2026-09-09-reply-tips.md](notes/2026-09-09-reply-tips.md) |
 
 ## What is DeepSeek Harness (dsh)
 

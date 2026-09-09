@@ -47,8 +47,8 @@ xzz-dsh-plugin/
 | 2026-08-24 | 自声明事件实战：奶茶店事件族（declare module + @mode 契约）、五种分发模式全自有声明（serial/bail/parallel 真实语义）、type-only import、事件派生 | [2026-08-24-tea-shop-demo.md](notes/2026-08-24-tea-shop-demo.md) |
 | 2026-08-26 | approval 应答者实战：传达室自动审批（allow/deny 名单 + prepend 层序）、approval/request 三角色与 fail-closed、审计对与会话策略 | [2026-08-26-gatehouse-demo.md](notes/2026-08-26-gatehouse-demo.md) |
 | 2026-09-02 | Client 对话节点实战：洗衣店卡片（可重放 session 事件 + Conversation Node Definition + keyed 聊天渲染器，纯投影测试） | [2026-09-02-laundry-demo.md](notes/2026-09-02-laundry-demo.md) |
-| 2026-09-07 | 纯 Client 插件实战：输入栏加按钮（list 槽新增 vs 替换、slots.inject、inputActions 发送路径、busy 纯函数闸门、动态插件零重启验证） | [2026-09-07-grill-send-button.md](notes/2026-09-07-grill-send-button.md) |
-| 2026-09-09 | 客户端与服务端双端联动实战：推荐开关 + LLM 追问胶囊（私有 RPC、readSession 读正文、回合结束边沿触发、关闭思考生成、防旧缓存回灌与垃圾胶囊过滤） | [2026-09-09-reply-tips.md](notes/2026-09-09-reply-tips.md) |
+| 2026-09-07 | 输入栏一键发送按钮：聊天输入框旁加一个可点按钮，点一下就把预设的一句话发出去（练习在输入框工具行加控件、走官方发送通道、消息在飞时自动禁用） | [2026-09-07-grill-send-button.md](notes/2026-09-07-grill-send-button.md) |
+| 2026-09-09 | 回答完自动给建议：发送键旁加一个推荐开关，打开后每次回答结束，输入框上方自动给出一排可点的问题建议，点一下就发出去（练习界面与服务端两头协作，界面只负责显示，服务端负责记住开关和照着最新问答生成建议） | [2026-09-09-reply-tips.md](notes/2026-09-09-reply-tips.md) |
 
 ## 什么是 DeepSeek Harness（dsh）
 
