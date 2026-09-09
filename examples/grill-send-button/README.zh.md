@@ -86,13 +86,38 @@ export function buildGrillSend(busy: boolean): string | null {
 
 ## 分发
 
-动态流程证明了行为，但什么都没发布。要把按钮交给别的 profile，得把本目录提升成标准 Client 插件包：`src/client/index.ts` 入口、`dsh.client` manifest 行、重新 build web bundle、重启 profile（发布版 web HMR 默认禁用，新插件必须重启进程）。包布局与 Client 插件机制见 `docs/plugin-package.md` 和 `docs/client-plugin.md`。
+本目录已经同时是一个**独立的 npm 风格包**（教学源码与可安装包同体），包名
+`@smileonroad/dsh-grill-send-button`，标记为 `dsh.client` 的浏览器插件，安装后在 web 输入栏加 ⚡ Grill。
+
+**包级门禁（源码在 `scripts/`）**
+
+```sh
+npm install         # 装 devDependency esbuild（构建用）
+npm run build       # TS → ESM，产出 lib/client.js 与 lib/index.js
+npm run verify      # 静态门禁：manifest/exports/dsh.client/产物/./client 运行契约
+```
+
+**行为测试**仍走随示例分发的 vitest 配置（拷进 deepseek-harness 后在其根目录跑，命令见「运行」节）。
+`lib/` 是预构建产物随包提交，安装方不需要任何工具链。
+
+**安装与在 dsh 中使用**
+
+把包装进 dsh 的官方插件安装通道（git 路径或本地目录，`dsh plugin add` 的确切语义以当时命令帮助为准），
+安装后重建 web bundle 并重启 profile，输入栏即出现 ⚡ Grill，点击经 composer 正路发送预设话术，
+消息在飞时按钮禁用。发布版 web HMR 默认禁用，新插件必须重启进程。
+
+包布局与 Client 插件机制见 `docs/plugin-package.md` 与 `docs/client-plugin.md`。
 
 ## 结构
 
 ```text
 grill-send-button/
-├── src/index.ts                    # 插件本体：契约 + apply（零 import）
+├── package.json                    # 独立包 manifest（dsh.client / exports ./client）
+├── src/index.ts                    # 插件本体：契约 + apply（零 import，TS）
+├── src/host.ts                     # Host 半边空桩（纯 Client 包惯例）
+├── scripts/build.mjs               # esbuild TS→ESM → lib/
+├── scripts/verify.mjs              # 独立包静态门禁
+├── lib/                            # 预构建产物（随包提交，含 client.js）
 ├── tests/grill-send-button.spec.ts # 纯 Node spec，钉死契约
 ├── vitest.examples.config.ts       # 随示例分发的 vitest 配置（在 harness 里跑）
 ├── README.md / README.zh.md        # 本文件，双语

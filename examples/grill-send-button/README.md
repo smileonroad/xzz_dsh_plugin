@@ -144,18 +144,46 @@ work"; it is also why the spec above can stay so small.
 
 ## How to distribute
 
-The dynamic flow proves behaviour but ships nothing. To hand the button to
-other profiles, promote this directory to a standard Client plugin package:
-`src/client/index.ts` entry, a `dsh.client` manifest line, a rebuilt web
-bundle, and a profile restart (web HMR is disabled on release builds, so a new
-plugin needs the process restarted). The package-layout and Client-plugin
-mechanics live in `docs/plugin-package.md` and `docs/client-plugin.md`.
+This directory is also an **independent npm-style package** (teaching source
+and installable package share one home), named
+`@smileonroad/dsh-grill-send-button` and marked as a `dsh.client` browser
+plugin: installed, it adds the ⚡ Grill button to the web chat input.
+
+**Package gates (scripts live in `scripts/`)**
+
+```sh
+npm install         # devDependency esbuild for the build
+npm run build       # TS → ESM, emits lib/client.js and lib/index.js
+npm run verify      # static gates: manifest / exports / dsh.client / artifacts / ./client runtime contract
+```
+
+Behaviour tests still run through the per-example vitest config (copy into
+deepseek-harness and run from its root, see "How to run"). `lib/` is
+prebuilt and ships with the package, so consumers need no toolchain.
+
+**Install and use in dsh**
+
+Install the package through dsh's plugin channel (git path or a local
+directory; pin the exact `dsh plugin add` semantics from its command help at
+install time). After installing, rebuild the web bundle and restart the
+profile: the ⚡ Grill button appears beside the chat input, sends the preset
+phrase through the composer path on click, and disables while a message is in
+flight. Web HMR is disabled on release builds, so a new plugin needs the
+process restarted.
+
+Package-layout and Client-plugin mechanics live in `docs/plugin-package.md`
+and `docs/client-plugin.md`.
 
 ## Structure
 
 ```text
 grill-send-button/
-├── src/index.ts                    # the plugin: contract + apply (no imports)
+├── package.json                    # package manifest (dsh.client / exports ./client)
+├── src/index.ts                    # the plugin: contract + apply (no imports, TS)
+├── src/host.ts                     # empty Host half (pure-Client package convention)
+├── scripts/build.mjs               # esbuild TS→ESM into lib/
+├── scripts/verify.mjs              # independent-package static gates
+├── lib/                            # prebuilt artifacts shipped with the package (client.js etc.)
 ├── tests/grill-send-button.spec.ts # pure Node spec pinning the contract
 ├── vitest.examples.config.ts       # per-example vitest config (run in harness)
 ├── README.md / README.zh.md        # this file, bilingual

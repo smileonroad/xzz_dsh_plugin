@@ -1,0 +1,34 @@
+{
+  "name": "@smileonroad/dsh-grill-send-button",
+  "description": "Adds a ⚡ Grill composer button to dsh web chat that sends a preset phrase through the official input path (Client plugin)",
+  "version": "0.1.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": {
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "default": "./lib/client.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "client": {
+      "platform": "web"
+    }
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "verify": "node scripts/verify.mjs",
+    "test": "echo \"run the example spec from the deepseek-harness root, see README\""
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.12"
+  },
+  "license": "MIT"
+}
