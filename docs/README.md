@@ -7,7 +7,7 @@
 | 想找什么                                 | 去哪里                                                       |
 | ---------------------------------------- | ------------------------------------------------------------ |
 | 插件模型入门（命令/工具/服务/effect）    | [cordis-basics.md](cordis-basics.md)                         |
-| dsh 插件包布局与分发（packages/ 规范）   | [plugin-package.md](plugin-package.md)                       |
+| dsh 插件包布局、独立分发包与官方安装通道 | [plugin-package.md](plugin-package.md)                       |
 | 添加模型工具（工具 vs 命令、执行扩展点） | [adding-a-tool.md](adding-a-tool.md)                         |
 | 插件配置（Schemastery、同名导出、分层）  | [plugin-config.md](plugin-config.md)                         |
 | Client 插件（Web UI 侧）                 | [client-plugin.md](client-plugin.md)                         |
@@ -20,7 +20,7 @@
 
 一个实战 = 一个源码目录（`examples/<项目>/`）+ 一篇经验笔记（`notes/`）。
 
-- `examples/<项目>/` — 完整源码（可独立阅读、可作参考模板），也是**源码权威来源**。测试通过 `@deepseek-ai/dsh-*` 包与根 `tsconfig.json` 加载（`tsx`），须在 deepseek-harness 根目录运行——**验证前先把该目录拷贝到 deepseek-harness 的 `examples/<项目>/`**（覆盖，同名目录可能因旧内容而不同步），再在 deepseek-harness 根目录跑测试或在 web 中用 `--patch` 加载。教学示例无 `package.json`，要分发需提升为标准 bundle。
+- `examples/<项目>/` — 完整源码（可独立阅读、可作参考模板），也是**源码权威来源**。测试通过 `@deepseek-ai/dsh-*` 包与根 `tsconfig.json` 加载（`tsx`），须在 deepseek-harness 根目录运行——**验证前先把该目录拷贝到 deepseek-harness 的 `examples/<项目>/`**（覆盖，同名目录可能因旧内容而不同步），再在 deepseek-harness 根目录跑测试或在 web 中用 `--patch` 加载。`grill-send-button` 已升级为可独立安装的标准 bundle（`package.json` + `cordis.patch.yml`，官方通道安装，见 [plugin-package.md](plugin-package.md)）；其余教学示例无 `package.json`，要分发需先做同样提升。
 - `notes/` — 对外发布的经验总结，面向对 dsh 插件开发感兴趣的读者；文章引用 `examples/` 下的源码作为参考。
 
 **已发布系列：**
@@ -35,7 +35,7 @@
 | 2026-08-24 | 自声明事件实战：奶茶店事件族（declare module + @mode 契约）、五种分发模式全自有声明（serial/bail/parallel 真实语义）、type-only import、事件派生 | [notes/2026-08-24-tea-shop-demo.md](../notes/2026-08-24-tea-shop-demo.md) | [examples/tea-shop-demo/](../examples/tea-shop-demo/) |
 | 2026-08-26 | approval 应答者实战：传达室自动审批（allow/deny 名单 + prepend 层序）、approval/request 三角色与 fail-closed、审计对与会话策略 | [notes/2026-08-26-gatehouse-demo.md](../notes/2026-08-26-gatehouse-demo.md) | [examples/gatehouse-demo/](../examples/gatehouse-demo/) |
 | 2026-09-02 | Client 对话节点实战：洗衣店卡片（可重放 session 事件 + Conversation Node Definition + keyed 聊天渲染器，纯投影测试） | [notes/2026-09-02-laundry-demo.md](../notes/2026-09-02-laundry-demo.md) | [examples/laundry-demo/](../examples/laundry-demo/) |
-| 2026-09-07 | 纯 Client 插件实战：输入栏加按钮（list 槽新增 vs 替换、slots.inject、standard props 的 inputActions、busy 纯函数闸门、动态插件零重启验证） | [notes/2026-09-07-grill-send-button.md](../notes/2026-09-07-grill-send-button.md) | [examples/grill-send-button/](../examples/grill-send-button/) |
+| 2026-09-07 | 纯 Client 插件实战：输入栏加按钮（list 槽新增 vs 替换、slots.inject、standard props 的 inputActions、busy 纯函数闸门、动态插件零重启验证；9-9 补记提升为独立标准包、官方通道装进 profile、`__ModuleLoader__` 产物坑） | [notes/2026-09-07-grill-send-button.md](../notes/2026-09-07-grill-send-button.md) | [examples/grill-send-button/](../examples/grill-send-button/) |
 | 2026-09-09 | Client + Host 双端联动实战：💡 推荐开关与 LLM 追问胶囊（host.call↔harness.handle、readSession 取正文、session.running 边沿触发、reasoningEffort off、notOld/isJunkTip、26 版动态迭代） | [notes/2026-09-09-reply-tips.md](../notes/2026-09-09-reply-tips.md) | [examples/reply-tips/](../examples/reply-tips/) |
 
 ## 开发流程速记（helloworld / sql-check-tool 实战印证）
@@ -44,7 +44,7 @@
 2. 用 `--patch <file>.yml` 把插件行 insert 进 profile 的组合树。entry 的 `name` 相对 profile 目录（`~/.dsh/profiles/<profile>/`）解析，不是 patch 文件位置：免绝对路径的做法是 profile 目录下建 junction 指向 deepseek-harness 后写 `./examples/...`（本仓库 patch 默认如此），或设 `DSH_HOME` 同盘写 `../../` 跳转；写绝对路径时 Windows 要 `file:///D:/...` 前缀（裸 `E:/...` 会被当成 URL scheme `e:` 报错）。
 3. **web 的 HMR 默认禁用**：加新插件必须重启 web 进程。
 4. 测试：`pnpm exec vitest run --config examples/<项目>/vitest.examples.config.ts ... --disableConsoleIntercept --silent=false`（harness 的 vitest 工作区已不含 examples/，用随示例分发的临时配置；vitest 默认拦 console，调试要透传）。
-5. 分发：升级为 `packages/` 下的标准 bundle（带 `dsh.bundle.patch`），`dsh plugin --profile <name> add ...` 安装。
+5. 分发：把示例提升为**独立标准包**（`package.json` 声明 `dsh.bundle.patch` 与 `dsh.client`、自带 `cordis.patch.yml`、预构建 `lib/`、`files` 收口），经官方通道 `dsh plugin --profile web add <本地目录|git|npm|tarball>` 装进 profile（参数转发 pnpm + reconcile 只激活声明 `dsh.bundle` 的依赖），**重启 web 进程生效**。浏览器半边产物必须是 `window.__ModuleLoader__.load(...)` 工厂格式（裸 ESM 会整批加载失败）。机制见 [plugin-package.md](plugin-package.md)。
 
 ## 关键源码位置（deepseek-harness 内）
 
@@ -54,6 +54,9 @@
 - `vendor/cordis/` — Cordis 框架本体（vendored 源码）
 - `docs/user/develop/basic/` — 「第一个 Harness 插件」系列教程（config / tool / publish）
 - `docs/cookbook/` — 实操手册（adding-a-package / adding-a-tool / …）
+- `apps/cli/src/plugin.ts` + `args.ts` — `dsh plugin add` 实现（pnpm 转发 + `dsh.profile.bundles` reconcile + 本地 spec 锚定）
+- `vendor/loader/src/` — Cordis Loader（patch 行挂载、`exports.default ?? exports` 解包）
+- `packages/client/modules/src/` — web client-modules：扫 loader 条目、组合 `__DSH_BOOT__`、浏览器产物要求 `__ModuleLoader__.load` 登记
 
 ## 摘要 ↔ 上游配对
 
@@ -70,10 +73,12 @@ git hash-object docs/cordis-basics.md reference/cordis-primer.zh.md ...
 | ------------------------ | ------------------------------------------------------------ | --------- | --------- | ----- |
 | `docs/cordis-basics.md`  | `reference/cordis-primer.zh.md`                              | 7cf57c2   | 9990736   | ✓     |
 | `docs/adding-a-tool.md`  | `reference/cookbook/adding-a-tool.zh.md`                     | 60c09e0   | 6a24d5d   | ✓     |
-| `docs/plugin-package.md` | `reference/cookbook/adding-a-package.zh.md`                  | c8e77c0   | c6d0918   | ✓     |
+| `docs/plugin-package.md` | `reference/cookbook/adding-a-package.zh.md`                  | 5567010   | c6d0918   | ✓     |
 | `docs/plugin-config.md` | `reference/basic/config.md`（deepseek-harness `docs/user/develop/basic/config.md` 双语副本） | 8fa986b | d935fc3 / 642a413 | ✓     |
-| `docs/client-plugin.md`  | `reference/cookbook/adding-a-conversation-node.zh.md`（部分）+ deepseek-harness `packages/client/AGENTS.md` | 6fc508e   | 2986f69   | ✓     |
+| `docs/client-plugin.md`  | `reference/cookbook/adding-a-conversation-node.zh.md`（部分）+ deepseek-harness `packages/client/AGENTS.md` | e65cf35   | 2986f69   | ✓     |
 
 > `docs/client-plugin.md` 还参考了 deepseek-harness 侧的 `packages/client/AGENTS.md`、`apps/web/`、`packages/client/modules/`、`packages/client/hmr/` 等；hash 只覆盖本仓库内的原文。摘要对 deepseek-harness 文件的引用更新时，修改本表备注。
+>
+> `docs/plugin-package.md` 的独立分发语义另参考 deepseek-harness `docs/user/develop/basic/publish.md` 与 `apps/cli/src/plugin.ts`（源码位于 deepseek-harness，不在本仓库，hash 不配对）。
 >
 > 新增 `docs/*.md` 摘要时，在此登记一行并重记 hash。

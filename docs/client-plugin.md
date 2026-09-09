@@ -68,3 +68,7 @@
 - 覆盖率：client 源码包在逐文件 100% 门禁内；组件 spec 用真实 props 或驱动 fixture runtime，断言用户可见行为；jsdom 环境用文件头 `// @vitest-environment jsdom` pragma。
 - 目录制：一个 UI 功能 = 一个插件包（`src/client/` 浏览器半边），多域包按 `ui-conversation` 模式分 `contract/` + 域目录 + 单一 `apply.ts` 装配点。
 - 文案中文、代码注释英文；样式用共享 `--dsw-*` token + CSS Modules，无组件库无 Tailwind。
+
+### 双面包与产物格式（互补）
+
+上文是仓库内 Client 包的开发纪律。把插件**独立分发**还差两层壳，细节在 [plugin-package.md](plugin-package.md)「独立分发包」一节：`package.json` 的 `dsh.client` + `./client` 导出 + 空的 node 半边 `.`（能被 loader 挂载），以及浏览器产物必须是 `window.__ModuleLoader__.load({ id, factory })` 工厂格式（裸 ESM 从不登记，整批 combo 报 `loaded without registering`，grill-send-button 实战实测踩过）。
