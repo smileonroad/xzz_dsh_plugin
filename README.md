@@ -37,7 +37,9 @@ xzz-dsh-plugin/
     ├── events-demo/              # practice #5: typed events on real harness events (tools waterfall + commands/change)
     ├── tea-shop-demo/            # practice #6: self-declared events (milk-tea shop event family, all five modes)
     ├── gatehouse-demo/           # practice #7: approval/request answerer (gatehouse auto-approval + prepend layer story)
-    └── laundry-demo/             # practice #8: Client conversation node (laundromat card — session events folded by a browser Definition)
+    ├── laundry-demo/             # practice #8: Client conversation node (laundromat card — session events folded by a browser Definition)
+    ├── grill-send-button/        # practice #9: pure Client composer button (slot add vs replace, slots.inject, inputActions submit)
+    └── reply-tips/               # practice #10: Client+Host Recommend toggle + LLM follow-up pills (private RPC, readSession, running-edge refresh)
 ```
 
 **Master index: [docs/README.md](docs/README.md)** (summary catalog +
@@ -62,6 +64,8 @@ surfaces (headless / acp / jsonrpc / web / schedule) and is indexed at
 | 2026-08-24 | self-declared events: milk-tea shop event family (declare module + @mode contract), all five modes with real semantics, type-only import, event derivation | [2026-08-24-tea-shop-demo.md](notes/2026-08-24-tea-shop-demo.md) |
 | 2026-08-26 | approval answerer: gatehouse auto-approval (allow/deny lists + prepend layer order), the approval/request roles and fail-closed outcomes, audit pair and session policy | [2026-08-26-gatehouse-demo.md](notes/2026-08-26-gatehouse-demo.md) |
 | 2026-09-02 | Client conversation node: laundromat card (durable session events + Conversation Node Definition + keyed chat renderer, pure-projection tests) | [2026-09-02-laundry-demo.md](notes/2026-09-02-laundry-demo.md) |
+| 2026-09-07 | pure Client plugin: composer button (list-slot add vs replace, slots.inject, inputActions submit path, busy pure guard, dynamic-plugin verification) | [2026-09-07-grill-send-button.md](notes/2026-09-07-grill-send-button.md) |
+| 2026-09-09 | Client+Host pair: Recommend toggle + LLM follow-up pills (private RPC, readSession content, session.running-edge refresh, thinking-off generation, stale-cache and junk-tip guards) | [2026-09-09-reply-tips.md](notes/2026-09-09-reply-tips.md) |
 
 ## What is DeepSeek Harness (dsh)
 
