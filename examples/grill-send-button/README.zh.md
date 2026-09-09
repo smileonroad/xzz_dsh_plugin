@@ -86,8 +86,8 @@ export function buildGrillSend(busy: boolean): string | null {
 
 ## 分发
 
-本目录已经同时是一个**独立的 npm 风格包**（教学源码与可安装包同体），包名
-`@smileonroad/dsh-grill-send-button`，标记为 `dsh.client` 的浏览器插件，安装后在 web 输入栏加 ⚡ Grill。
+本目录已经同时是一个**可独立安装的 npm bundle**（教学源码与可安装包同体），包名
+`@smileonroad/dsh-grill-send-button`，声明 `dsh.client` + `dsh.bundle`，安装后在 web 输入栏加 ⚡ Grill。
 
 **包级门禁（源码在 `scripts/`）**
 
@@ -102,9 +102,35 @@ npm run verify      # 静态门禁：manifest/exports/dsh.client/产物/./client
 
 **安装与在 dsh 中使用**
 
-把包装进 dsh 的官方插件安装通道（git 路径或本地目录，`dsh plugin add` 的确切语义以当时命令帮助为准），
-安装后重建 web bundle 并重启 profile，输入栏即出现 ⚡ Grill，点击经 composer 正路发送预设话术，
-消息在飞时按钮禁用。发布版 web HMR 默认禁用，新插件必须重启进程。
+本包同时声明了 `dsh.bundle`，所以它走的是 dsh 官方安装通道。装进某个 profile
+后，包自带的 `cordis.patch.yml` 会作为一层补丁挂进启动树（行内 `name` 指向包自身，
+Node 解析到安装后的代码）；浏览器半边则由 web 的 client-modules 服务按 `dsh.client`
+声明自动注入 `window.__DSH_BOOT__`。安装命令：
+
+```sh
+# 从 xzz-dsh-plugin 仓库根目录执行；相对路径以你敲命令的目录为锚
+dsh plugin --profile web add ./examples/grill-send-button
+```
+
+`dsh plugin --profile <name> add <spec>` 把剩余参数原样转发给 profile 目录里的
+pnpm，装完做一次 reconcile：**声明了 `dsh.bundle` 的依赖**被追加进
+`dsh.profile.bundles` 层列表并激活；没声明的照装，但只当普通依赖并打警告。
+spec 可以是 pnpm 支持的任意形式：本地目录（`.` / `../` / `file:` / `link:`）、
+npm 包名、git（`github:` / `git+ssh:`，可钉 `#commit`）、tarball。本包命中激活条件：
+
+| 条件 | 本包 |
+|---|---|
+| `dsh.bundle.patch` 指向 `cordis.patch.yml` | ✅ reconcile 判定为 bundle |
+| `cordis.patch.yml` 插入一行 `id: grill-send-button`、`name: '@smileonroad/dsh-grill-send-button'` | ✅ 挂载 node 半边 `lib/index.js`（空桩） |
+| `dsh.client {platform:'web'}` + `exports["./client"]` | ✅ client-modules 把浏览器半边注进启动图 |
+
+装完**必须重启 web 进程**：bundle 层列表在 boot 时读取，`patchReload: live` 只热重载
+profile 自己的 `cordis.patch.yml`，且 client-modules 的包元数据缓存到重启才失效。
+重启后输入栏出现 ⚡ Grill，行为与「在 GUI 里实测」一致。
+
+> 注：git 安装拉的是仓库源码 —— 本包 `lib/` 已随仓库提交，git 装完立即可用，不需要
+> `prepare` 构建白名单；但包在 monorepo 子目录，git spec 只能装仓库根，跨机器分发请
+> 发布 npm 或拆独立仓库，装 tarball（`pnpm pack`）也行。
 
 包布局与 Client 插件机制见 `docs/plugin-package.md` 与 `docs/client-plugin.md`。
 
@@ -112,7 +138,8 @@ npm run verify      # 静态门禁：manifest/exports/dsh.client/产物/./client
 
 ```text
 grill-send-button/
-├── package.json                    # 独立包 manifest（dsh.client / exports ./client）
+├── package.json                    # 独立包 manifest（dsh.bundle / dsh.client / exports ./client / files）
+├── cordis.patch.yml                # bundle 层：插入一行挂载本包（dsh.bundle.patch 指向它）
 ├── src/index.ts                    # 插件本体：契约 + apply（零 import，TS）
 ├── src/host.ts                     # Host 半边空桩（纯 Client 包惯例）
 ├── scripts/build.mjs               # esbuild TS→ESM → lib/

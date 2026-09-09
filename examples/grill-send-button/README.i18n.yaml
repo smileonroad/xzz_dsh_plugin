@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write examples/grill-send-button/README.md
-README.md: 05653f61f79a93f4144963fc6fdf2f7cdc5b268d
-README.zh.md: 9d24be7072e96e4d28035ece54389f97b159276f
+README.md: d261f80486b28b28520fb2789faa983c82f3b8b4
+README.zh.md: c97fac27858a09b9310eba49d412d7a231e32565

@@ -144,10 +144,10 @@ work"; it is also why the spec above can stay so small.
 
 ## How to distribute
 
-This directory is also an **independent npm-style package** (teaching source
-and installable package share one home), named
-`@smileonroad/dsh-grill-send-button` and marked as a `dsh.client` browser
-plugin: installed, it adds the ⚡ Grill button to the web chat input.
+This directory is also an **independently installable npm bundle** (teaching
+source and installable package share one home), named
+`@smileonroad/dsh-grill-send-button` and declaring both `dsh.client` and
+`dsh.bundle`: installed, it adds the ⚡ Grill button to the web chat input.
 
 **Package gates (scripts live in `scripts/`)**
 
@@ -163,13 +163,45 @@ prebuilt and ships with the package, so consumers need no toolchain.
 
 **Install and use in dsh**
 
-Install the package through dsh's plugin channel (git path or a local
-directory; pin the exact `dsh plugin add` semantics from its command help at
-install time). After installing, rebuild the web bundle and restart the
-profile: the ⚡ Grill button appears beside the chat input, sends the preset
-phrase through the composer path on click, and disables while a message is in
-flight. Web HMR is disabled on release builds, so a new plugin needs the
-process restarted.
+The package declares `dsh.bundle`, so it installs through dsh's official
+plugin channel. Once a profile lists it, the package's own `cordis.patch.yml`
+joins the boot tree as one more configuration layer (its row names the package
+itself, resolved by Node to the installed code), and the web client-modules
+service reads the same package's `dsh.client` declaration to serve the browser
+half into `window.__DSH_BOOT__`:
+
+```sh
+# run from the xzz-dsh-plugin repository root; relative specs anchor to the
+# directory you invoke dsh from
+dsh plugin --profile web add ./examples/grill-send-button
+```
+
+`dsh plugin --profile <name> add <spec>` forwards its remaining arguments
+verbatim to pnpm inside the profile directory, then reconciles the profile:
+a dependency that **declares `dsh.bundle`** is appended to
+`dsh.profile.bundles` and activated; one without it installs as a plain
+dependency with a warning. The spec may be any pnpm-installable form — a local
+directory (`.` / `../` / `file:` / `link:`), an npm name, git
+(`github:` / `git+ssh:`, pinnable with `#commit`), or a tarball. This package
+meets every activation condition:
+
+| Condition | This package |
+|---|---|
+| `dsh.bundle.patch` points at `cordis.patch.yml` | ✅ reconcile classifies it as a bundle |
+| `cordis.patch.yml` inserts a row `id: grill-send-button`, `name: '@smileonroad/dsh-grill-send-button'` | ✅ mounts the node half `lib/index.js` (empty stub) |
+| `dsh.client {platform:'web'}` + `exports["./client"]` | ✅ client-modules injects the browser half into the boot graph |
+
+After installing you **must restart the web process**: the bundle list is read
+at boot, `patchReload: live` hot-reloads only the profile's own
+`cordis.patch.yml`, and client-modules caches package metadata until restart.
+After the restart the ⚡ Grill button appears beside the chat input and behaves
+exactly as described under "Verify live in the GUI".
+
+> Note: a git install fetches repository sources — this package commits its
+> `lib/`, so a git install works as-is with no `prepare`-script allowlist. But
+> the package lives in a monorepo subdirectory, and a git spec can only install
+> a repository root; for cross-machine distribution publish to npm, split a
+> standalone repo, or ship a tarball from `pnpm pack`.
 
 Package-layout and Client-plugin mechanics live in `docs/plugin-package.md`
 and `docs/client-plugin.md`.
@@ -178,7 +210,8 @@ and `docs/client-plugin.md`.
 
 ```text
 grill-send-button/
-├── package.json                    # package manifest (dsh.client / exports ./client)
+├── package.json                    # package manifest (dsh.bundle / dsh.client / exports ./client / files)
+├── cordis.patch.yml                # bundle layer: one row mounting this package (dsh.bundle.patch target)
 ├── src/index.ts                    # the plugin: contract + apply (no imports, TS)
 ├── src/host.ts                     # empty Host half (pure-Client package convention)
 ├── scripts/build.mjs               # esbuild TS→ESM into lib/

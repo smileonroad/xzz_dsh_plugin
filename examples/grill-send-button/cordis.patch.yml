@@ -1,0 +1,15 @@
+# The configuration layer @smileonroad/dsh-grill-send-button contributes when a
+# profile lists it in dsh.profile.bundles (the bundle contract: package.json
+# declares dsh.bundle.patch pointing here; see docs/user/develop/basic/publish.md
+# in deepseek-harness).
+#
+# The row references the package by name, not by a relative source path, so
+# Node resolution finds the installed code wherever the package landed (profile
+# node_modules for an out-of-tree install, the dsh installation for in-box
+# bundles). Mounting `name:` imports the "." entry — lib/index.js, the empty
+# Host half. The web client-modules service then reads the same package's
+# dsh.client declaration and serves the browser half from exports["./client"]
+# into window.__DSH_BOOT__, which is what actually places the ⚡ Grill button.
+- insert:
+    - id: grill-send-button
+      name: '@smileonroad/dsh-grill-send-button'
