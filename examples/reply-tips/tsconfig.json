@@ -1,0 +1,39 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "lib/types"
+  },
+  "include": [
+    "src",
+    "tests"
+  ],
+  "references": [
+    {
+      "path": "../../vendor/cordis"
+    },
+    {
+      "path": "../../vendor/schemastery"
+    },
+    {
+      "path": "../../packages/typert/protocol"
+    },
+    {
+      "path": "../../packages/llm/llm"
+    },
+    {
+      "path": "../../packages/core/session"
+    },
+    {
+      "path": "../../packages/session-query/session-query"
+    },
+    {
+      "path": "../../packages/fs/fs"
+    },
+    {
+      "path": "../../packages/api/remotes"
+    },
+    {
+      "path": "../../packages/api/gateway"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+# The configuration layer @smileonroad/dsh-reply-tips contributes when a profile
+# lists it in dsh.profile.bundles (the bundle contract: package.json declares
+# dsh.bundle.patch pointing here).
+#
+# The row mounts the Host half (the "." entry), which provides the `replyTips`
+# Typert Remote service. The wire manifest is discovered separately: the bundle
+# package exports "./typert", so the typert loader registers it from this very
+# Loader row, and the browser half self-mounts the generated "./remote"
+# contribution before registering its two composer slots.
+- insert:
+    - id: reply-tips
+      name: '@smileonroad/dsh-reply-tips'

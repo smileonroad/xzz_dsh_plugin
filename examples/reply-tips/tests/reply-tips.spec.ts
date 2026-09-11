@@ -1,10 +1,12 @@
 /**
  * reply-tips 纯函数层 spec。
  *
- * 钉住 src/index.ts 里可脱离宿主测试的核心：latestTurnPair 的同轮配对回扫、
- * fallbackTips 规则兜底、buildSuggestionsPrompt 提示词形状、tryParseArray /
- * linesFallback / parseModelOutput 三级解析、withToggle / readToggleFile 开关文件
- * 读写，以及导出契约（name / inject / FILE_NAME）。
+ * 钉住可脱离宿主测试的核心：latestTurnPair 的同轮配对回扫、fallbackTips 规则兜底、
+ * buildSuggestionsPrompt 提示词形状、tryParseArray / linesFallback / parseModelOutput
+ * 三级解析、withToggle / readToggleFile 开关文件读写，以及导出契约。
+ *
+ * 静态包把两侧入口分开：`.`（`src/index.ts`）是 Host 半边，`./client`
+ * （`src/client.ts`）是浏览器半边，`inject` 归客户端半边，Host 的纯函数经 `.` 转出。
  *
  * 与仓库其它 example 同一哲学：测试描述行为——把「现在就是这样工作的」钉死，
  * 包括框架与解析链的反直觉细节（例如同轮配对只认回复之前的最近 user 提问、
@@ -13,7 +15,7 @@
 
 import { describe, expect, it } from 'vitest'
 import {
-  FILE_NAME, buildSuggestionsPrompt, fallbackTips, inject, latestTurnPair, linesFallback,
+  FILE_NAME, buildSuggestionsPrompt, fallbackTips, latestTurnPair, linesFallback,
   name, parseModelOutput, readToggleFile, tryParseArray, withToggle,
   type SessionLike,
 } from '../src/index.ts'
@@ -28,9 +30,8 @@ const assistantMessage = (blocks: Array<{ type: string; text?: string }>, seq = 
 })
 
 describe('导出契约', () => {
-  it('name/inject/FILE_NAME 是给 loader 与 Host 用的固定值', () => {
+  it('name/FILE_NAME 从 Host 入口转出；客户端半边的 inject 由包门禁断言', () => {
     expect(name).toBe('reply-tips')
-    expect(inject).toEqual(['slots'])
     expect(FILE_NAME).toBe('.reply-tips.json')
   })
 })
