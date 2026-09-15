@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { Context } from '@deepseek-ai/cordis'
-import AgentRegistry, { Inbox } from '@deepseek-ai/dsh-agent'
+import AgentRegistry from '@deepseek-ai/dsh-agent'
 import type { Agent, AgentStatus } from '@deepseek-ai/dsh-agent'
 import CommandRuntime from '@deepseek-ai/dsh-commands'
 import SessionStore, { Session, SessionId } from '@deepseek-ai/dsh-session'
@@ -11,22 +11,22 @@ import * as helloworldCommand from '../src/index.ts'
 /** Build a live idle agent the command executor can log lifecycle events on. */
 function stubAgent(ctx: Context, id: string): { agent: Agent; session: Session } {
   const session = ctx.sessions.create(SessionId(id))
-  const inbox = new Inbox(session, { inserted: () => {}, discarded: () => {}, claimed: () => {} })
   let status: AgentStatus = 'idle'
   const agent: Agent = {
     id: session.id,
     options: {},
     session,
-    inbox,
+    // The inbox is now a plain value shape (no runtime class to construct).
+    inbox: { nextTurn: [], nextStep: [] } as never,
     ctx: new Context(),
     get status() { return status },
     send: () => {},
     followup: () => {},
-    steer: () => {},
+    steer: () => ({ outcome: Promise.resolve({ status: 'rejected' as const }) }),
     inject() {},
     cancel() { status = 'idle' },
     runMaintenance: task => task(new AbortController().signal),
-    whenIdle() { return Promise.resolve() },
+    whenIdle: () => Promise.resolve(),
   }
   return { agent, session }
 }
