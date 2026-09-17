@@ -1,12 +1,12 @@
 /**
- * 剧本模型（offline provider）的词汇表。
+ * 离线模型（offline provider）的词汇表。
  *
  * 这些类型只描述「这一轮模型打算说什么」，不涉及任何厂商协议。
  * `script.ts` 从进入的 `GenerateOptions` 推导出一个 `ScriptedTurn`，
  * `adapter.ts` 再把它翻成规范分片流（`StreamChunk`）。
  */
 
-/** 剧本模型声明的一个 provider/model 路由。 */
+/** 离线模型声明的一个 provider/model 路由。 */
 export interface ScriptedModelConfig {
   /** 模型 id，等于 `GenerateOptions.model`。 */
   id: string
@@ -26,8 +26,8 @@ export interface ScriptedModelConfig {
 /**
  * 本轮模型要产生的内容。
  *
- * `failure` / `provider-error` / `empty` / `hang` 是四种失败或异常剧本形态，
- * 分别对应规范协议里不同的错误路径（见 README 的「怎么写剧本」）。
+ * `failure` / `provider-error` / `empty` / `hang` 是四种失败或异常形态，
+ * 分别对应规范协议里不同的错误路径（见 README 的「回答规则怎么写」）。
  */
 export type ScriptedTurn =
   /** 先说一段思考，再说一段可见文本（用来练多块的 index 分配）。 */

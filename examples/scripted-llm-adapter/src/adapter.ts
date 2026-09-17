@@ -1,5 +1,5 @@
 /**
- * 剧本适配器本体：把 `LlmAdapter` 的契约落成一个可运行的提供方。
+ * 离线模型适配器本体：把 `LlmAdapter` 的契约落成一个可运行的提供方。
  *
  * 只实现 `LlmAdapter` 要求的那一个抽象方法 `stream()`，其余三个方法
  * （`providerInfo` / `listModels` / `resolveModel`）按需要覆写，用来演示
@@ -12,7 +12,7 @@ import { EMPTY_RESPONSE_CODE, LlmAdapter, LlmError, ReasoningEffortId } from '@d
 import { planTurn, renderTurn } from './script.ts'
 import type { ScriptedModelConfig } from './types.ts'
 
-/** 取消时用来吵醒挂起剧本的信号；没有 signal 就永远等下去（挂起剧本的本意）。 */
+/** 取消时用来吵醒挂起分支的信号；没有 signal 就永远等下去（挂起分支的本意）。 */
 function interrupted(signal?: AbortSignal): Promise<never> {
   return new Promise((_resolve, reject) => {
     const fail = (): void => reject(new Error('the scripted stream was aborted'))
@@ -93,7 +93,7 @@ export class ScriptedAdapter extends LlmAdapter {
   override async *stream(options: GenerateOptions): AsyncIterable<StreamChunk> {
     this.requests.push(options)
 
-    // 剧本不支持停止序列。官方手册要求这种情况「抛带稳定 code 的错误，不许静默丢弃」。
+    // 离线模型不支持停止序列。官方手册要求这种情况「抛带稳定 code 的错误，不许静默丢弃」。
     if (options.stop !== undefined) {
       throw new LlmError('the scripted provider cannot honour stop sequences', 'UNSUPPORTED_OPTION')
     }
@@ -105,7 +105,7 @@ export class ScriptedAdapter extends LlmAdapter {
     if (turn.kind === 'empty') {
       throw new LlmError('the scripted model returned a completion with no content', EMPTY_RESPONSE_CODE)
     }
-    // 挂起剧本：先发半截内容，再等取消。取消后抛错，由运行时按 signal 归类成 aborted。
+    // 挂起分支：先发半截内容，再等取消。取消后抛错，由运行时按 signal 归类成 aborted。
     if (turn.kind === 'hang') {
       yield { type: 'block-start', index: 0, blockType: 'text' }
       yield { type: 'text-delta', index: 0, text: 'partial' }

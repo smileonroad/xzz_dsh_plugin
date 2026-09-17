@@ -1,10 +1,10 @@
 /**
- * 剧本的纯函数部分：把一次模型请求推导成本轮要说的内容，再翻成规范分片。
+ * 回答规则的纯函数部分：把一次模型请求推导成本轮要说的内容，再翻成规范分片。
  *
  * 这一层不碰网络、不碰 Cordis，只依赖 `@deepseek-ai/dsh-llm` 的类型，
  * 所以可以单独测试，也可以被别的适配器复用（比如把回显换成真的 HTTP 调用）。
  *
- * 剧本指令（写在最后一条人类消息的开头）：
+ * 回答规则（写在最后一条人类消息的开头）：
  *   `think:<内容>`              先说思考块再说文本块
  *   `tool:<名字> <JSON>`        要求调用工具（工具结果回来后回显结果）
  *   `fail:<CODE> <描述>`        适配器抛 LlmError（传输/协议故障路径）
@@ -19,7 +19,7 @@ import type { ContentBlock, GenerateOptions, Message, StreamChunk } from '@deeps
 import { ToolCallId } from '@deepseek-ai/dsh-llm'
 import type { ScriptedTurn } from './types.ts'
 
-/** 回显前缀，一眼分辨这条回复来自剧本而不是真模型。 */
+/** 回显前缀，一眼分辨这条回复来自离线模型而不是真模型。 */
 export const ECHO_PREFIX = '[scripted] '
 
 /** 一条人类消息的开头命令。 */
@@ -78,7 +78,7 @@ function codeAndMessage(rest: string): { code: string; message: string } {
 }
 
 /**
- * 推导本轮剧本。
+ * 推导本轮回答。
  * @param options - 本次模型请求，适配器原样收到的那份。
  * @returns 本轮要说的话。
  */
@@ -119,12 +119,12 @@ export function planTurn(options: GenerateOptions): ScriptedTurn {
 }
 
 /**
- * 把一轮「正常」剧本翻成规范分片。
+ * 把一轮「正常」回答翻成规范分片。
  *
  * 顺序遵守协议义务：块先 `block-start` 再若干 delta，`block-end` 交出拼好的块；
  * 用量在 `finish` 之前；`finish` 之后不再发任何东西。`failure` 与 `hang`
  * 不是分片序列，由适配器单独处理。
- * @param turn - 本轮剧本（只接受正常形态）。
+ * @param turn - 本轮回答（只接受正常形态）。
  * @param options - 本次请求，用于推算用量与工具调用 id。
  * @returns 本轮的分片序列。
  */

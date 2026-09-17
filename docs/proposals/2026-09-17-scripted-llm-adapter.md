@@ -12,7 +12,7 @@
 
 干这件事的东西叫 **LLM 适配器**（LLM adapter）。它的角色像同声传译。harness 内部只认一门语言，叫「规范分片流」，模型说的话必须以规定好的分片形式流回来；而每个厂商（DeepSeek、其他 OpenAI 兼容服务、内部模型）说的都是自家那门语言。适配器站在中间，进去时把 harness 的请求翻成厂商的请求，出来时把厂商的响应翻回规范分片。
 
-我们这次的「厂商」是自己写的剧本模型，整个过程完全离线，所以**任何人都能一键复现**，不需要 API key。
+我们这次的「厂商」是自己写的离线模型，整个过程完全离线，所以**任何人都能一键复现**，不需要 API key。
 
 ## 二、为什么排到这里
 
@@ -99,11 +99,11 @@ export function apply(ctx, config) {
 
 `inject: ['llm']` 保证 `ctx.llm` 就绪才执行 `apply`，这是依赖驱动加载的标准用法（units-capability 那篇讲过）。配置走 Schemastery，理由和 csv-query-tool 那篇一样，用户可以在 cordis.yml 里改，也可以留默认值。注意这里**不要**去读自造的密钥文件，官方手册点名过这一点，需要凭据就走 Schemastery 的环境变量回退。
 
-### 第 2 步：剧本与纯函数
+### 第 2 步：规则与纯函数
 
-这一步是整个示例的教学设计核心。真适配器解析的是 HTTP/SSE，我们解析「剧本」。`src/script.ts` 是一个纯函数模块，输入是「剧本 + 本次收到的 `GenerateOptions`」，输出是「这一轮该发哪些分片」。
+这一步是整个示例的教学设计核心。真适配器解析的是 HTTP/SSE，我们解析「回答规则」。`src/script.ts` 是一个纯函数模块，输入是「规则 + 本次收到的 `GenerateOptions`」，输出是「这一轮该发哪些分片」。
 
-判断规则保持可预测，比如历史里最后一条用户消息是 `tool:ls` 就发一个工具调用块，否则把全文包成 `[scripted] …` 回显。剧本本身支持几种回合类型，普通文本、工具调用、注入失败、故意挂起（用来测取消）。
+判断规则保持可预测，比如历史里最后一条用户消息是 `tool:ls` 就发一个工具调用块，否则把全文包成 `[scripted] …` 回显。规则本身支持几种回合类型，普通文本、工具调用、注入失败、故意挂起（用来测取消）。
 
 之所以不直接对着 `llm-mock-server` 写 HTTP 适配器，是因为那样一半精力会花在 SSE 解析和 HTTP 细节上，而这次要教的**规范分片流契约**会被淹没。HTTP 那一层留作可选进阶（见第五节）。
 
@@ -112,14 +112,14 @@ export function apply(ctx, config) {
 `src/adapter.ts`，一个继承 `LlmAdapter` 的类。
 
 - `providerInfo()` 给出提供方展示信息。
-- `listModels()` 列出剧本里声明过的模型，让模型选择器能看见（是否真被 UI 消费待验证）。
+- `listModels()` 列出规则里声明过的模型，让模型选择器能看见（是否真被 UI 消费待验证）。
 - `resolveModel()` 返回身份 + 上下文窗口 + reasoning 选项，其中 reasoning 列表原样透出，包括 `off`。
 - `stream()` 是重头戏，按契约顺序发分片。文本块是 `block-start` → 若干 `text-delta` → `block-end`，工具调用块用 `tool-call-delta` 传原始 JSON 的增量。收尾统一是 `usage` 然后 `finish`，之后什么都不发。
-- 错误按两条路径分流。剧本里标记为「传输故障」的回合抛 `LlmError` 带稳定 code；标记为「提供方带内故障」的回合以 error finish 收流。
+- 错误按两条路径分流。规则里标记为「传输故障」的回合抛 `LlmError` 带稳定 code；标记为「提供方带内故障」的回合以 error finish 收流。
 - 不支持的字段不静默丢，抛 `UNSUPPORTED_OPTION`。这是官方手册的硬要求，也是最容易偷懒的地方。
-- 全程尊重 `options.signal`，挂起剧本要能在 abort 后立刻停稳。
+- 全程尊重 `options.signal`，挂起分支要能在 abort 后立刻停稳。
 
-目录分层照着 `packages/llm/llm-deepseek/` 的思路来，协议类型、剧本编译、适配器类各管一段，不糊在一个文件里。
+目录分层照着 `packages/llm/llm-deepseek/` 的思路来，协议类型、规则编译、适配器类各管一段，不糊在一个文件里。
 
 ### 第 4 步：零密钥演示
 
@@ -143,11 +143,11 @@ export function apply(ctx, config) {
 
 契约组，钉的是分片顺序与装配结果。文本回合跑完整链路，断言分片顺序和装配出来的消息、usage 都正确。工具调用回合断言增量拼出的参数是原始 JSON 字符串，工具真的被执行，第二轮能拿到工具结果。
 
-故意写错组，钉的是「约束真的存在」。发一个违规剧本（usage 晚于 finish、缺 block-end、index 乱序），断言被 `invariant.ts` 那条监听器拦下。这一组的价值在于，它把文档上的承诺变成了可执行的证据。
+故意写错组，钉的是「约束真的存在」。发一个违规形态（usage 晚于 finish、缺 block-end、index 乱序），断言被 `invariant.ts` 那条监听器拦下。这一组的价值在于，它把文档上的承诺变成了可执行的证据。
 
-错误组，钉的是错误语义。抛 `LlmError` 后消费方看到的是规范化后的终态 finish，且 code 保留；塞一个剧本不支持的字段得到 `UNSUPPORTED_OPTION`；显式指定不支持的 reasoning 强度时，`stream()` 根本还没被调用就已被拒；空响应落到 `EMPTY_RESPONSE`，照抄内核的分类，不自己发明「空就是空」。
+错误组，钉的是错误语义。抛 `LlmError` 后消费方看到的是规范化后的终态 finish，且 code 保留；塞一个离线模型不支持的字段得到 `UNSUPPORTED_OPTION`；显式指定不支持的 reasoning 强度时，`stream()` 根本还没被调用就已被拒；空响应落到 `EMPTY_RESPONSE`，照抄内核的分类，不自己发明「空就是空」。
 
-生命周期组，钉的是注册与取消。同 route 二次注册抛错；`replace()` 换路由过程中没有请求看到空窗；disposer 之后再 `replace` 抛 `REGISTRATION_DISPOSED`；流中途 abort 后终态是 aborted，挂起剧本及时收尾。
+生命周期组，钉的是注册与取消。同 route 二次注册抛错；`replace()` 换路由过程中没有请求看到空窗；disposer 之后再 `replace` 抛 `REGISTRATION_DISPOSED`；流中途 abort 后终态是 aborted，挂起分支及时收尾。
 
 端到端装配优先用 `packages/test-support/agent-loop-testkit`（它的 README 明说「测试仍然负责适配器」，正好就是这次被测的东西），注册语义那几条只依赖 `LlmRuntime`，用最小装配更清楚。
 

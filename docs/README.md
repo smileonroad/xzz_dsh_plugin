@@ -37,7 +37,7 @@
 | 2026-09-02 | Client 对话节点实战：洗衣店卡片（可重放 session 事件 + Conversation Node Definition + keyed 聊天渲染器，纯投影测试） | [notes/2026-09-02-laundry-demo.md](../notes/2026-09-02-laundry-demo.md) | [examples/laundry-demo/](../examples/laundry-demo/) |
 | 2026-09-07 | 纯 Client 插件实战：输入栏加按钮（list 槽新增 vs 替换、slots.inject、standard props 的 inputActions、busy 纯函数闸门、动态插件零重启验证；9-9 补记提升为独立标准包、官方通道装进 profile、`__ModuleLoader__` 产物坑） | [notes/2026-09-07-grill-send-button.md](../notes/2026-09-07-grill-send-button.md) | [examples/grill-send-button/](../examples/grill-send-button/) |
 | 2026-09-09 | Client + Host 双端联动实战：💡 推荐开关与 LLM 追问胶囊（host.call↔harness.handle、readSession 取正文、session.running 边沿触发、reasoningEffort off、notOld/isJunkTip、26 版动态迭代） | [notes/2026-09-09-reply-tips.md](../notes/2026-09-09-reply-tips.md) | [examples/reply-tips/](../examples/reply-tips/) |
-| 2026-09-17 | 模型提供方实战：离线剧本适配器（LlmAdapter 只需实现 stream、规范分片流契约由包不变量强制、抛错被规范化成终态 finish、reasoning 能力在 stream 之前校验、注册与原子 replace）+ 敏感词拦截层（llm/stream 瀑布短路，不调模型也能回答） | [notes/2026-09-17-scripted-llm-adapter.md](../notes/2026-09-17-scripted-llm-adapter.md) | [examples/scripted-llm-adapter/](../examples/scripted-llm-adapter/) |
+| 2026-09-17 | 模型提供方实战：离线模型适配器（LlmAdapter 只需实现 stream、规范分片流契约由包不变量强制、抛错被规范化成终态 finish、reasoning 能力在 stream 之前校验、注册与原子 replace）+ 敏感词拦截层（llm/stream 瀑布短路，不调模型也能回答） | [notes/2026-09-17-scripted-llm-adapter.md](../notes/2026-09-17-scripted-llm-adapter.md) | [examples/scripted-llm-adapter/](../examples/scripted-llm-adapter/) |
 
 ## 开发流程速记（helloworld / sql-check-tool 实战印证）
 

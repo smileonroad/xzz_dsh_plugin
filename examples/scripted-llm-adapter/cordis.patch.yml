@@ -1,4 +1,4 @@
-# 把剧本适配器挂进某个 profile 的 overlay。
+# 把离线模型适配器挂进某个 profile 的 overlay。
 #
 #   pnpm dsh web --patch examples/scripted-llm-adapter/cordis.patch.yml
 #   node demo/run-headless.mjs --patch examples/scripted-llm-adapter/cordis.patch.yml "你好"
@@ -10,7 +10,7 @@
 # `file:///D:/myPI/deepseek-harness/examples/scripted-llm-adapter/src/index.ts`，
 # 裸 `D:/...` 会被当成 URL scheme 报 ERR_UNSUPPORTED_ESM_URL_SCHEME。
 #
-# 第二行把默认模型指到剧本提供方，但**它可能不生效**：`agent-default-model`
+# 第二行把默认模型指到离线提供方，但**它可能不生效**：`agent-default-model`
 # 的值会被 settings 用户层（`$DSH_HOME/settings.yaml`）覆盖，而真实 home 里通常
 # 已经存了用户的模型选择。要一个稳定的离线演示，用本示例自带的
 # `scripts/demo.mjs`（它造一个一次性 DSH_HOME，settings 与 overlay 都在里面）。

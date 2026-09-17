@@ -6,7 +6,7 @@
  *
  * 做法是给这次运行造一个**一次性 DSH_HOME**，在里面同时写两样东西：
  *
- * 1. `settings.yaml` —— 把 `agent-default-model` 指到剧本适配器的 `scripted/demo`。
+ * 1. `settings.yaml` —— 把 `agent-default-model` 指到离线模型适配器的 `scripted/demo`。
  *    这一步不能省：真实的 `~/.dsh/settings.yaml` 里已经有用户的模型选择，
  *    而 settings 是叠在组合配置之上的用户层，直接改 profile 的配置会被它盖掉。
  * 2. 一个 overlay patch —— 把适配器这一行插进组合树。

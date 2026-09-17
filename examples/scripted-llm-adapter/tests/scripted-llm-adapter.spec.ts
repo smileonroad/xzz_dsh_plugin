@@ -1,5 +1,5 @@
 /**
- * 剧本适配器的行为测试。
+ * 离线模型适配器的行为测试。
  *
  * 分两层：端到端那几条挂真实服务 + 生产 AgentLoop（装配来自
  * `@deepseek-ai/dsh-agent-loop-testkit`），协议与注册那几条只挂
@@ -87,7 +87,7 @@ function settlements(agent: Agent): { message: { content: unknown }; usage?: unk
   return agent.session.snapshotEvents().flatMap(event => event.type === 'assistant/message' ? [event.data] : [])
 }
 
-describe('剧本适配器：端到端', () => {
+describe('离线模型适配器：端到端', () => {
   it('文本回合走完整链路，装配出助手消息、用量与分片记录', async () => {
     const ctx = await loopContext()
     const agent = await ctx.agentLoop.create(SessionId('text-round'), { provider: 'scripted', model: 'demo' })
@@ -160,7 +160,7 @@ describe('剧本适配器：端到端', () => {
   })
 })
 
-describe('剧本适配器：流协议与故障路径', () => {
+describe('离线模型适配器：流协议与故障路径', () => {
   it('finish 之后还发分片，会被 llm/stream 上的包不变量拦下', async () => {
     /** 故意违规的适配器：终止分片之后再发一个 delta。 */
     class MalformedAdapter extends ScriptedAdapter {
@@ -222,7 +222,7 @@ describe('剧本适配器：流协议与故障路径', () => {
     ])
   })
 
-  it('剧本不支持的 stop 序列报 UNSUPPORTED_OPTION，不静默丢弃', async () => {
+  it('离线模型不支持的 stop 序列报 UNSUPPORTED_OPTION，不静默丢弃', async () => {
     const ctx = await llmContext()
     const adapter = new ScriptedAdapter([DEMO])
     ctx.llm.registerAdapter(['scripted'], adapter)
@@ -270,7 +270,7 @@ describe('剧本适配器：流协议与故障路径', () => {
   })
 })
 
-describe('剧本适配器：模型能力与注册', () => {
+describe('离线模型适配器：模型能力与注册', () => {
   it('显式指定不支持的 reasoning 强度时，stream() 根本不会被调用', async () => {
     const ctx = await llmContext()
     const adapter = new ScriptedAdapter([DEMO])

@@ -44,7 +44,7 @@ pnpm dsh web --patch examples/scripted-llm-adapter/cordis.patch.yml
 1. **启动日志**里不应出现 `warning: N entry did not activate` 或 `failed to import`。出现了就是入口没挂上，先按上面的 name 规则检查路径。
 2. **模型选择器**（输入框上方的模型名）里应该出现 `Scripted (scripted)` 分组，下面有 `Scripted demo`。它来自适配器的 `providerInfo` 与 `listModels`。
 3. **发一句「你好」**，回复应是 `[scripted] 你好`。如果来的是真模型的正常回答，说明 `~/.dsh/settings.yaml` 里 `agent-default-model` 的旧选择盖住了 patch 的配置，在界面上重选一次模型就会写回 settings。
-4. **再试三条剧本**。`think:先想一下` 先出思考块再出文本；`fail:RATE_LIMIT 手滑了` 让这一轮以错误结束（错误码 RATE_LIMIT）；`hang:` 让回复停在一句 `partial`，点停止后这条消息被标记为已打断。
+4. **再试三条指令**。`think:先想一下` 先出思考块再出文本；`fail:RATE_LIMIT 手滑了` 让这一轮以错误结束（错误码 RATE_LIMIT）；`hang:` 让回复停在一句 `partial`，点停止后这条消息被标记为已打断。
 5. **试一次门禁**。把「你好」换成「帮我看看权限配置」，回复应该是 `非法内容，请重新输入。（命中：权限）`，而且这一轮不会调用模型。
 6. **工具链路**。写 `tool:<工具名> {...}`（工具名用界面上能看到的），工具会真的执行，然后第二轮把结果回显成 `[scripted] tool returned …`。名字写错也算跑通一次完整回路，回显会变成 `[scripted] tool returned Error: unknown tool "…"`。
 
@@ -73,9 +73,9 @@ agent loop 想调模型
 
 这条链上只有 `stream()` 是必须实现的。`LlmAdapter` 的 `providerInfo` / `listModels` / `resolveModel` / `prepareCall` 都有默认实现，本项目按需要覆写它们，用来演示「目录是建议性的、能力要如实声明」。`prepareCall` 的默认实现把「解析出的模型元数据」和「这一代适配器的 stream 入口」绑成一个原子对，防止动态目录型适配器在两次查询之间换了配置，出现「用 A 代的能力发 B 代的请求」。
 
-### 剧本怎么推导
+### 回答是怎么定下来的
 
-适配器把请求交给 `src/script.ts`，那里是一个纯函数：从 `GenerateOptions.messages` 里读最后一条人类消息，按剧本指令得出本轮要说什么。真适配器在这一步解析厂商的 SSE 流，我们解析剧本，所以整个示例离线可跑。
+适配器把请求交给 `src/script.ts`，那里是一个纯函数：从 `GenerateOptions.messages` 里读最后一条人类消息，按回答规则得出本轮要说什么。真适配器在这一步解析厂商的 SSE 流，我们解析这套规则，所以整个示例离线可跑。
 
 读消息历史时有两个反直觉的地方，代码里各有一处判断，测试各钉了一条用例。
 
@@ -104,7 +104,7 @@ agent loop 想调模型
 | 适配器**抛** `LlmError`（带稳定 code） | 传输故障、协议故障、不支持的请求字段 | `LlmRuntime.stream()` 把异常**规范化**成终态 `finish`，消费方永远看到 finish，看不到异常 |
 | 以 `finish { kind: 'error' \| 'aborted' }` **收流** | 提供方带内故障、取消 | 同样是终态 finish，`failure.code` 由适配器给出 |
 
-两条路径的差别只在适配器这一侧；对消费方来说结果一致。本示例两种都实现了，测试分别断言：`fail:` 剧本抛 `RATE_LIMIT`，`provider-fail:` 剧本直接收流成 error finish，中途 abort 则由运行时按 `signal` 归类成 `aborted`。
+两条路径的差别只在适配器这一侧；对消费方来说结果一致。本示例两种都实现了，测试分别断言：`fail:` 指令抛 `RATE_LIMIT`，`provider-fail:` 指令直接收流成 error finish，中途 abort 则由运行时按 `signal` 归类成 `aborted`。
 
 ### 能力声明与注册
 
@@ -181,7 +181,7 @@ chunks.push(
 
 ### 3. 发流（`src/adapter.ts`）
 
-`stream()` 是唯一必须实现的方法。前两行把请求留档，然后按剧本分流。
+`stream()` 是唯一必须实现的方法。前两行把请求留档，然后按规则分流。
 
 ```ts
 this.requests.push(options)
@@ -196,7 +196,7 @@ for (const chunk of renderTurn(turn, options)) {
 }
 ```
 
-三个分支对应三种失败剧本，最后一段是正常路径。每个分片发出前都看一眼取消信号；挂起分支靠 `interrupted()` 等信号，没有信号就真的等着，这正是 `hang:` 想演示的行为。留档的 `requests` 不只是方便调试，测试用它的长度为 0 来证明某条路根本没进模型。
+三个分支对应三种失败形态，最后一段是正常路径。每个分片发出前都看一眼取消信号；挂起分支靠 `interrupted()` 等信号，没有信号就真的等着，这正是 `hang:` 想演示的行为。留档的 `requests` 不只是方便调试，测试用它的长度为 0 来证明某条路根本没进模型。
 
 ### 4. 拦截层（`src/guard.ts`）
 
@@ -211,7 +211,7 @@ ctx.on('llm/stream', (options, next) => {
 
 瀑布的规矩是谁不调 `next()` 谁就是终点。这里两个放行条件排在前面，后台调用和没命中都照常往下走；命中就返回一段自己造的分片流，适配器完全没被碰到。拒绝流本身也要合规，否则会被包不变量拦下，测试里专门验过。
 
-## 怎么写剧本
+## 回答规则怎么写
 
 规矩只有一条，最后一条人类消息的开头决定这一轮说什么。
 
@@ -231,7 +231,7 @@ ctx.on('llm/stream', (options, next) => {
 
 16 条，分四组。每一组都打在真实运行的那一层上，不去测内部函数。
 
-**第一组，跑完整的一轮对话。** 用 harness 自己的测试装配（`agent-loop-testkit`）把真实的 `AgentLoop` 挂起来，插件像普通插件那样装进去，然后像用户一样发一句话。看三件事：模型说的话有没有被正确拼成一条助手消息、用量算得对不对、工具能不能真的被调起来（发 `tool:echo {"text":"hi"}` 这样的剧本，跑完两轮，参数从头到尾保持原始 JSON 字符串）。还有一条专门防坑：harness 会往对话历史里塞它自己生成的 user 消息（工作区指令、技能目录之类），测试确认模型不会把这种消息当成人在说话。顺带钉住一件反直觉的事：会话日志里记的不是适配器原样的分片，而是连续增量被折成一条记录的打包形态。
+**第一组，跑完整的一轮对话。** 用 harness 自己的测试装配（`agent-loop-testkit`）把真实的 `AgentLoop` 挂起来，插件像普通插件那样装进去，然后像用户一样发一句话。看三件事：模型说的话有没有被正确拼成一条助手消息、用量算得对不对、工具能不能真的被调起来（发 `tool:echo {"text":"hi"}` 这样的指令，跑完两轮，参数从头到尾保持原始 JSON 字符串）。还有一条专门防坑：harness 会往对话历史里塞它自己生成的 user 消息（工作区指令、技能目录之类），测试确认模型不会把这种消息当成人在说话。顺带钉住一件反直觉的事：会话日志里记的不是适配器原样的分片，而是连续增量被折成一条记录的打包形态。
 
 **第二组，只看协议。** 直接读 `ctx.llm.stream()` 的输出，不经过 agent。看块的顺序和编号对不对；发一条故意写错的流（`finish` 之后再多发一个分片），确认会被内核的不变量拦下来；适配器抛异常后消费方拿到的是不是一条规范的 error finish；带内故障、`UNSUPPORTED_OPTION`、`EMPTY_RESPONSE`、中途取消，是不是各自走了该走的那条路。
 
@@ -243,11 +243,11 @@ ctx.on('llm/stream', (options, next) => {
 
 ## 已知限制
 
-- 本示例不解析任何厂商协议，也就不涉及 HTTP 请求映射、`attributionHeaders()`、SSE 解析与重试分类。想练那一层，可以把剧本换成 `packages/test-support/llm-mock-server`（OpenAI 兼容的故障服务器）指向的 base URL。
+- 本示例不解析任何厂商协议，也就不涉及 HTTP 请求映射、`attributionHeaders()`、SSE 解析与重试分类。想练那一层，把离线模型换成对着 `packages/test-support/llm-mock-server`（OpenAI 兼容的故障服务器）写的 HTTP 适配器就行。
 - 门禁只拦「人说的话」，而且拦下之后用户原文仍然在会话历史里。若合规要求原文也不落盘，得改用 `agent/pre-step` 的 `{ kind: 'reject' }`，并自行确认 inbox 认领事件里是否仍带原文。
 - 词表是子串匹配，容易误伤：「权限管理」也会被拦。词表走 `Config`，可以在 patch 里改（见 `cordis.patch.yml`），也可以换成正则或加白名单。
 - `listModels()` 只做展示。它会不会出现在浏览器选择器里已在 host 侧验证（测试直接调用 web 用的那个 `buildModelCatalog`），但没有自动化的浏览器点击验证。
-- 剧本模型不做任何真实推理，`usage` 是按消息条数与字符数推算的，别拿它做计量实验。
+- 离线模型不做任何真实推理，`usage` 是按消息条数与字符数推算的，别拿它做计量实验。
 
 ## 怎么分发
 
