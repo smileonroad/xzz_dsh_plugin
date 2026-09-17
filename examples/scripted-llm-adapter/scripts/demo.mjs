@@ -27,7 +27,12 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const harness = resolve(process.env.DSH_HARNESS ?? join(root, '..', '..'))
 const bin = join(harness, 'apps', 'cli', 'src', 'bin.ts')
-const entry = join(harness, 'examples', 'scripted-llm-adapter', 'src', 'index.ts')
+const example = join(harness, 'examples', 'scripted-llm-adapter')
+/** 这次演示要挂的两个插件：提供方本体，和它前面的敏感词拦截层。 */
+const entries = [
+  ['scripted-llm', 'src/index.ts'],
+  ['prompt-guard', 'src/guard.ts'],
+]
 const task = process.argv.slice(2).join(' ') || '你好，介绍一下你自己'
 
 function fail(message) {
@@ -38,8 +43,8 @@ function fail(message) {
 if (!existsSync(bin)) {
   fail(`没找到 harness 的 CLI（${bin}）。本示例所在目录的上两级不是一个 harness checkout 时，请设 DSH_HARNESS 指向它`)
 }
-if (!existsSync(entry)) {
-  fail(`没找到 ${entry}。先把本仓库的 examples/scripted-llm-adapter 整个拷到 harness 的 examples/ 下再跑`)
+if (!existsSync(join(example, 'src', 'index.ts'))) {
+  fail(`没找到 ${example}。先把本仓库的 examples/scripted-llm-adapter 整个拷到 harness 的 examples/ 下再跑`)
 }
 
 // tsx 从 harness 解析，这样调用者的工作目录可以保持不变（也就是 agent 的工作目录）。
@@ -55,13 +60,15 @@ const tsx = (() => {
 const home = mkdtempSync(join(tmpdir(), 'dsh-scripted-'))
 const patch = join(home, 'scripted.patch.yml')
 
-// 入口名用 file:// URL：patch 行里的相对路径是按 profile 目录解析的，
+// 入口名用 file:// URL：patch 行里的相对路径是按 patch 文件所在目录解析的，
 // 这个临时 home 里并没有 examples 目录，写绝对 URL 最省事（Windows 也认）。
 writeFileSync(patch, [
   '# 由 examples/scripted-llm-adapter/scripts/demo.mjs 生成的一次性 overlay。',
   '- insert:',
-  '    - id: scripted-llm',
-  `      name: '${pathToFileURL(entry).href}'`,
+  ...entries.flatMap(([id, relative]) => [
+    `    - id: ${id}`,
+    `      name: '${pathToFileURL(join(example, relative)).href}'`,
+  ]),
   '',
 ].join('\n'))
 

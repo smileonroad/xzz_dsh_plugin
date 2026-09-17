@@ -21,6 +21,7 @@ pnpm exec vitest run --config examples/scripted-llm-adapter/vitest.examples.conf
 
 # 2b. Offline demo: no key, no network, and your real ~/.dsh is untouched
 node examples/scripted-llm-adapter/scripts/demo.mjs "hello"
+node examples/scripted-llm-adapter/scripts/demo.mjs "check the permission config"   # blocked words, no model call
 
 # 2c. Mount it into the web UI (optional; published web disables HMR, restart the process)
 pnpm dsh web --patch examples/scripted-llm-adapter/cordis.patch.yml
@@ -44,7 +45,8 @@ Once it is running, check these in order; each one has a clear expectation.
 2. The **model selector** (the model name above the composer) should list a `Scripted (scripted)` group containing `Scripted demo`. Both come from the adapter's `providerInfo` and `listModels`.
 3. **Send `hello`** and the reply should be `[scripted] hello`. If a real model answers normally instead, the old `agent-default-model` value in `~/.dsh/settings.yaml` is overriding the patch; picking the scripted model once in the UI writes the selection back to settings.
 4. **Try three more scripts.** `think:think first` emits a reasoning block before the text; `fail:RATE_LIMIT slipped` ends the turn as an error (code `RATE_LIMIT`); `hang:` stops the reply after `partial`, and pressing stop marks that message as interrupted.
-5. **The tool round trip.** Write `tool:<tool name> {...}` using a name visible in the UI: the tool really runs, and the second round echoes the result as `[scripted] tool returned …`. Getting the name wrong still exercises the whole loop, with the echo reading `[scripted] tool returned Error: unknown tool "…"`.
+5. **Try the guard.** Replace `hello` with a message containing a blocked word; the configured refusal comes back and no model call happens.
+6. **The tool round trip.** Write `tool:<tool name> {...}` using a name visible in the UI: the tool really runs, and the second round echoes the result as `[scripted] tool returned …`. Getting the name wrong still exercises the whole loop, with the echo reading `[scripted] tool returned Error: unknown tool "…"`.
 
 ## Design
 
@@ -110,6 +112,22 @@ What `resolveModel()` declares is genuinely validated. When reasoning capability
 
 Registration has its own rules worth remembering. One route can hold only one adapter, and a duplicate registration throws `DUPLICATE_ADAPTER`; registering several routes either succeeds entirely or fails entirely; the returned handle can be disposed and also supports `replace()` for an atomic route swap that validates everything first and swaps in one synchronous section, leaving no window; calling `replace` after disposal throws `REGISTRATION_DISPOSED`. Registration is a side effect owned by the plugin lifetime, so HMR is safe.
 
+### Interception: answering without a model call
+
+Step ① in the diagram above is a waterfall, so a plugin can wrap the model call or skip it entirely. This example uses that for a blocked-word guard (`src/guard.ts`): when the input contains a word such as "permission" or "password", the guard answers with a configured refusal and the adapter is never called.
+
+That policy deliberately does not live inside the adapter, because a policy should not grow on the provider. Swap in a real model and the adapter changes, while the guard has nothing to do with which model answers; "before the model call" is where it belongs.
+
+| What you want | Which extension point | What it costs |
+| --- | --- | --- |
+| Answer with your own text and skip the model | The `llm/stream` waterfall (what this example does) | The answer must be a valid chunk stream; the user's original text still enters the session |
+| Swallow the step silently | `agent/pre-step` returning `{ kind: 'reject' }` | The turn ends as `blocked`; the original text still produces inbox events |
+| Rewrite and let it through (redaction, added context) | `agent/pre-step` returning `{ kind: 'enter', messages }` | The model is still called, just with rewritten content |
+
+Three implementation details are worth remembering. First, the guard inspects the last thing a person said; tool results and harness-injected user messages do not count (both traps are already handled by `lastUserText()`). Second, a non-empty `options.purpose` marks a background call such as compaction or session titling, which must pass through or it gets interrupted. Third, the refusal has to be a **valid** chunk stream, since it goes through the same validation as adapter output; the spec runs it under the package invariant to prove that. No model call happened, so no `usage` is reported.
+
+> **Deeper: why the guard can pass for the model.** To the agent loop, whatever `llm/stream` returns is the answer: it receives canonical text chunks, assembles one assistant message, records it in the session, and the UI renders it. The guard is not lying; it only changes who produced the stream, from a provider API to a local policy. That is also why `llm/stream` is a weighty extension point: retries, compaction, and token accounting all hang off the same place.
+
 ## Script grammar
 
 The start of the last human message decides what this turn says.
@@ -126,7 +144,7 @@ The start of the last human message decides what this turn says.
 
 ## Tests
 
-16 behaviours in four groups. Each group aims at a real runtime boundary rather than at internal functions.
+21 behaviours in five groups. Each group aims at a real runtime boundary rather than at internal functions.
 
 **One full conversation turn.** The harness's own test kit (`agent-loop-testkit`) mounts the production `AgentLoop`, the plugin is installed like any other plugin, and the test sends a message the way a user would. Three things are checked: whether what the model said assembles into one assistant message, whether the usage numbers come out right, and whether a tool can actually be driven (sending a script like `tool:echo {"text":"hi"}` runs two rounds, with the arguments staying a raw JSON string the whole way). One case guards a trap: the harness inserts user-role messages of its own making into the history (workspace instructions, skill catalogs), and the test confirms the model does not mistake one for something a person said. It also pins a counter-intuitive detail: the session log stores the packed form of the stream, where consecutive deltas collapse into one record, not the adapter's raw chunks.
 
@@ -136,9 +154,13 @@ The start of the last human message decides what this turn says.
 
 **Registration.** One route cannot hold two adapters; `replace()` swaps routes atomically, so no request falls through a gap mid-swap; and replacing after disposal throws `REGISTRATION_DISPOSED`.
 
+**The interception layer.** A blocked word returns the refusal text with the adapter never called; a clean message goes to the model as usual; background calls are exempt; a blocked word appearing only inside a tool result does not trip the guard; and the refusal stream itself passes the package invariant.
+
 ## Known limitations
 
 - This example parses no provider protocol, so HTTP request mapping, `attributionHeaders()`, SSE parsing, and retry classification are out of scope. To practise that layer, point the script at the OpenAI-compatible failure server in `packages/test-support/llm-mock-server`.
+- The guard only inspects what a person said, and the original text still lands in the session history. If compliance requires the text itself not to persist, use `agent/pre-step` with `{ kind: 'reject' }` instead, and confirm for yourself whether the inbox claim event still carries it.
+- The word list is substring matching, so it over-triggers: "permission management" is blocked too. The list travels through `Config`, so a patch can change it (see `cordis.patch.yml`); a regex or a whitelist is the next step if you need precision.
 - `listModels()` is display-only. Whether it reaches the browser selector is verified on the host side (the spec calls the same `buildModelCatalog` the web UI uses), but no automated browser click-through covers it.
 - The scripted model does no real inference, and `usage` is derived from message count and character count. Do not use it for measurement experiments.
 

@@ -149,13 +149,13 @@ export function apply(ctx, config) {
 
 端到端装配优先用 `packages/test-support/agent-loop-testkit`（它的 README 明说「测试仍然负责适配器」，正好就是这次被测的东西），注册语义那几条只依赖 `LlmRuntime`，用最小装配更清楚。
 
-**交付物清单**：`examples/scripted-llm-adapter/` 下的 `src/`（四个文件）、`tests/`、`cordis.patch.yml`、双语 README、`vitest.examples.config.ts`，外加 `notes/2026-09-17-scripted-llm-adapter.md` 一篇，以及 `docs/README.md` 索引与配对表的例行更新。
+**交付物清单**：`examples/scripted-llm-adapter/` 下的 `src/`（五个文件：适配器本体四个 + 拦截层 `guard.ts`）、`tests/`、`cordis.patch.yml`、`scripts/demo.mjs`、双语 README、`vitest.examples.config.ts`，外加 `notes/2026-09-17-scripted-llm-adapter.md` 一篇，以及 `docs/README.md` 索引与配对表的例行更新。
 
 ## 五、已定的决策与待查的问题
 
 ### 已定
 
-**范围只做 P1。** 进程内确定性适配器 + 九条测试 + headless 演示 + 笔记。往上的两档留作以后可选，P2 是用 `packages/test-support/llm-mock-server`（OpenAI 兼容的故障服务器）把它升级成真 wire 适配器，教 HTTP 请求映射、`attributionHeaders()`、SSE 解析、重试分类；P3 是再加一个 `llm/stream` 拦截图层，跟 events-demo 呼应。这两档体量都在 P1 之上，等 P1 落地后看手感再定。
+**范围只做 P1，另加一个小的拦截层。** 进程内确定性适配器 + 测试 + headless 演示 + 笔记。开发中确认了一个真实需求（输入含敏感词就回固定文案、不要调模型），它正好是 P3 里那个 `llm/stream` 拦截图层的入门形态，体量很小（一个 `src/guard.ts` + 五条测试），所以直接并进了本实战，P3 剩下的部分（重试、脱敏、计量的包一层玩法）仍留给以后。往上的 P2 仍然可选，用 `packages/test-support/llm-mock-server`（OpenAI 兼容的故障服务器）把它升级成真 wire 适配器，教 HTTP 请求映射、`attributionHeaders()`、SSE 解析、重试分类。
 
 **装配走 testkit。** 端到端那几条用 `packages/test-support/agent-loop-testkit` 的 `mountAgentLoopTestDependencies` 和 `mountAgentLoopTestHarness`，注册语义那几条只依赖 `LlmRuntime`，用最小装配。选 testkit 的代价是服务组合藏在背后，出问题时定位要靠读它的源码，所以开工第一件事就是把它的实际实现读准（见下）。
 

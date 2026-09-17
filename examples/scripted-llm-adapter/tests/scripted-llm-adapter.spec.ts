@@ -15,12 +15,13 @@ import { Context } from '@deepseek-ai/cordis'
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import { mountAgentLoopTestDependencies, mountAgentLoopTestHarness } from '@deepseek-ai/dsh-agent-loop-testkit'
 import type { GenerateOptions, StreamChunk } from '@deepseek-ai/dsh-llm'
-import LlmRuntime, { ReasoningEffortId, createUserMessage } from '@deepseek-ai/dsh-llm'
+import LlmRuntime, { ReasoningEffortId, ToolCallId, createUserMessage } from '@deepseek-ai/dsh-llm'
 import * as LlmInvariant from '@deepseek-ai/dsh-llm/invariant'
 import InvariantRegistry from '@deepseek-ai/dsh-invariants'
 import { SessionId } from '@deepseek-ai/dsh-session'
 import { defineTool } from '@deepseek-ai/dsh-tools'
 import { buildModelCatalog } from '@deepseek-ai/dsh-api-session-controller'
+import * as guard from '../src/guard.ts'
 import * as scripted from '../src/index.ts'
 import { ScriptedAdapter } from '../src/index.ts'
 import type { ScriptedModelConfig } from '../src/index.ts'
@@ -363,5 +364,77 @@ describe('剧本适配器：模型能力与注册', () => {
     })()
     expect(disposed?.code).toBe('REGISTRATION_DISPOSED')
     expect(ctx.llm.listProviders()).toEqual([])
+  })
+})
+
+describe('拦截图层：敏感词门禁', () => {
+  /** 挂上适配器 + 门禁，并留下适配器引用以便断言「模型有没有被调用」。 */
+  async function guardContext(options: { purpose?: GenerateOptions['purpose'] } = {}): Promise<{
+    ctx: Context
+    adapter: ScriptedAdapter
+    stream: (text: string) => Promise<StreamChunk[]>
+  }> {
+    const ctx = await llmContext()
+    const adapter = new ScriptedAdapter([DEMO])
+    ctx.llm.registerAdapter(['scripted'], adapter)
+    await ctx.plugin(guard as never, { words: ['权限', '密码'], refusal: '非法内容，请重新输入。' })
+    return {
+      ctx,
+      adapter,
+      stream: text => drain(ctx.llm.stream({
+        ...seamOptions(text),
+        ...options.purpose === undefined ? {} : { purpose: options.purpose },
+      })),
+    }
+  }
+
+  it('命中敏感词时直接拒绝，适配器一次都不会被调用', async () => {
+    const { adapter, stream } = await guardContext()
+
+    const chunks = await stream('帮我看看这个权限配置')
+
+    expect(chunks.map(chunk => chunk.type)).toEqual(['block-start', 'text-delta', 'block-end', 'finish'])
+    const text = chunks.flatMap(chunk => chunk.type === 'text-delta' ? [chunk.text] : []).join('')
+    expect(text).toBe('非法内容，请重新输入。（命中：权限）')
+    expect(adapter.requests).toHaveLength(0)
+  })
+
+  it('没命中就正常走模型', async () => {
+    const { adapter, stream } = await guardContext()
+
+    const chunks = await stream('你好')
+
+    expect(adapter.requests).toHaveLength(1)
+    expect(chunks.at(-1)).toEqual({ type: 'finish', reason: { kind: 'stop' } })
+  })
+
+  it('后台辅助调用（压缩、起标题）不设门禁', async () => {
+    const { adapter, stream } = await guardContext({ purpose: 'compaction' })
+
+    await stream('把这段权限记录压缩一下')
+
+    expect(adapter.requests).toHaveLength(1)
+  })
+
+  it('敏感词只出现在工具结果里时不拦', async () => {
+    const { ctx, adapter } = await guardContext()
+    const toolResult = createUserMessage({
+      content: [{ type: 'tool-result', toolCallId: ToolCallId('call-1'), content: [{ type: 'text', text: '权限校验通过' }] }],
+      source: { kind: 'user' },
+    })
+
+    await drain(ctx.llm.stream({ ...seamOptions('你好'), messages: [prompt('你好'), toolResult] }))
+
+    expect(adapter.requests).toHaveLength(1)
+  })
+
+  it('拒绝流本身是一段合规的流，包不变量不会拦它', async () => {
+    const ctx = await invariantContext()
+    ctx.llm.registerAdapter(['scripted'], new ScriptedAdapter([DEMO]))
+    await ctx.plugin(guard as never, { words: ['权限'], refusal: '非法内容，请重新输入。' })
+
+    const chunks = await drain(ctx.llm.stream(seamOptions('查一下权限')))
+
+    expect(chunks.at(-1)).toMatchObject({ type: 'finish', reason: { kind: 'stop' } })
   })
 })

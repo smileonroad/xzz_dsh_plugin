@@ -17,6 +17,13 @@
 - insert:
     - id: scripted-llm
       name: './src/index.ts'
+    # 拦截图层：命中词表就不调模型，直接返回自定义文本。词表与文案走插件的
+    # Schemastery Config，所以改词不用改代码。
+    - id: prompt-guard
+      name: './src/guard.ts'
+      config:
+        words: ['权限', '密码', '密钥']
+        refusal: '非法内容，请重新输入。'
 
 - id: agent-default-model
   config:

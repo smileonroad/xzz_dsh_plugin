@@ -21,6 +21,7 @@ pnpm exec vitest run --config examples/scripted-llm-adapter/vitest.examples.conf
 
 # 2b. 离线演示：不用 key、不联网，也不碰你真实的 ~/.dsh
 node examples/scripted-llm-adapter/scripts/demo.mjs "你好"
+node examples/scripted-llm-adapter/scripts/demo.mjs "帮我看看权限配置"   # 命中门禁，不调模型
 
 # 2c. 挂进 web（可选；web 发布版 HMR 默认禁用，要重启进程）
 pnpm dsh web --patch examples/scripted-llm-adapter/cordis.patch.yml
@@ -44,7 +45,8 @@ pnpm dsh web --patch examples/scripted-llm-adapter/cordis.patch.yml
 2. **模型选择器**（输入框上方的模型名）里应该出现 `Scripted (scripted)` 分组，下面有 `Scripted demo`。它来自适配器的 `providerInfo` 与 `listModels`。
 3. **发一句「你好」**，回复应是 `[scripted] 你好`。如果来的是真模型的正常回答，说明 `~/.dsh/settings.yaml` 里 `agent-default-model` 的旧选择盖住了 patch 的配置，在界面上重选一次模型就会写回 settings。
 4. **再试三条剧本**。`think:先想一下` 先出思考块再出文本；`fail:RATE_LIMIT 手滑了` 让这一轮以错误结束（错误码 RATE_LIMIT）；`hang:` 让回复停在一句 `partial`，点停止后这条消息被标记为已打断。
-5. **工具链路**。写 `tool:<工具名> {...}`（工具名用界面上能看到的），工具会真的执行，然后第二轮把结果回显成 `[scripted] tool returned …`。名字写错也算跑通一次完整回路，回显会变成 `[scripted] tool returned Error: unknown tool "…"`。
+5. **试一次门禁**。把「你好」换成「帮我看看权限配置」，回复应该是 `非法内容，请重新输入。（命中：权限）`，而且这一轮不会调用模型。
+6. **工具链路**。写 `tool:<工具名> {...}`（工具名用界面上能看到的），工具会真的执行，然后第二轮把结果回显成 `[scripted] tool returned …`。名字写错也算跑通一次完整回路，回显会变成 `[scripted] tool returned Error: unknown tool "…"`。
 
 ## 设计
 
@@ -110,6 +112,22 @@ agent loop 想调模型
 
 注册的规矩也值得记住。同一个 route 只能有一个适配器，重复注册抛 `DUPLICATE_ADAPTER`；一次注册多个 route 要么全成要么全败；注册返回的句柄除了注销，还有一个 `replace()` 能原子换路由，先整体校验再同步置换，中途没有空窗；句柄释放之后再 `replace` 抛 `REGISTRATION_DISPOSED`。注册本身是副作用，跟着插件生命周期自动回收，所以 HMR 安全。
 
+### 拦截层：不调模型也能回答
+
+上面那张图里的第 ① 步是一条瀑布，插件可以在模型调用外面包一层，甚至根本不往下传。本示例用它做了一个敏感词门禁（`src/guard.ts`）：输入里带「权限」「密码」这类词就直接回一句「非法内容，请重新输入。」，适配器一次都不会被调用。
+
+这段策略没有写进适配器，因为策略不该长在提供方身上。换个真模型，适配器就换了，而门禁与用哪个模型无关，「模型调用之前」才是它的位置。
+
+| 想做的事 | 用哪个扩展点 | 代价 |
+| --- | --- | --- |
+| 命中就返回一句自定义回复，不调模型 | `llm/stream` 瀑布（本示例的做法） | 回复得是一段合规的分片流；用户原文仍会进会话 |
+| 静默吞掉这一步，用户什么也看不到 | `agent/pre-step` 返回 `{ kind: 'reject' }` | 这一轮以 `blocked` 结束；同样阻不住原文产生 inbox 事件 |
+| 改写后再放行（脱敏、补上下文） | `agent/pre-step` 返回 `{ kind: 'enter', messages }` | 模型仍会被调用，只是看到的是改写后的内容 |
+
+三个实现细节值得记一下。第一，判断对象是「最后一条人说的话」，工具结果和 harness 注入的 user 消息都不算（`lastUserText()` 已经处理过这两个坑）。第二，`options.purpose` 非空的是压缩、起标题这类后台调用，必须直接放行，否则会打断它们。第三，拒绝时返回的必须是一段**合规**的分片流（块启停配对、`finish` 收尾），因为它和适配器的产出走同一条校验；测试里特意把它挂在包不变量下跑了一遍。没有发生模型调用，所以不报 `usage`。
+
+> **深入：为什么门禁能「假装」成模型。** 在 agent loop 眼里，`llm/stream` 返回什么就是什么：它拿到一段规范的文本分片流，装配成一条助手消息，记进会话，界面照常渲染。拦截层没有说谎，它只是把「这段流是谁产出的」从厂商 API 换成了本地策略。这也解释了 `llm/stream` 为什么是个有分量的扩展点 —— 重试、压缩、用量计量都挂在同一处。
+
 ## 剧本文法
 
 最后一条人类消息的开头决定这一轮说什么。
@@ -126,6 +144,8 @@ agent loop 想调模型
 
 ## 测试
 
+21 条，分五组。每一组都打在真实运行的那一层上，不去测内部函数。
+
 16 条，分四组。每一组都打在真实运行的那一层上，不去测内部函数。
 
 **第一组，跑完整的一轮对话。** 用 harness 自己的测试装配（`agent-loop-testkit`）把真实的 `AgentLoop` 挂起来，插件像普通插件那样装进去，然后像用户一样发一句话。看三件事：模型说的话有没有被正确拼成一条助手消息、用量算得对不对、工具能不能真的被调起来（发 `tool:echo {"text":"hi"}` 这样的剧本，跑完两轮，参数从头到尾保持原始 JSON 字符串）。还有一条专门防坑：harness 会往对话历史里塞它自己生成的 user 消息（工作区指令、技能目录之类），测试确认模型不会把这种消息当成人在说话。顺带钉住一件反直觉的事：会话日志里记的不是适配器原样的分片，而是连续增量被折成一条记录的打包形态。
@@ -136,9 +156,13 @@ agent loop 想调模型
 
 **第四组，注册。** 同一个路由不能有两个适配器；`replace()` 换路由是原子的，换的过程中没有请求会掉进空窗；句柄释放之后再换会抛 `REGISTRATION_DISPOSED`。
 
+**第五组，拦截层。** 命中词表时返回拒绝文本，且适配器一次都没被调用；没命中就照常走模型；后台辅助调用不设门禁；敏感词只出现在工具结果里时不拦；拒绝流本身能通过包不变量。
+
 ## 已知限制
 
 - 本示例不解析任何厂商协议，也就不涉及 HTTP 请求映射、`attributionHeaders()`、SSE 解析与重试分类。想练那一层，可以把剧本换成 `packages/test-support/llm-mock-server`（OpenAI 兼容的故障服务器）指向的 base URL。
+- 门禁只拦「人说的话」，而且拦下之后用户原文仍然在会话历史里。若合规要求原文也不落盘，得改用 `agent/pre-step` 的 `{ kind: 'reject' }`，并自行确认 inbox 认领事件里是否仍带原文。
+- 词表是子串匹配，容易误伤：「权限管理」也会被拦。词表走 `Config`，可以在 patch 里改（见 `cordis.patch.yml`），也可以换成正则或加白名单。
 - `listModels()` 只做展示。它会不会出现在浏览器选择器里已在 host 侧验证（测试直接调用 web 用的那个 `buildModelCatalog`），但没有自动化的浏览器点击验证。
 - 剧本模型不做任何真实推理，`usage` 是按消息条数与字符数推算的，别拿它做计量实验。
 
