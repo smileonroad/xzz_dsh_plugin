@@ -106,14 +106,27 @@ if (existsSync(join(root, 'lib/typert.remote-client.js'))) {
   }
 }
 
-// Host half: a mountable Cordis plugin.
+// Host half: a mountable Cordis plugin. The artifact keeps its
+// `@deepseek-ai/dsh-*` imports external, so importing it needs the harness
+// workspace resolution (tsx plus the root tsconfig paths). Run this script
+// under tsx from the deepseek-harness root to get the check; a plain `node`
+// run reports it as skipped instead of failing on an unresolvable anchor.
 let host
+let hostSkipped = false
 try {
   host = await import(new URL('../lib/index.js', import.meta.url).href)
 } catch (error) {
-  fail(`"." entry imports as ESM (${error instanceof Error ? error.message : error})`)
+  const message = error instanceof Error ? error.message : String(error)
+  if (/Cannot find package '@deepseek-ai\/dsh-/u.test(message)) {
+    hostSkipped = true
+    console.log('  - "." entry import skipped (needs harness resolution; run: pnpm exec tsx examples/reply-tips/scripts/verify.mjs)')
+  } else {
+    fail(`"." entry imports as ESM (${message})`)
+  }
 }
-if (host) {
+if (hostSkipped) {
+  // Nothing else to assert without the imported module.
+} else if (host) {
   if (host.name === 'reply-tips') ok('"." exports name reply-tips')
   else fail('"." exports name reply-tips')
   if (typeof host.apply === 'function') ok('"." exports apply (Cordis plugin shape)')
