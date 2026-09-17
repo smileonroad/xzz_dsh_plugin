@@ -41,7 +41,7 @@ pnpm dsh web --patch examples/<项目>/<项目>.patch.yml               # 临时
 
 ## 环境特定坑（血泪经验）
 
-- **patch entry 的 `name` 相对 profile 目录解析**（baseUrl 锚定 `~/.dsh/profiles/<profile>/`），不是 patch 文件位置；Windows 绝对路径必须 `file:///` 前缀（裸 `E:/...` 被当 URL scheme 报 `ERR_UNSUPPORTED_ESM_URL_SCHEME`）。免绝对路径三选一（细节见各 patch 文件头注释）：① profile 目录下建 junction（`mklink /J %USERPROFILE%\.dsh\profiles\web\examples <harness>\examples`，无需管理员）；② `DSH_HOME` 同盘写 `../../` 相对跳转；③ 升级 bundle 用 `dsh plugin add` 装包名。
+- **patch entry 的 `name` 相对「声明这一行的 patch 文件所在目录」解析**（2026-09-17 实测：`--patch examples/<项目>/<项目>.patch.yml` 里写 `./examples/<项目>/src/index.ts` 会解析成 `<项目目录>/examples/<项目>/src/index.ts` 而报 `failed to import`）。所以 `examples/<项目>/<项目>.patch.yml` 直接写 `./src/index.ts`，**不需要 junction**；只有 profile 目录里那份 `cordis.patch.yml` 才按 profile 目录解析，那一份写 `./examples/<项目>/...` 时才需要 profile 下的 `examples` junction（`mklink /J %USERPROFILE%\.dsh\profiles\web\examples <harness>\examples`，无需管理员）。Windows 绝对路径必须 `file:///` 前缀（裸 `E:/...` 被当 URL scheme 报 `ERR_UNSUPPORTED_ESM_URL_SCHEME`）；`DSH_HOME` 同盘时也可写 `../../` 相对跳转；升级 bundle 用 `dsh plugin add` 装包名。
 - **web 的 HMR 发布时默认禁用**：加新插件必须重启 web 进程。界面没反应是正常现象，不是 bug。
 - **vitest 默认拦截 console**：调试日志看不到不是没执行，加 `--disableConsoleIntercept --silent=false` 透传。
 

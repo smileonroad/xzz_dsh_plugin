@@ -24,13 +24,9 @@ pnpm dsh web --patch examples/gatehouse-demo/gatehouse.patch.yml
 
 > 注意：web 的 HMR 在发布版默认禁用，加完插件后必须重启 web 进程。
 >
-> 注意：patch 里 entry 的 `name` 是相对**profile 目录**（`~/.dsh/profiles/web/`）解析的，不是相对本文件。`gatehouse.patch.yml` 用的是相对路径 + profile 目录下的 junction；首次使用前建一次 junction（Windows，无需管理员权限）：
+> 注意：patch 里 entry 的 `name` 相对**本 patch 文件所在目录**解析（2026-09-17 实测），所以 `gatehouse.patch.yml` 直接写 `./src/index.ts`，不需要 junction。只有放在 profile 目录里的那份 `cordis.patch.yml` 才按 profile 目录解析，那一份写 `./examples/<项目>/...` 时才需要 profile 下的 examples junction。
 >
-> ```sh
-> cmd //c "mklink /J %USERPROFILE%\.dsh\profiles\web\examples <deepseek-harness>\examples"
-> ```
->
-> 不想用 junction，就改成绝对 `file:///` URL（规则见该文件顶部注释；同盘设 DSH_HOME 相对跳转和 bundle 安装是另外两种做法）。
+> 不想用相对路径就改绝对 `file:///` URL（规则见该 patch 文件顶部注释；只有放在 profile 目录里的那份 patch 才需要 junction）。
 
 在 web 对话框里让模型开储物柜（`use_locker`）：keeper 的 allow 名单直接放行，工具照常执行。试试金库（`open_vault`）：当场拒绝。再试试实验室（`use_lab`）：不在名单上，web UI 应答者在浏览器里弹窗问真人。
 

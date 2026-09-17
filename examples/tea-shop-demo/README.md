@@ -39,14 +39,7 @@ pnpm dsh web --patch examples/tea-shop-demo/tea-shop.patch.yml
 > the test suite. The patch file exists in case you want the demo shop
 > running on a live instance.
 >
-> Note: an entry's `name` in a patch resolves against the **profile directory**
-> (`~/.dsh/profiles/web/`), not against this file. `tea-shop.patch.yml` uses a
-> relative path plus a junction under the profile directory; create the
-> junction once before first use (Windows, no admin rights):
->
-> ```sh
-> cmd //c "mklink /J %USERPROFILE%\.dsh\profiles\web\examples <deepseek-harness>\examples"
-> ```
+> Note: an entry's `name` in a patch resolves against **the directory of that patch file** (measured 2026-09-17), so `tea-shop.patch.yml` writes `./src/index.ts` and needs no junction. Only the profile's own `cordis.patch.yml` resolves against the profile directory, and that is the file that needs an `examples` junction when it writes `./examples/<name>/...`.
 
 ## Design
 

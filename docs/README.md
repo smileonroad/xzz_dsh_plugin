@@ -41,7 +41,7 @@
 ## 开发流程速记（helloworld / sql-check-tool 实战印证）
 
 1. 写插件文件（`name` / `inject` / `apply` 三件套）。
-2. 用 `--patch <file>.yml` 把插件行 insert 进 profile 的组合树。entry 的 `name` 相对 profile 目录（`~/.dsh/profiles/<profile>/`）解析，不是 patch 文件位置：免绝对路径的做法是 profile 目录下建 junction 指向 deepseek-harness 后写 `./examples/...`（本仓库 patch 默认如此），或设 `DSH_HOME` 同盘写 `../../` 跳转；写绝对路径时 Windows 要 `file:///D:/...` 前缀（裸 `E:/...` 会被当成 URL scheme `e:` 报错）。
+2. 用 `--patch <file>.yml` 把插件行 insert 进 profile 的组合树。entry 的 `name` 相对**声明这一行的 patch 文件所在目录**解析（2026-09-17 实测；旧说法「锚定 profile 目录」只对 profile 目录里那份 `cordis.patch.yml` 成立）：所以 `examples/<项目>/` 下的 patch 直接写 `./src/...`，不需要 junction；profile 目录里那份才写 `./examples/...`，那份才需要 profile 下的 `examples` junction。写绝对路径时 Windows 要 `file:///D:/...` 前缀（裸 `E:/...` 会被当成 URL scheme `e:` 报错）。
 3. **web 的 HMR 默认禁用**：加新插件必须重启 web 进程。
 4. 测试：`pnpm exec vitest run --config examples/<项目>/vitest.examples.config.ts ... --disableConsoleIntercept --silent=false`（harness 的 vitest 工作区已不含 examples/，用随示例分发的临时配置；vitest 默认拦 console，调试要透传）。
 5. 分发：把示例提升为**独立标准包**（`package.json` 声明 `dsh.bundle.patch` 与 `dsh.client`、自带 `cordis.patch.yml`、预构建 `lib/`、`files` 收口），经官方通道 `dsh plugin --profile web add <本地目录|git|npm|tarball>` 装进 profile（参数转发 pnpm + reconcile 只激活声明 `dsh.bundle` 的依赖），**重启 web 进程生效**。浏览器半边产物必须是 `window.__ModuleLoader__.load(...)` 工厂格式（裸 ESM 会整批加载失败）。机制见 [plugin-package.md](plugin-package.md)。

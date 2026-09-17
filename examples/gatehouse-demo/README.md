@@ -37,18 +37,11 @@ pnpm dsh web --patch examples/gatehouse-demo/gatehouse.patch.yml
 > Note: web HMR is disabled by default in release builds, so you must restart
 > the web process after adding a plugin.
 >
-> Note: an entry's `name` in a patch resolves against the **profile directory**
-> (`~/.dsh/profiles/web/`), not against this file. `gatehouse.patch.yml` uses
-> a relative path plus a junction under the profile directory; create the
-> junction once before first use (Windows, no admin rights):
+> Note: an entry's `name` in a patch resolves against **the directory of that patch file** (measured 2026-09-17), so `gatehouse.patch.yml` writes `./src/index.ts` and needs no junction. Only the profile's own `cordis.patch.yml` resolves against the profile directory, and that is the file that needs an `examples` junction when it writes `./examples/<name>/...`.
 >
-> ```sh
-> cmd //c "mklink /J %USERPROFILE%\.dsh\profiles\web\examples <deepseek-harness>\examples"
-> ```
->
-> To avoid junctions, switch to an absolute `file:///` URL (rules at the top
-> of that file; a DSH_HOME-on-same-drive relative hop and bundle install are
-> the other two alternatives).
+> To use an absolute path instead, switch to a `file:///` URL (rules at the top
+> of that patch file; only a patch that lives in the profile directory needs the
+> junction).
 
 In the web dialog, ask the model to take something from a storage locker
 (`use_locker`): the keeper's allow list waves it through and the tool runs.

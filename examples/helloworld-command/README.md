@@ -27,18 +27,11 @@ pnpm dsh web --patch examples/helloworld-command/helloworld.patch.yml
 > Note: web HMR is disabled by default in release builds, so you must restart
 > the web process after adding a plugin for the command to appear.
 >
-> Note: an entry's `name` in a patch resolves against the **profile directory**
-> (`~/.dsh/profiles/web/`), not against this file. `helloworld.patch.yml` uses
-> a relative path plus a junction under the profile directory; create the
-> junction once before first use (Windows, no admin rights):
+> Note: an entry's `name` in a patch resolves against **the directory of that patch file** (measured 2026-09-17), so `helloworld.patch.yml` writes `./src/index.ts` and needs no junction. Only the profile's own `cordis.patch.yml` resolves against the profile directory, and that is the file that needs an `examples` junction when it writes `./examples/<name>/...`.
 >
-> ```sh
-> cmd //c "mklink /J %USERPROFILE%\.dsh\profiles\web\examples <deepseek-harness>\examples"
-> ```
->
-> To avoid junctions, switch to an absolute `file:///` URL (rules at the top
-> of that file; a DSH_HOME-on-same-drive relative hop and bundle install are
-> the other two alternatives).
+> To use an absolute path instead, switch to a `file:///` URL (rules at the top
+> of that patch file; only a patch that lives in the profile directory needs the
+> junction).
 
 Verified end-to-end in the web UI (2026-08-16), four layers: (1) typing `/`
 lists `helloworld` in the command menu; (2) executing `/helloworld <name>`

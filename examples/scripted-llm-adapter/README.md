@@ -28,10 +28,12 @@ pnpm dsh web --patch examples/scripted-llm-adapter/cordis.patch.yml
 
 The demo script creates a throwaway `DSH_HOME` in a temp directory, writes a `settings.yaml` there (pointing the default model at `scripted/demo`) plus an overlay, and deletes it afterwards. `cordis.patch.yml` alone is not enough because `agent-default-model` belongs to the **settings user layer**, which overrides composition config, and a real home usually already stores a model selection. To use `cordis.patch.yml` directly, first remove the `agent-default-model:` section from `~/.dsh/settings.yaml`.
 
-> A patch entry's `name` resolves against the **profile directory** (`~/.dsh/profiles/<name>/`), not against the patch file. `cordis.patch.yml` uses a relative path, so the profile directory needs an `examples` junction pointing at the harness `examples/`; without one, use a `file:///` absolute URL. Creating the junction for the web profile:
+> A patch entry's `name` resolves against **the directory holding that patch file**, not the profile directory and not the current working directory. `cordis.patch.yml` lives in this directory, so it says `./src/index.ts`; for an absolute path on Windows you must keep the `file:///` prefix, because a bare `D:/...` is read as a URL scheme.
+>
+> The easily confused counterpart is the profile's own `cordis.patch.yml`, which does resolve against the **profile directory**; that is the one that needs an `examples` junction when it writes `./examples/<name>/...`. Mounting this example with `--patch` needs no junction:
 >
 > ```sh
-> cmd //c "mklink /J %USERPROFILE%\.dsh\profiles\web\examples <deepseek-harness>\examples"
+> pnpm dsh web --patch examples/scripted-llm-adapter/cordis.patch.yml
 > ```
 
 ## Design

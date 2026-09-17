@@ -39,7 +39,7 @@ verification points. They also drive the Host tool through the real
 
 To mount the Host half into a running profile (web or headless), apply the
 patch — see the rules at the top of `laundry.patch.yml` for entry-name
-resolution and the junction trick:
+resolution:
 
 ```sh
 pnpm dsh web --patch examples/laundry-demo/laundry.patch.yml

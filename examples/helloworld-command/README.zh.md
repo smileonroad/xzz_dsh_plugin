@@ -22,13 +22,9 @@ pnpm dsh web --patch examples/helloworld-command/helloworld.patch.yml
 
 > 注意：web 的 HMR 在发布版默认禁用——加完插件后必须重启 web 进程，命令才会出现。
 >
-> 注意：patch 里 entry 的 `name` 相对 **profile 目录**（`~/.dsh/profiles/web/`）解析，不是相对本文件。`helloworld.patch.yml` 用相对路径 + profile 目录下 junction 的方式，首次使用先建 junction（Windows，无需管理员）：
+> 注意：patch 里 entry 的 `name` 相对**本 patch 文件所在目录**解析（2026-09-17 实测），所以 `helloworld.patch.yml` 直接写 `./src/index.ts`，不需要 junction。只有放在 profile 目录里的那份 `cordis.patch.yml` 才按 profile 目录解析，那一份写 `./examples/<项目>/...` 时才需要 profile 下的 examples junction。
 >
-> ```sh
-> cmd //c "mklink /J %USERPROFILE%\.dsh\profiles\web\examples <deepseek-harness>\examples"
-> ```
->
-> 不想用 junction 就改回绝对 `file:///` URL（规则见该文件顶部注释，另有 DSH_HOME 同盘、bundle 安装两种替代）。
+> 不想用相对路径就改绝对 `file:///` URL（规则见该 patch 文件顶部注释；只有放在 profile 目录里的那份 patch 才需要 junction）。
 
 已在 web UI 端到端验证（2026-08-16），四层证据：（1）输入 `/` 后命令菜单列出 helloworld；（2）执行 `/helloworld <name>` 约 1 秒内对话流渲染出命令节点（不走模型轮次）；（3）每次执行在会话日志里留下成对的 `command/run` + `command/done` 记录；（4）重新打开会话，命令节点从日志原样重放，会话的轨迹视图按轮次列出每一步事件（命令输入、工具调用、结果）。
 

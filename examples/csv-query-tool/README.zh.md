@@ -61,7 +61,7 @@ csv-query-tool/
 ├── src/index.ts                 # the plugin: name / inject / Config / apply
 ├── tests/csv-query-tool.spec.ts # 13 cases, real ToolRuntime + SystemPrompt
 ├── cordis.yml                   # test composition (system-prompt + tools + plugin)
-├── csv-query.patch.yml          # web overlay entry (junction relative path)
+├── csv-query.patch.yml          # web overlay entry (path relative to this directory)
 └── bundle/                      # buildable bundle (package.json + built index.js + patch)
 ```
 
@@ -114,6 +114,6 @@ taskkill //F //IM node.exe && pnpm dsh web
 
 漏掉任何一步，profile 静默跑的都是旧版——上面的 config 端到端验证正好踩中（patch 改了但 profile 副本是旧的，`config:` 一直不出现，重装才生效）。版本号 bump 让「新旧」可见：dump-config 看 layer，profile 的 package.json 钉住安装的版本。
 
-`dsh plugin add` 会把 bundle pnpm-link 进 profile，并因包声明了 `dsh.bundle` 而把它追加到 profile 的 `dsh.profile.bundles` 列表。bundle layer 按包名解析插件，所以不涉及 junction 或绝对路径——这是 `--patch`（本地临时）和 junction 相对路径（机器本地）都不具备的可移植分发路径。卸载用 `dsh plugin --profile web remove dsh-csv-query-tool`。
+`dsh plugin add` 会把 bundle pnpm-link 进 profile，并因包声明了 `dsh.bundle` 而把它追加到 profile 的 `dsh.profile.bundles` 列表。bundle layer 按包名解析插件，所以不涉及 junction 或绝对路径——这是 `--patch`（本地临时）和相对路径 overlay（机器本地）都不具备的可移植分发路径。卸载用 `dsh plugin --profile web remove dsh-csv-query-tool`。
 
 完整的 bundle 契约与 layer 顺序见[打包教程](../../docs/user/develop/basic/publish.zh.md)。

@@ -33,14 +33,7 @@ pnpm dsh web --patch examples/events-demo/events.patch.yml
 > be required for any web change). The patch file exists so the demo policy can
 > be activated on a running instance if you want it.
 >
-> Note: an entry's `name` in a patch resolves against the **profile directory**
-> (`~/.dsh/profiles/web/`), not against this file. `events.patch.yml` uses a
-> relative path plus a junction under the profile directory; create the
-> junction once before first use (Windows, no admin rights):
->
-> ```sh
-> cmd //c "mklink /J %USERPROFILE%\.dsh\profiles\web\examples <deepseek-harness>\examples"
-> ```
+> Note: an entry's `name` in a patch resolves against **the directory of that patch file** (measured 2026-09-17), so `events.patch.yml` writes `./src/index.ts` and needs no junction. Only the profile's own `cordis.patch.yml` resolves against the profile directory, and that is the file that needs an `examples` junction when it writes `./examples/<name>/...`.
 
 ## Design
 

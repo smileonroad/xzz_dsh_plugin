@@ -3,10 +3,12 @@
 #   pnpm dsh web --patch examples/scripted-llm-adapter/cordis.patch.yml
 #   node demo/run-headless.mjs --patch examples/scripted-llm-adapter/cordis.patch.yml "你好"
 #
-# 入口名相对 **profile 目录**（`~/.dsh/profiles/<name>/`）解析，不是相对本文件，
-# 所以 profile 目录下要有一个指向 harness `examples/` 的 examples junction
-# （web profile 的常规做法）；没有 junction 时把 name 换成 file:/// 绝对 URL，
-# 例如 `file:///D:/myPI/deepseek-harness/examples/scripted-llm-adapter/src/index.ts`。
+# 入口名相对**本 patch 文件所在的目录**解析，所以这里写 `./src/index.ts`。
+# （只有放在 profile 目录里的 `cordis.patch.yml` 才是相对 profile 目录解析，
+# 那种写法需要 profile 下的 examples junction；本文件在自己目录里，不需要。）
+# 要写绝对路径时 Windows 必须带 `file:///` 前缀，例如
+# `file:///D:/myPI/deepseek-harness/examples/scripted-llm-adapter/src/index.ts`，
+# 裸 `D:/...` 会被当成 URL scheme 报 ERR_UNSUPPORTED_ESM_URL_SCHEME。
 #
 # 第二行把默认模型指到剧本提供方，但**它可能不生效**：`agent-default-model`
 # 的值会被 settings 用户层（`$DSH_HOME/settings.yaml`）覆盖，而真实 home 里通常
@@ -14,7 +16,7 @@
 # `scripts/demo.mjs`（它造一个一次性 DSH_HOME，settings 与 overlay 都在里面）。
 - insert:
     - id: scripted-llm
-      name: './examples/scripted-llm-adapter/src/index.ts'
+      name: './src/index.ts'
 
 - id: agent-default-model
   config:

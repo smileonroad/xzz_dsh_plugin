@@ -98,7 +98,7 @@ csv-query-tool/
 ├── src/index.ts                 # the plugin: name / inject / Config / apply
 ├── tests/csv-query-tool.spec.ts # 13 cases, real ToolRuntime + SystemPrompt
 ├── cordis.yml                   # test composition (system-prompt + tools + plugin)
-├── csv-query.patch.yml          # web overlay entry (junction relative path)
+├── csv-query.patch.yml          # web overlay entry (path relative to this directory)
 └── bundle/                      # buildable bundle (package.json + built index.js + patch)
 ```
 
@@ -170,7 +170,7 @@ shows the layer, and the profile's `package.json` pins the installed version.
 profile's `dsh.profile.bundles` list because the package declares
 `dsh.bundle`. The bundle layer resolves the plugin by package name, so no
 junction or absolute path is involved — this is the portable distribution path
-that `--patch` (local, ephemeral) and junction relative paths (machine-local)
+that `--patch` (local, ephemeral) and relative-path overlays (machine-local)
 are not. Remove with `dsh plugin --profile web remove dsh-csv-query-tool`.
 
 The full bundle contract and layer order are covered in the

@@ -24,11 +24,7 @@ pnpm dsh web --patch examples/tea-shop-demo/tea-shop.patch.yml
 
 > 注意：事件类插件**没有可见 UI**。挂进 web 自己不会显示任何东西，所以本实战有意义的验证是测试套件。patch 文件的存在是为了在需要时把演示奶茶店挂到运行中的实例上。
 >
-> 注意：patch 里 entry 的 `name` 是相对**profile 目录**（`~/.dsh/profiles/web/`）解析的，不是相对本文件。`tea-shop.patch.yml` 用的是相对路径 + profile 目录下的 junction；首次使用前建一次 junction（Windows，无需管理员权限）：
->
-> ```sh
-> cmd //c "mklink /J %USERPROFILE%\.dsh\profiles\web\examples <deepseek-harness>\examples"
-> ```
+> 注意：patch 里 entry 的 `name` 相对**本 patch 文件所在目录**解析（2026-09-17 实测），所以 `tea-shop.patch.yml` 直接写 `./src/index.ts`，不需要 junction。只有放在 profile 目录里的那份 `cordis.patch.yml` 才按 profile 目录解析，那一份写 `./examples/<项目>/...` 时才需要 profile 下的 examples junction。
 
 ## 设计
 

@@ -28,10 +28,12 @@ pnpm dsh web --patch examples/scripted-llm-adapter/cordis.patch.yml
 
 演示脚本会在临时目录造一个一次性 `DSH_HOME`，在里面写 `settings.yaml`（把默认模型指到 `scripted/demo`）和一个 overlay，跑完删掉。之所以不能只靠 `cordis.patch.yml`，是因为 `agent-default-model` 的值归 **settings 用户层**管，它会盖掉组合层配置，而真实 home 里通常已经存了用户的模型选择。想直接用 `cordis.patch.yml` 的话，先清掉 `~/.dsh/settings.yaml` 里 `agent-default-model:` 那一段。
 
-> patch 里 entry 的 `name` 相对 **profile 目录**（`~/.dsh/profiles/<name>/`）解析，不是相对 patch 文件。`cordis.patch.yml` 用的是相对路径，所以 profile 目录下要有指向 harness `examples/` 的 junction；没有的话改用 `file:///` 绝对 URL。web profile 的 junction 建法：
+> patch 里 entry 的 `name` 相对**本 patch 文件所在目录**解析，不是相对 profile 目录，也不是相对 cwd。`cordis.patch.yml` 住在自己目录里，所以写 `./src/index.ts`；要写绝对路径时 Windows 必须带 `file:///` 前缀，裸 `D:/...` 会被当成 URL scheme 报错。
+>
+> 容易混的是另一份文件：profile 目录下的 `cordis.patch.yml` 才按 **profile 目录**解析，那一份写 `./examples/<项目>/...` 时才需要 profile 里的 examples junction。所以用 `--patch` 挂本示例不需要建 junction：
 >
 > ```sh
-> cmd //c "mklink /J %USERPROFILE%\.dsh\profiles\web\examples <deepseek-harness>\examples"
+> pnpm dsh web --patch examples/scripted-llm-adapter/cordis.patch.yml
 > ```
 
 ## 设计

@@ -11,11 +11,12 @@
 # ConversationNodeAssembler with fixture events (laundry-definition spec) and
 # pinning the renderer's React-free pure projection (laundry-view spec).
 #
-# Entry `name` resolution: a leading `.` resolves against the Loader baseUrl,
-# which is THE PROFILE DIRECTORY (~/.dsh/profiles/<profile>/), not this file.
-# The junction trick (see gatehouse.patch.yml for the three options) points
-# the profile at the deepseek-harness checkout:
-#   cmd //c "mklink /J %USERPROFILE%\.dsh\profiles\web\examples <deepseek-harness>\examples"
+# Entry `name` resolution (measured 2026-09-17): a leading `.` resolves against
+# THE DIRECTORY OF THIS PATCH FILE, not the profile directory and not the cwd.
+# This file sits next to `src/`, so `./src/machine.ts` needs no junction; the
+# profile-level `cordis.patch.yml` is the one that resolves against the profile
+# directory. An absolute URL needs the Windows `file:///` prefix (a bare
+# `D:/...` is read as the URL scheme `d:` and rejected by the ESM loader).
 - insert:
     - id: laundry-machine
-      name: './examples/laundry-demo/src/machine.ts'
+      name: './src/machine.ts'

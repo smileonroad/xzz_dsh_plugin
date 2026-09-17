@@ -21,7 +21,7 @@ pnpm exec vitest run --config examples/laundry-demo/vitest.examples.config.ts ex
 
 测试是行为门槛：用 fixture session 事件（工具真正追加的那批 `laundry/*` 事件）驱动**真实的** `ConversationNodeAssembler`，把 Definition 钉死在官方 cookbook 的 6 点验证上；Host 工具则走真实的 `ToolRuntime`。不开浏览器、不需要模型 key。
 
-把 Host 半侧挂进 profile（web 或 headless）用 patch，entry name 的解析规则和 junction 技巧见 `laundry.patch.yml` 文件头：
+把 Host 半侧挂进 profile（web 或 headless）用 patch，entry name 的解析规则见 `laundry.patch.yml` 文件头：
 
 ```sh
 pnpm dsh web --patch examples/laundry-demo/laundry.patch.yml
