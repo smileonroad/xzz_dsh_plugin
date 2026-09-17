@@ -18,7 +18,8 @@ import type { ReplyTipsState, ReplyTipsGetRequest, ReplyTipsGetResult, ReplyTips
 
 /**
  * 最小 remote 面。独立包不 import 内嵌的客户端装配类型（那会把整个 in-box 远程面
- * 拖进 typert 分析），改为自持声明 + 一次断言；运行期拿到的是装配服务本身。
+ * 拖进 typert 分析），改为自持声明；命名空间句柄在 `ctx.inject(['remote.replyTips'])`
+ * 作用域里取得（Cordis 要求显式 inject 才能访问 `ctx.remote.<namespace>`）。
  */
 interface RemoteResultLike<T> {
   readonly ok: boolean
@@ -32,14 +33,22 @@ interface ReplyTipsRemote {
   'get-suggestions'(request: ReplyTipsSuggestionsRequest): Promise<RemoteResultLike<ReplyTipsSuggestionsResult>>
 }
 
-interface RemoteService {
-  replyTips: ReplyTipsRemote
+/** 已挂载的 replyTips 命名空间（mount 之后、注入作用域内取得）。 */
+let replyTipsApi: ReplyTipsRemote | undefined
+
+/** 取命名空间；未就绪时 undefined（controller 会把它显示为调用失败）。 */
+function replyTipsOf(): ReplyTipsRemote | undefined {
+  return replyTipsApi
+}
+
+/** mount 入口（`ctx.remote.$mount`）：不 import 内嵌装配类型，用局部断言取。 */
+interface RemoteMountService {
   $mount(contribution: unknown): Promise<() => Promise<void>>
 }
 
-/** 取浏览器 remote 服务（装配在浏览器根 context 上）。 */
-function remoteOf(ctx: Context): RemoteService {
-  return (ctx as unknown as { remote: RemoteService }).remote
+/** 取浏览器 remote 服务。 */
+function remoteServiceOf(ctx: Context): RemoteMountService {
+  return (ctx as unknown as { remote: RemoteMountService }).remote
 }
 
 /**
@@ -129,10 +138,10 @@ function sendTip(props: SlotProps, text: string): void {
 }
 
 /**
- * 取得（或建立）某会话的 controller。Remote 调用一律走 `remoteOf(ctx).replyTips`，
+ * 取得（或建立）某会话的 controller。Remote 调用走已挂载的 `replyTips` 命名空间，
  * `RemoteResult` 的失败分支收成 `err` 文案，不抛出到组件树。
  */
-function apiFor(ctx: Context, sessionId: string): SessionApi {
+function apiFor(sessionId: string): SessionApi {
   const existing = controllers.get(sessionId)
   if (existing !== undefined) return existing
   const api: SessionApi = {
@@ -146,7 +155,13 @@ function apiFor(ctx: Context, sessionId: string): SessionApi {
     },
     async ensure() {
       if (api.state.ready) return
-      const result = await remoteOf(ctx).replyTips.get({ sessionId })
+      const remote = replyTipsOf()
+      if (remote === undefined) {
+        api.state = { ...api.state, ready: true, err: 'remote-not-mounted' }
+        api.notify()
+        return
+      }
+      const result = await remote.get({ sessionId })
       api.state = result.ok
         ? { ...api.state, enabled: result.value.enabled, ready: true, err: undefined }
         : { ...api.state, ready: true, err: `${result.error.code}` }
@@ -156,7 +171,13 @@ function apiFor(ctx: Context, sessionId: string): SessionApi {
       const previous = api.state.enabled
       api.state = { ...api.state, enabled, saving: true, err: undefined }
       api.notify()
-      const result = await remoteOf(ctx).replyTips.set({ sessionId, enabled })
+      const remote = replyTipsOf()
+      if (remote === undefined) {
+        api.state = { ...api.state, enabled: previous, saving: false, err: 'remote-not-mounted' }
+        api.notify()
+        return
+      }
+      const result = await remote.set({ sessionId, enabled })
       api.state = result.ok
         ? { ...api.state, enabled: result.value.enabled, saving: false, ready: true }
         : { ...api.state, enabled: previous, saving: false, err: `${result.error.code}` }
@@ -166,7 +187,13 @@ function apiFor(ctx: Context, sessionId: string): SessionApi {
       if (api.state.loading) return
       api.state = { ...api.state, loading: true }
       api.notify()
-      const result = await remoteOf(ctx).replyTips['get-suggestions']({ sessionId, refresh: mode === 'refresh' })
+      const remote = replyTipsOf()
+      if (remote === undefined) {
+        api.state = { ...api.state, loading: false, fetching: false, err: 'remote-not-mounted' }
+        api.notify()
+        return
+      }
+      const result = await remote['get-suggestions']({ sessionId, refresh: mode === 'refresh' })
       if (!result.ok) {
         api.state = { ...api.state, loading: false, fetching: false, err: `${result.error.code}` }
         api.notify()
@@ -215,9 +242,8 @@ function useApiState(api: SessionApi): ApiState {
 
 /** 开关按钮：`conversation.input.right`。 */
 function ReplyTipsToggle(props: SlotProps): unknown {
-  const ctx = currentCtx()
   const sessionId = sessionIdOf(props)
-  const api = React.useMemo(() => (sessionId === '' || ctx === undefined ? undefined : apiFor(ctx, sessionId)), [ctx, sessionId])
+  const api = React.useMemo(() => (sessionId === '' ? undefined : apiFor(sessionId)), [sessionId])
   const state = useApiState(api ?? emptyApi())
   React.useEffect(() => { void api?.ensure() }, [api])
   if (api === undefined || sessionId === '') return null
@@ -243,7 +269,7 @@ function ReplyTipsRow(props: SlotProps): unknown {
   const ctx = currentCtx()
   const timer = ctx?.get('timer') as TimerService | undefined
   const sessionId = sessionIdOf(props)
-  const api = React.useMemo(() => (sessionId === '' || ctx === undefined ? undefined : apiFor(ctx, sessionId)), [ctx, sessionId])
+  const api = React.useMemo(() => (sessionId === '' ? undefined : apiFor(sessionId)), [sessionId])
   const state = useApiState(api ?? emptyApi())
   React.useEffect(() => {
     if (api === undefined) return
@@ -356,28 +382,32 @@ function emptyApi(): SessionApi {
 /** Cordis 插件名。 */
 export const name = 'reply-tips'
 
-/** 槽位、浏览器 remote 与时间服务是硬依赖。 */
+/** 槽位、浏览器 remote 与时间服务是硬依赖（命名空间在 mount 之后再注入）。 */
 export const inject = ['slots', 'timer', 'remote']
 
 /**
- * 挂载浏览器半边：先 mount 自己的 Remote contribution，再注册两个槽。
+ * 挂载浏览器半边：先 mount 自己的 Remote contribution，再在
+ * `remote.replyTips` 注入作用域里拿到命名空间并注册两个槽。
  * @param ctx - 浏览器根 context。
  */
 export async function apply(ctx: Context): Promise<void> {
-  activeCtx = ctx
-  await remoteOf(ctx).$mount(TYPERT_REMOTE)
-  const slots = ctx.get('slots') as SlotsService | undefined
-  if (slots === undefined) return
-  slots.inject('conversation.input.right', () => slots.register({
-    name: 'conversation.input.right',
-    id: 'reply-tips-toggle',
-    order: 10,
-    label: () => 'Reply tips toggle',
-  }, ReplyTipsToggle))
-  slots.inject('conversation.input.dock', () => slots.register({
-    name: 'conversation.input.dock',
-    id: 'reply-tips-row',
-    order: 30,
-    label: () => 'Reply tips row',
-  }, ReplyTipsRow))
+  await remoteServiceOf(ctx).$mount(TYPERT_REMOTE)
+  await ctx.inject(['slots', 'timer', 'remote.replyTips'], (scoped: Context) => {
+    activeCtx = scoped
+    replyTipsApi = (scoped as unknown as { remote: { replyTips: ReplyTipsRemote } }).remote.replyTips
+    const slots = scoped.get('slots') as SlotsService | undefined
+    if (slots === undefined) return
+    slots.inject('conversation.input.right', () => slots.register({
+      name: 'conversation.input.right',
+      id: 'reply-tips-toggle',
+      order: 10,
+      label: () => 'Reply tips toggle',
+    }, ReplyTipsToggle))
+    slots.inject('conversation.input.dock', () => slots.register({
+      name: 'conversation.input.dock',
+      id: 'reply-tips-row',
+      order: 30,
+      label: () => 'Reply tips row',
+    }, ReplyTipsRow))
+  })
 }

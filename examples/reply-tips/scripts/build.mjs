@@ -22,7 +22,7 @@
  * (the layout when this package sits in `<harness>/examples/reply-tips`).
  */
 import { execFileSync } from 'node:child_process'
-import { copyFileSync, cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
+import { copyFileSync, cpSync, existsSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
@@ -134,6 +134,19 @@ async function generateWire() {
   }
   for (const [name, body] of written) writeFileSync(join(root, 'lib', name), body)
   console.log(`wire: ${written.map(([name, body]) => `${name} (${body.length}b)`).join(', ')}`)
+
+  // The generated artifacts import zod, which is not resolvable from an
+  // examples/ package under pnpm's isolated layout. Bundle zod into the two
+  // runtime artifacts so the package needs no install of its own (the in-box
+  // packages get it from their own node_modules instead).
+  for (const name of ['typert.host.js', 'typert.remote-client.js']) {
+    const file = join(root, 'lib', name)
+    const tmp = `${file}.tmp`
+    const before = readFileSync(file, 'utf8').length
+    compile(file, tmp, 'esm', ['--bundle', '--minify', `--alias:zod=${zodPath()}`, '--log-level=warning'])
+    renameSync(tmp, file)
+    console.log(`wire: ${name} inlined zod (${before}b -> ${readFileSync(file, 'utf8').length}b)`)
+  }
 }
 
 // ── 2..4 plain artifacts ───────────────────────────────────────────────────

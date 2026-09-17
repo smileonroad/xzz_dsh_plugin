@@ -61,18 +61,26 @@ for (const file of artifacts) {
   else fail(`built ${file} missing — run npm run build first`)
 }
 
-// Host wire manifest: three invocations, each with a strict zod codec.
+// Host wire manifest: three invocations, each with a strict zod codec. The
+// artifact is bundled+minified (esbuild renames the binding and switches to
+// double quotes), so whitespace is stripped and quotes are normalized.
+const normalize = (text) => text.replace(/\s+/g, '').replace(/"/g, "'")
+
 if (existsSync(join(root, 'lib/typert.host.js'))) {
-  const hostWire = readFileSync(join(root, 'lib/typert.host.js'), 'utf8')
+  const hostWire = normalize(readFileSync(join(root, 'lib/typert.host.js'), 'utf8'))
+  const strictCodecs = (hostWire.match(/mode:'strict'/g) ?? []).length
   const hostWireChecks = [
-    ['declares TYPERT', hostWire.includes('export const TYPERT')],
-    ['declares face host', hostWire.includes("face: 'host'")],
-    ['is owned by this package', hostWire.includes(`package: '${pkg.name}'`)],
-    ['carries the get invocation', hostWire.includes(`id: '${pkg.name}#replyTips/get'`)],
-    ['carries the set invocation', hostWire.includes(`id: '${pkg.name}#replyTips/set'`)],
-    ['carries the get-suggestions invocation', hostWire.includes(`id: '${pkg.name}#replyTips/get-suggestions'`)],
-    ['all codecs are strict', !hostWire.includes("mode: 'loose'") && hostWire.includes("mode: 'strict'")],
-    ['declares the replyTips service', hostWire.includes('"key": "replyTips"')],
+    ['declares TYPERT', hostWire.includes('asTYPERT}')],
+    ['declares face host', hostWire.includes("face:'host'")],
+    ['is owned by this package', hostWire.includes(`package:'${pkg.name}'`)],
+    ['carries the get invocation', hostWire.includes(`id:'${pkg.name}#replyTips/get'`)],
+    ['carries the set invocation', hostWire.includes(`id:'${pkg.name}#replyTips/set'`)],
+    ['carries the get-suggestions invocation', hostWire.includes(`id:'${pkg.name}#replyTips/get-suggestions'`)],
+    // Three parameters + three results must all be strict codecs (the bundled
+    // zod library carries its own 'loose' text, so count ours instead).
+    ['all six codecs are strict', strictCodecs >= 6],
+    ['declares the replyTips service', hostWire.includes("key:'replyTips'")],
+    ['inlines zod (no runtime dependency)', !hostWire.includes("from'zod'")],
   ]
   for (const [label, passes] of hostWireChecks) {
     if (passes) ok(`typert.host.js ${label}`)
@@ -82,14 +90,15 @@ if (existsSync(join(root, 'lib/typert.host.js'))) {
 
 // Client wire contribution: descriptors for the same three methods.
 if (existsSync(join(root, 'lib/typert.remote-client.js'))) {
-  const remoteWire = readFileSync(join(root, 'lib/typert.remote-client.js'), 'utf8')
+  const remoteWire = normalize(readFileSync(join(root, 'lib/typert.remote-client.js'), 'utf8'))
   const remoteWireChecks = [
-    ['declares TYPERT_REMOTE', remoteWire.includes('export const TYPERT_REMOTE')],
-    ['is owned by this package', remoteWire.includes(`package: '${pkg.name}'`)],
-    ['describes get', remoteWire.includes("method: 'get'")],
-    ['describes set', remoteWire.includes("method: 'set'")],
-    ['describes get-suggestions', remoteWire.includes("method: 'get-suggestions'")],
-    ['uses strict codecs', remoteWire.includes("mode: 'strict'")],
+    ['declares TYPERT_REMOTE', remoteWire.includes('asTYPERT_REMOTE')],
+    ['is owned by this package', remoteWire.includes(`package:'${pkg.name}'`)],
+    ['describes get', remoteWire.includes("method:'get'")],
+    ['describes set', remoteWire.includes("method:'set'")],
+    ['describes get-suggestions', remoteWire.includes("method:'get-suggestions'")],
+    ['uses strict codecs', remoteWire.includes("mode:'strict'")],
+    ['inlines zod (no runtime dependency)', !remoteWire.includes("from'zod'")],
   ]
   for (const [label, passes] of remoteWireChecks) {
     if (passes) ok(`typert.remote-client.js ${label}`)
@@ -156,6 +165,7 @@ if (existsSync(join(root, 'lib/client.js'))) {
       const mounts = []
       const ctx = {
         get: () => undefined,
+        inject: async (_deps, callback) => { callback(ctx) },
         remote: {
           $mount: async (contribution) => { mounts.push(contribution); return async () => {} },
           replyTips: {

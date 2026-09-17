@@ -4,8 +4,7 @@
     "outDir": "lib/types"
   },
   "include": [
-    "src",
-    "tests"
+    "src"
   ],
   "references": [
     {
