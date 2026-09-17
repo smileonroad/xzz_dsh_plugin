@@ -211,9 +211,9 @@ ctx.on('llm/stream', (options, next) => {
 
 In a waterfall, whoever does not call `next()` becomes the end of the chain. The two pass-through conditions come first, so background calls and clean messages continue as usual; a hit returns a locally built chunk stream, and the adapter is never touched. That refusal stream must itself be valid, or the package invariant rejects it, which a test verifies.
 
-## Script grammar
+## How to write a script
 
-The start of the last human message decides what this turn says.
+There is one rule: the start of the last human message decides what this turn says.
 
 | Prefix | Effect | Why it exists |
 | --- | --- | --- |

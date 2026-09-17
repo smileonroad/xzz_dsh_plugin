@@ -27,7 +27,7 @@ export interface ScriptedModelConfig {
  * 本轮模型要产生的内容。
  *
  * `failure` / `provider-error` / `empty` / `hang` 是四种失败或异常剧本形态，
- * 分别对应规范协议里不同的错误路径（见 README 的「剧本文法」）。
+ * 分别对应规范协议里不同的错误路径（见 README 的「怎么写剧本」）。
  */
 export type ScriptedTurn =
   /** 先说一段思考，再说一段可见文本（用来练多块的 index 分配）。 */
