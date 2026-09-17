@@ -128,6 +128,89 @@ Three implementation details are worth remembering. First, the guard inspects th
 
 > **Deeper: why the guard can pass for the model.** To the agent loop, whatever `llm/stream` returns is the answer: it receives canonical text chunks, assembles one assistant message, records it in the session, and the UI renders it. The guard is not lying; it only changes who produced the stream, from a provider API to a local policy. That is also why `llm/stream` is a weighty extension point: retries, compaction, and token accounting all hang off the same place.
 
+## Walking through the core code
+
+Four files, best read as plugin shell, turn planning, streaming, then interception. Together they are under four hundred lines.
+
+### 1. The plugin shell (`src/index.ts`)
+
+```ts
+export const name = 'scripted-llm-adapter'
+export const inject = ['llm']
+export const Config: Schema<Config> = Schema.object({
+  providers: Schema.array(Schema.string()).default(['scripted']),
+  models: Schema.array(ModelSchema).default(DEFAULT_MODELS),
+})
+export function apply(ctx: Context, config: Config): void {
+  ctx.llm.registerAdapter(config.providers, new ScriptedAdapter(config.models))
+}
+```
+
+`inject` guarantees `ctx.llm` is ready before `apply` runs. Configuration goes through Schemastery, so both the route name and the model catalog can change in a patch rather than in code. Registration is a side effect, and the plugin's lifetime reclaims those routes, which is what makes HMR safe.
+
+### 2. Planning (`src/script.ts`)
+
+A pure module that touches neither Cordis nor the network, so it can be tested on its own. It does two things: work out what the person said, then work out which chunks this turn should emit.
+
+```ts
+export function planTurn(options: GenerateOptions): ScriptedTurn {
+  const completed = toolResultText(options)
+  if (completed !== undefined) return { kind: 'text', text: `${ECHO_PREFIX}tool returned ${completed}` }
+  const prompt = lastUserText(options).trim()
+  const match = COMMAND.exec(prompt)
+  // ...
+}
+```
+
+The first two lines are the two traps described earlier. A tool result at the end of the history means this turn should wrap up rather than call the tool again, and `lastUserText()` prefers text whose source is the user, which filters out the reminders the harness injects.
+
+The chunk emission follows the protocol order exactly.
+
+```ts
+chunks.push(
+  { type: 'block-start', index, blockType: 'tool-call' },
+  { type: 'tool-call-delta', index, id, name: turn.name, argumentsDelta: turn.arguments.slice(0, split) },
+  { type: 'tool-call-delta', index, id, argumentsDelta: turn.arguments.slice(split) },
+  { type: 'block-end', index, block: { type: 'tool-call', id, name: turn.name, arguments: turn.arguments } },
+  { type: 'usage', usage: { inputTokens, outputTokens: outputTokens + turn.arguments.length } },
+  { type: 'finish', reason: { kind: 'tool-calls' } },
+)
+```
+
+Arguments are deliberately split into two deltas so that reassembly is visible in a test, and `arguments` stays a raw JSON string throughout: what a model produces may well be half a JSON document at first.
+
+### 3. Streaming (`src/adapter.ts`)
+
+`stream()` is the one required method. It records the request, then branches on the script.
+
+```ts
+this.requests.push(options)
+if (options.stop !== undefined) throw new LlmError('the scripted provider cannot honour stop sequences', 'UNSUPPORTED_OPTION')
+const turn = planTurn(options)
+if (turn.kind === 'failure') throw new LlmError(turn.message, turn.code)              // thrown, normalized by the runtime
+if (turn.kind === 'empty') throw new LlmError('...', EMPTY_RESPONSE_CODE)
+if (turn.kind === 'hang') { /* emit half a block */ await interrupted(options.signal); return }
+for (const chunk of renderTurn(turn, options)) {
+  if (options.signal?.aborted === true) throw new Error('the scripted stream was aborted')
+  yield chunk
+}
+```
+
+Three branches cover the three failure scripts, and the loop at the end is the normal path. Every chunk checks the cancel signal first, and the hang branch waits on `interrupted()`, which really does wait forever without a signal, exactly what `hang:` is meant to demonstrate. The recorded `requests` array is not only a debugging aid: tests use its length being zero to prove that a path never reached the model.
+
+### 4. Interception (`src/guard.ts`)
+
+```ts
+ctx.on('llm/stream', (options, next) => {
+  if (options.purpose !== undefined) return next()
+  const hit = matchBlockedWord(lastUserText(options), config.words)
+  if (hit === undefined) return next()
+  return refusalStream(`${config.refusal}（命中：${hit}）`)
+})
+```
+
+In a waterfall, whoever does not call `next()` becomes the end of the chain. The two pass-through conditions come first, so background calls and clean messages continue as usual; a hit returns a locally built chunk stream, and the adapter is never touched. That refusal stream must itself be valid, or the package invariant rejects it, which a test verifies.
+
 ## Script grammar
 
 The start of the last human message decides what this turn says.

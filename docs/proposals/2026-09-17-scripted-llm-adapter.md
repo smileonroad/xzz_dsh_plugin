@@ -1,8 +1,10 @@
 # 提案：scripted-llm-adapter —— 给 harness 接一个不用联网的模型提供方
 
-> 日期 2026-09-17。状态：范围与装配路径已确认（P1 + testkit），待开工。
+> 日期 2026-09-17。状态：**已完成**（P1 + 小的拦截图层）。
 > 前置实战：`examples/reply-tips/`（Client + Host 双端标准包 + Typert 线协议）已收尾并提交。
 > 本文按「为什么做 → 总体流程 → 实现方案 → 问题」的顺序写，先讲人话再落技术细节。
+>
+> 交付与验证（2026-09-17）：`examples/scripted-llm-adapter/`（`src/` 五个文件、21 条测试、`cordis.patch.yml`、`scripts/demo.mjs`、双语 README），`notes/2026-09-17-scripted-llm-adapter.md` 一篇。测试 21/21 通过；离线演示三条路径实测（正常回显、命中门禁拒绝、工具结果回传）都不联网不要密钥。开发期新增的三个发现记在笔记的「工程上还有三处现实的坑」，其中 patch 锚点那条把仓库里九个 patch 与六组 README 一并改正了。
 
 ## 一、这次练什么
 

@@ -128,6 +128,89 @@ agent loop 想调模型
 
 > **深入：为什么门禁能「假装」成模型。** 在 agent loop 眼里，`llm/stream` 返回什么就是什么：它拿到一段规范的文本分片流，装配成一条助手消息，记进会话，界面照常渲染。拦截层没有说谎，它只是把「这段流是谁产出的」从厂商 API 换成了本地策略。这也解释了 `llm/stream` 为什么是个有分量的扩展点 —— 重试、压缩、用量计量都挂在同一处。
 
+## 核心代码解读
+
+四个文件按「插件壳 → 规划 → 发流 → 拦截」的顺序读，加起来不到四百行。
+
+### 1. 插件壳（`src/index.ts`）
+
+```ts
+export const name = 'scripted-llm-adapter'
+export const inject = ['llm']
+export const Config: Schema<Config> = Schema.object({
+  providers: Schema.array(Schema.string()).default(['scripted']),
+  models: Schema.array(ModelSchema).default(DEFAULT_MODELS),
+})
+export function apply(ctx: Context, config: Config): void {
+  ctx.llm.registerAdapter(config.providers, new ScriptedAdapter(config.models))
+}
+```
+
+`inject` 保证 `ctx.llm` 就绪才执行 `apply`。配置走 Schemastery，路由名和模型目录都能在 patch 里改，不用改代码。注册是副作用，插件卸载时这些路由自动撤掉，所以 HMR 安全。
+
+### 2. 规划（`src/script.ts`）
+
+纯函数，不碰 Cordis 也不碰网络，所以能单独测。它干两件事，先认出「人在说什么」，再算出这一轮该发哪些分片。
+
+```ts
+export function planTurn(options: GenerateOptions): ScriptedTurn {
+  const completed = toolResultText(options)
+  if (completed !== undefined) return { kind: 'text', text: `${ECHO_PREFIX}tool returned ${completed}` }
+  const prompt = lastUserText(options).trim()
+  const match = COMMAND.exec(prompt)
+  // ...
+}
+```
+
+开头两行就是前面说的两个坑。历史末尾是工具结果，说明这一轮该收尾，不能再调一次工具；`lastUserText()` 里优先取来源是用户的文本，把 harness 注入的提醒排除掉。
+
+发分片的那段严格照协议顺序写。
+
+```ts
+chunks.push(
+  { type: 'block-start', index, blockType: 'tool-call' },
+  { type: 'tool-call-delta', index, id, name: turn.name, argumentsDelta: turn.arguments.slice(0, split) },
+  { type: 'tool-call-delta', index, id, argumentsDelta: turn.arguments.slice(split) },
+  { type: 'block-end', index, block: { type: 'tool-call', id, name: turn.name, arguments: turn.arguments } },
+  { type: 'usage', usage: { inputTokens, outputTokens: outputTokens + turn.arguments.length } },
+  { type: 'finish', reason: { kind: 'tool-calls' } },
+)
+```
+
+参数故意拆成两段发，是为了让「增量拼接」在测试里看得见；`arguments` 从头到尾都是原始 JSON 字符串，不提前解析，因为模型产出的参数本来可能是半截 JSON。
+
+### 3. 发流（`src/adapter.ts`）
+
+`stream()` 是唯一必须实现的方法。前两行把请求留档，然后按剧本分流。
+
+```ts
+this.requests.push(options)
+if (options.stop !== undefined) throw new LlmError('the scripted provider cannot honour stop sequences', 'UNSUPPORTED_OPTION')
+const turn = planTurn(options)
+if (turn.kind === 'failure') throw new LlmError(turn.message, turn.code)              // 抛，由运行时规范化
+if (turn.kind === 'empty') throw new LlmError('...', EMPTY_RESPONSE_CODE)
+if (turn.kind === 'hang') { /* 发半截文本 */ await interrupted(options.signal); return }
+for (const chunk of renderTurn(turn, options)) {
+  if (options.signal?.aborted === true) throw new Error('the scripted stream was aborted')
+  yield chunk
+}
+```
+
+三个分支对应三种失败剧本，最后一段是正常路径。每个分片发出前都看一眼取消信号；挂起分支靠 `interrupted()` 等信号，没有信号就真的等着，这正是 `hang:` 想演示的行为。留档的 `requests` 不只是方便调试，测试用它的长度为 0 来证明某条路根本没进模型。
+
+### 4. 拦截层（`src/guard.ts`）
+
+```ts
+ctx.on('llm/stream', (options, next) => {
+  if (options.purpose !== undefined) return next()
+  const hit = matchBlockedWord(lastUserText(options), config.words)
+  if (hit === undefined) return next()
+  return refusalStream(`${config.refusal}（命中：${hit}）`)
+})
+```
+
+瀑布的规矩是谁不调 `next()` 谁就是终点。这里两个放行条件排在前面，后台调用和没命中都照常往下走；命中就返回一段自己造的分片流，适配器完全没被碰到。拒绝流本身也要合规，否则会被包不变量拦下，测试里专门验过。
+
 ## 剧本文法
 
 最后一条人类消息的开头决定这一轮说什么。
