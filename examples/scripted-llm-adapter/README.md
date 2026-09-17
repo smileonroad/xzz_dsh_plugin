@@ -71,9 +71,9 @@ agent loop decides it needs the model
       └─ otherwise → the turn ends
 ```
 
-Only `stream()` is mandatory on this path. The other three (`providerInfo` / `listModels` / `resolveModel`) have defaults, and this example overrides them to show two conventions: the catalog is advisory, and capabilities must be declared truthfully.
+**Only `stream()` is mandatory on this path.** The other three (`providerInfo` / `listModels` / `resolveModel`) have defaults, and this example overrides them to show two conventions: **the catalog is advisory, and capabilities must be declared truthfully**.
 
-The default `prepareCall` deserves one sentence. It asks two things in a single pass, what this model can do and which entry point this request goes out through, and then keeps the answers together. Some adapters discover their model catalog at runtime, so between two operations the configuration may already have changed; keeping the pair together is what stops a request from being prepared with one model's parameters and sent to another. Our offline model needs no such protection, and the default provides it for free.
+The default `prepareCall` asks two things in a single pass, what this model can do and which entry point this request goes out through, and keeps the answers together. Some adapters discover their model catalog at runtime, so between two operations the configuration may already have changed; **keeping the pair together is what stops a request from being prepared with one model's parameters and sent to another**. Our offline model needs no such protection, and the default provides it for free.
 
 ### How a turn is planned
 
@@ -110,15 +110,20 @@ The difference exists only on the adapter side; consumers see the same shape. Th
 
 ### Capability declaration and registration
 
-What `resolveModel()` declares is not documentation; the framework enforces it. When an adapter declares reasoning levels (such as `off`, `low`, `high`), they pass through in the order it gave them, including the level that turns reasoning off. When a caller names a level that was never declared, `LlmRuntime` rejects the call **before** `stream()` is reached, and the test's evidence is that the adapter was never called at all. Omitting the level falls back to the declared default.
+**What `resolveModel()` declares is not documentation; the framework enforces it.** When an adapter declares reasoning levels (such as `off`, `low`, `high`), they pass through in the order it gave them, including the level that turns reasoning off. When a caller names a level that was never declared, `LlmRuntime` rejects the call **before** `stream()` is reached, and the test's evidence is that the adapter was never called at all. Omitting the level falls back to the declared default.
 
-Registration has its own rules worth remembering. One route can hold only one adapter, and a duplicate registration throws `DUPLICATE_ADAPTER`; registering several routes either succeeds entirely or fails entirely; the returned handle can be disposed and also supports `replace()`, which swaps every route at once after validating them all and does it in one synchronous step, leaving no window in between; calling `replace` after disposal throws `REGISTRATION_DISPOSED`. Registration is a side effect owned by the plugin lifetime, so HMR is safe.
+Registration has its own rules worth remembering.
+
+- One route holds one adapter; a duplicate registration throws `DUPLICATE_ADAPTER`.
+- Registering several routes either succeeds entirely or fails entirely.
+- The handle can be disposed, and `replace()` swaps every route at once after validating them all, in one synchronous step with no window in between; replacing after disposal throws `REGISTRATION_DISPOSED`.
+- Registration is a side effect owned by the plugin lifetime, so HMR is safe.
 
 ### Interception: answering without a model call
 
-Step ① in the diagram above is a waterfall, so a plugin can wrap the model call or skip it entirely. This example uses that for a blocked-word guard (`src/guard.ts`): when the input contains a word such as "permission" or "password", the guard answers with a configured refusal and the adapter is never called.
+Step ① in the diagram is a waterfall, so a plugin can wrap the model call or skip it entirely. This example uses that for a blocked-word guard (`src/guard.ts`): when the input contains a blocked word, the guard answers with a configured refusal and **the adapter is never called**.
 
-That policy deliberately does not live inside the adapter, because a policy should not grow on the provider. Swap in a real model and the adapter changes, while the guard has nothing to do with which model answers; "before the model call" is where it belongs.
+**The policy deliberately does not live inside the adapter, because a policy should not grow on the provider.** Swap in a real model and the adapter changes, while the guard has nothing to do with which model answers; "before the model call" is where it belongs.
 
 | What you want | Which extension point | What it costs |
 | --- | --- | --- |
@@ -126,7 +131,11 @@ That policy deliberately does not live inside the adapter, because a policy shou
 | Swallow the step silently | `agent/pre-step` returning `{ kind: 'reject' }` | The turn ends as `blocked`; the original text still produces inbox events |
 | Rewrite and let it through (redaction, added context) | `agent/pre-step` returning `{ kind: 'enter', messages }` | The model is still called, just with rewritten content |
 
-Three implementation details are worth remembering. First, the guard inspects the last thing a person said; tool results and harness-injected user messages do not count (both traps are already handled by `lastUserText()`). Second, a non-empty `options.purpose` marks a background call such as compaction or session titling, which must pass through or it gets interrupted. Third, the refusal has to be a **valid** chunk stream, since it goes through the same validation as adapter output; the spec runs it under the package invariant to prove that. No model call happened, so no `usage` is reported.
+Three implementation details.
+
+- The guard inspects **the last thing a person said**; tool results and harness-injected user messages do not count, both traps already handled by `lastUserText()`.
+- A non-empty `options.purpose` marks a background call such as compaction or session titling, which must pass through or it gets interrupted.
+- The refusal has to be a **valid** chunk stream, since it goes through the same validation as adapter output; the spec runs it under the package invariant to prove that. No model call happened, so no `usage` is reported.
 
 > **Deeper: why the guard can pass for the model.** To the agent loop, whatever `llm/stream` returns is the answer: it receives canonical text chunks, assembles one assistant message, records it in the session, and the UI renders it. The guard is not lying; it only changes who produced the stream, from a provider API to a local policy. That is also why `llm/stream` is a weighty extension point: retries, compaction, and token accounting all hang off the same place.
 
@@ -243,11 +252,11 @@ There is one rule: the start of the last human message decides what this turn sa
 
 ## Known limitations
 
-- This example parses no provider protocol, so HTTP request mapping, `attributionHeaders()`, SSE parsing, and retry classification are out of scope. To practise that layer, point the script at the OpenAI-compatible failure server in `packages/test-support/llm-mock-server`.
-- The guard only inspects what a person said, and the original text still lands in the session history. If compliance requires the text itself not to persist, use `agent/pre-step` with `{ kind: 'reject' }` instead, and confirm for yourself whether the inbox claim event still carries it.
-- The word list is substring matching, so it over-triggers: "permission management" is blocked too. The list travels through `Config`, so a patch can change it (see `cordis.patch.yml`); a regex or a whitelist is the next step if you need precision.
-- `listModels()` is display-only. Whether it reaches the browser selector is verified on the host side (the spec calls the same `buildModelCatalog` the web UI uses), but no automated browser click-through covers it.
-- The scripted model does no real inference, and `usage` is derived from message count and character count. Do not use it for measurement experiments.
+- **No provider protocol.** HTTP request mapping, `attributionHeaders()`, SSE parsing, and retry classification are out of scope; to practise them, point the offline model at an HTTP adapter for the OpenAI-compatible failure server in `packages/test-support/llm-mock-server`.
+- **The guard only inspects what a person said, and the original text still persists.** If compliance requires the text itself not to persist, use `agent/pre-step` with `{ kind: 'reject' }` instead, and confirm for yourself whether the inbox claim event still carries it.
+- **The word list is substring matching, so it over-triggers.** "permission management" is blocked too. The list travels through `Config`, so a patch can change it (see `cordis.patch.yml`); a regex or a whitelist is the next step if you need precision.
+- **Selector visibility is verified on the host side only.** The spec calls the same `buildModelCatalog` the web UI uses; no automated browser click-through covers it.
+- **The offline model does no real inference.** `usage` is derived from message count and character count, so do not use it for measurement experiments.
 
 ## Distribution
 

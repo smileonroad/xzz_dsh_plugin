@@ -15,11 +15,11 @@ export interface ScriptedModelConfig {
   /** 声明的上下文窗口（token）；缺省表示不声明，而不是 0。 */
   contextWindow?: number
   /**
-   * 有序的 reasoning 档位 id。原样透出给 harness，
+   * 有序的 reasoning 强度 id。原样透出给 harness，
    * 适配器支持 `off` 时就如实写 `off`，不要自作主张删掉。
    */
   reasoningEfforts?: string[]
-  /** 调用方没指定档位时落到的默认值；缺省表示不声明默认。 */
+  /** 调用方没指定强度时落到的默认值；缺省表示不声明默认。 */
   defaultReasoningEffort?: string
 }
 
