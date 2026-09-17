@@ -11,3 +11,9 @@ examples/*/bundle/index.js
 Thumbs.db
 .vscode/
 .idea/
+
+# Local scratch (not repository content)
+# `.pi/` is the pi coding-agent working directory; `tmp-recon/` holds throwaway
+# recon scripts and captures from the exploration step.
+.pi/
+tmp-recon/
