@@ -36,6 +36,16 @@ The demo script creates a throwaway `DSH_HOME` in a temp directory, writes a `se
 > pnpm dsh web --patch examples/scripted-llm-adapter/cordis.patch.yml
 > ```
 
+### Verifying in the web UI
+
+Once it is running, check these in order; each one has a clear expectation.
+
+1. The **startup log** should show no `warning: N entry did not activate` and no `failed to import`. Either one means the entry never mounted, so check the path against the `name` rule above first.
+2. The **model selector** (the model name above the composer) should list a `Scripted (scripted)` group containing `Scripted demo`. Both come from the adapter's `providerInfo` and `listModels`.
+3. **Send `hello`** and the reply should be `[scripted] hello`. If a real model answers normally instead, the old `agent-default-model` value in `~/.dsh/settings.yaml` is overriding the patch; picking the scripted model once in the UI writes the selection back to settings.
+4. **Try three more scripts.** `think:think first` emits a reasoning block before the text; `fail:RATE_LIMIT slipped` ends the turn as an error (code `RATE_LIMIT`); `hang:` stops the reply after `partial`, and pressing stop marks that message as interrupted.
+5. **The tool round trip.** Write `tool:<tool name> {...}` using a name visible in the UI: the tool really runs, and the second round echoes the result as `[scripted] tool returned …`. Getting the name wrong still exercises the whole loop, with the echo reading `[scripted] tool returned Error: unknown tool "…"`.
+
 ## Design
 
 ### Who a model call passes through
@@ -116,7 +126,7 @@ The start of the last human message decides what this turn says.
 
 ## Tests
 
-15 behaviours in four groups. Each group aims at a real runtime boundary rather than at internal functions.
+16 behaviours in four groups. Each group aims at a real runtime boundary rather than at internal functions.
 
 **One full conversation turn.** The harness's own test kit (`agent-loop-testkit`) mounts the production `AgentLoop`, the plugin is installed like any other plugin, and the test sends a message the way a user would. Three things are checked: whether what the model said assembles into one assistant message, whether the usage numbers come out right, and whether a tool can actually be driven (sending a script like `tool:echo {"text":"hi"}` runs two rounds, with the arguments staying a raw JSON string the whole way). One case guards a trap: the harness inserts user-role messages of its own making into the history (workspace instructions, skill catalogs), and the test confirms the model does not mistake one for something a person said. It also pins a counter-intuitive detail: the session log stores the packed form of the stream, where consecutive deltas collapse into one record, not the adapter's raw chunks.
 
@@ -129,7 +139,7 @@ The start of the last human message decides what this turn says.
 ## Known limitations
 
 - This example parses no provider protocol, so HTTP request mapping, `attributionHeaders()`, SSE parsing, and retry classification are out of scope. To practise that layer, point the script at the OpenAI-compatible failure server in `packages/test-support/llm-mock-server`.
-- `listModels()` is display-only, and whether the web model selector consumes it has not been verified. The web check is mounting the patch and looking for `Scripted (scripted)` in the model selector.
+- `listModels()` is display-only. Whether it reaches the browser selector is verified on the host side (the spec calls the same `buildModelCatalog` the web UI uses), but no automated browser click-through covers it.
 - The scripted model does no real inference, and `usage` is derived from message count and character count. Do not use it for measurement experiments.
 
 ## Distribution

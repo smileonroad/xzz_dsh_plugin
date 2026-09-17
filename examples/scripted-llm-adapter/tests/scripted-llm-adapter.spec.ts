@@ -20,6 +20,7 @@ import * as LlmInvariant from '@deepseek-ai/dsh-llm/invariant'
 import InvariantRegistry from '@deepseek-ai/dsh-invariants'
 import { SessionId } from '@deepseek-ai/dsh-session'
 import { defineTool } from '@deepseek-ai/dsh-tools'
+import { buildModelCatalog } from '@deepseek-ai/dsh-api-session-controller'
 import * as scripted from '../src/index.ts'
 import { ScriptedAdapter } from '../src/index.ts'
 import type { ScriptedModelConfig } from '../src/index.ts'
@@ -288,6 +289,29 @@ describe('剧本适配器：模型能力与注册', () => {
 
     await expect(ctx.llm.resolveCallConfig({ provider: 'scripted', model: 'demo' }))
       .resolves.toMatchObject({ reasoningEffort: 'low' })
+  })
+
+  it('浏览器模型选择器的数据源里能看到这个提供方与模型', async () => {
+    const ctx = await llmContext()
+    await ctx.plugin(scripted as never, pluginConfig())
+
+    // buildModelCatalog 是 web 侧模型选择器的 host 数据源，这里用同一个函数验证可见性。
+    const catalog = await buildModelCatalog(ctx, { provider: 'scripted', model: 'demo' })
+
+    expect(catalog.groups).toEqual([{
+      id: 'scripted',
+      name: 'Scripted (scripted)',
+      models: [{
+        id: 'demo',
+        name: 'Scripted demo',
+        reasoning: {
+          efforts: [{ id: 'off', name: 'off' }, { id: 'low', name: 'low' }, { id: 'high', name: 'high' }],
+          defaultEffort: 'low',
+        },
+      }],
+    }])
+    expect(catalog.routableProviders).toEqual(['scripted'])
+    expect(catalog.failures).toEqual([])
   })
 
   it('目录与能力各自独立：目录外的 id 接受，声明的能力原样透出', async () => {

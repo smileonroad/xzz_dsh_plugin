@@ -36,6 +36,16 @@ pnpm dsh web --patch examples/scripted-llm-adapter/cordis.patch.yml
 > pnpm dsh web --patch examples/scripted-llm-adapter/cordis.patch.yml
 > ```
 
+### 在 web 里验证
+
+启动后按顺序看这几件事，每一步都有明确的预期。
+
+1. **启动日志**里不应出现 `warning: N entry did not activate` 或 `failed to import`。出现了就是入口没挂上，先按上面的 name 规则检查路径。
+2. **模型选择器**（输入框上方的模型名）里应该出现 `Scripted (scripted)` 分组，下面有 `Scripted demo`。它来自适配器的 `providerInfo` 与 `listModels`。
+3. **发一句「你好」**，回复应是 `[scripted] 你好`。如果来的是真模型的正常回答，说明 `~/.dsh/settings.yaml` 里 `agent-default-model` 的旧选择盖住了 patch 的配置，在界面上重选一次模型就会写回 settings。
+4. **再试三条剧本**。`think:先想一下` 先出思考块再出文本；`fail:RATE_LIMIT 手滑了` 让这一轮以错误结束（错误码 RATE_LIMIT）；`hang:` 让回复停在一句 `partial`，点停止后这条消息被标记为已打断。
+5. **工具链路**。写 `tool:<工具名> {...}`（工具名用界面上能看到的），工具会真的执行，然后第二轮把结果回显成 `[scripted] tool returned …`。名字写错也算跑通一次完整回路，回显会变成 `[scripted] tool returned Error: unknown tool "…"`。
+
 ## 设计
 
 ### 一次模型调用经过谁
@@ -116,7 +126,7 @@ agent loop 想调模型
 
 ## 测试
 
-15 条，分四组。每一组都打在真实运行的那一层上，不去测内部函数。
+16 条，分四组。每一组都打在真实运行的那一层上，不去测内部函数。
 
 **第一组，跑完整的一轮对话。** 用 harness 自己的测试装配（`agent-loop-testkit`）把真实的 `AgentLoop` 挂起来，插件像普通插件那样装进去，然后像用户一样发一句话。看三件事：模型说的话有没有被正确拼成一条助手消息、用量算得对不对、工具能不能真的被调起来（发 `tool:echo {"text":"hi"}` 这样的剧本，跑完两轮，参数从头到尾保持原始 JSON 字符串）。还有一条专门防坑：harness 会往对话历史里塞它自己生成的 user 消息（工作区指令、技能目录之类），测试确认模型不会把这种消息当成人在说话。顺带钉住一件反直觉的事：会话日志里记的不是适配器原样的分片，而是连续增量被折成一条记录的打包形态。
 
@@ -129,7 +139,7 @@ agent loop 想调模型
 ## 已知限制
 
 - 本示例不解析任何厂商协议，也就不涉及 HTTP 请求映射、`attributionHeaders()`、SSE 解析与重试分类。想练那一层，可以把剧本换成 `packages/test-support/llm-mock-server`（OpenAI 兼容的故障服务器）指向的 base URL。
-- `listModels()` 只做展示，尚未验证 web 的模型选择器是否消费它；web 里的验证方式是挂上 patch 后在模型选择器里找 `Scripted (scripted)`。
+- `listModels()` 只做展示。它会不会出现在浏览器选择器里已在 host 侧验证（测试直接调用 web 用的那个 `buildModelCatalog`），但没有自动化的浏览器点击验证。
 - 剧本模型不做任何真实推理，`usage` 是按消息条数与字符数推算的，别拿它做计量实验。
 
 ## 怎么分发
