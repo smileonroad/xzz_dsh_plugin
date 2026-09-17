@@ -178,6 +178,25 @@ describe('剧本适配器：流协议与故障路径', () => {
       .rejects.toThrow(/after terminal finish/u)
   })
 
+  it('对流中途取消：半截内容被保留并标记为打断，agent 回到 idle', async () => {
+    const ctx = await loopContext()
+    const agent = await ctx.agentLoop.create(SessionId('cancel-round'), { provider: 'scripted', model: 'demo' })
+    let chunks = 0
+    ctx.on('agent/assistant-stream', ({ frame }) => { if (frame.type === 'chunk') chunks += 1 })
+
+    agent.followup(prompt('hang:'))
+    // 等第一个分片真的落地再取消，否则取消会早于任何内容，会话里不会留下打断的结算。
+    await vi.waitFor(() => { expect(chunks).toBeGreaterThan(0) })
+    agent.cancel({ kind: 'user' })
+    await agent.whenIdle()
+
+    expect(agent.status).toBe('idle')
+    expect(settlements(agent)[0]).toMatchObject({
+      interrupted: true,
+      message: { content: [{ type: 'text', text: 'partial' }] },
+    })
+  })
+
   it('适配器抛 LlmError 时，消费方看到的是规范化后的 error finish', async () => {
     const ctx = await llmContext()
     await ctx.plugin(scripted as never, pluginConfig())
@@ -271,12 +290,25 @@ describe('剧本适配器：模型能力与注册', () => {
       .resolves.toMatchObject({ reasoningEffort: 'low' })
   })
 
-  it('目录里没列出的模型 id 也接受，只是没有能力声明', async () => {
+  it('目录与能力各自独立：目录外的 id 接受，声明的能力原样透出', async () => {
     const ctx = await llmContext()
     ctx.llm.registerAdapter(['scripted'], new ScriptedAdapter([DEMO]))
 
+    // 目录是展示用的（可选项，且不包含上下文窗口）；未列出的 id 照样接受
+    await expect(ctx.llm.listModels('scripted')).resolves.toEqual([
+      { provider: 'scripted', id: 'demo', name: 'Scripted demo' },
+    ])
     await expect(ctx.llm.resolveModelInfo('scripted', 'not-in-catalog'))
       .resolves.toEqual({ provider: 'scripted', id: 'not-in-catalog', name: 'not-in-catalog' })
+
+    // 精确模型元数据里才有上下文窗口，reasoning 列表按声明顺序原样透出，包括 off
+    await expect(ctx.llm.resolveModelInfo('scripted', 'demo')).resolves.toMatchObject({
+      context: { contextWindow: 32000 },
+      reasoning: {
+        efforts: [{ id: 'off' }, { id: 'low' }, { id: 'high' }],
+        defaultEffort: 'low',
+      },
+    })
   })
 
   it('同一路由只能有一个适配器，replace 原子换路由，释放后不能再换', async () => {
