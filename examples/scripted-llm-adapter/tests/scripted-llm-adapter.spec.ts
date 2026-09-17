@@ -271,7 +271,7 @@ describe('离线模型适配器：流协议与故障路径', () => {
 })
 
 describe('离线模型适配器：模型能力与注册', () => {
-  it('显式指定不支持的 reasoning 强度时，stream() 根本不会被调用', async () => {
+  it('显式指定不支持的 reasoning 档位时，stream() 根本不会被调用', async () => {
     const ctx = await llmContext()
     const adapter = new ScriptedAdapter([DEMO])
     ctx.llm.registerAdapter(['scripted'], adapter)
@@ -284,7 +284,7 @@ describe('离线模型适配器：模型能力与注册', () => {
     expect(adapter.requests).toHaveLength(0)
   })
 
-  it('调用方省略强度时，落到适配器声明的默认值', async () => {
+  it('调用方省略档位时，落到适配器声明的默认值', async () => {
     const ctx = await llmContext()
     ctx.llm.registerAdapter(['scripted'], new ScriptedAdapter([DEMO]))
 

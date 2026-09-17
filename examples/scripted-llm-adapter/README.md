@@ -71,7 +71,9 @@ agent loop decides it needs the model
       └─ otherwise → the turn ends
 ```
 
-Only `stream()` is mandatory on this path. `LlmAdapter` provides defaults for `providerInfo` / `listModels` / `resolveModel` / `prepareCall`, and this example overrides them to show two conventions: the catalog is advisory, and capabilities must be declared truthfully. The default `prepareCall` binds the resolved model metadata and this generation's stream entry point into one atomic pair, so a dynamic-catalog adapter cannot combine one generation's capability with another generation's endpoint.
+Only `stream()` is mandatory on this path. The other three (`providerInfo` / `listModels` / `resolveModel`) have defaults, and this example overrides them to show two conventions: the catalog is advisory, and capabilities must be declared truthfully.
+
+The default `prepareCall` deserves one sentence. It asks two things in a single pass, what this model can do and which entry point this request goes out through, and then keeps the answers together. Some adapters discover their model catalog at runtime, so between two operations the configuration may already have changed; keeping the pair together is what stops a request from being prepared with one model's parameters and sent to another. Our offline model needs no such protection, and the default provides it for free.
 
 ### How a turn is planned
 
@@ -108,9 +110,9 @@ The difference exists only on the adapter side; consumers see the same shape. Th
 
 ### Capability declaration and registration
 
-What `resolveModel()` declares is genuinely validated. When reasoning capability is declared, the options pass through as the adapter's ordered opaque IDs, including `off`; when a caller explicitly asks for an unsupported level, `LlmRuntime` rejects it **before** calling `stream()`, and a test pins that with "`stream()` was never called". Omitting the level falls back to the adapter's declared default.
+What `resolveModel()` declares is not documentation; the framework enforces it. When an adapter declares reasoning levels (such as `off`, `low`, `high`), they pass through in the order it gave them, including the level that turns reasoning off. When a caller names a level that was never declared, `LlmRuntime` rejects the call **before** `stream()` is reached, and the test's evidence is that the adapter was never called at all. Omitting the level falls back to the declared default.
 
-Registration has its own rules worth remembering. One route can hold only one adapter, and a duplicate registration throws `DUPLICATE_ADAPTER`; registering several routes either succeeds entirely or fails entirely; the returned handle can be disposed and also supports `replace()` for an atomic route swap that validates everything first and swaps in one synchronous section, leaving no window; calling `replace` after disposal throws `REGISTRATION_DISPOSED`. Registration is a side effect owned by the plugin lifetime, so HMR is safe.
+Registration has its own rules worth remembering. One route can hold only one adapter, and a duplicate registration throws `DUPLICATE_ADAPTER`; registering several routes either succeeds entirely or fails entirely; the returned handle can be disposed and also supports `replace()`, which swaps every route at once after validating them all and does it in one synchronous step, leaving no window in between; calling `replace` after disposal throws `REGISTRATION_DISPOSED`. Registration is a side effect owned by the plugin lifetime, so HMR is safe.
 
 ### Interception: answering without a model call
 
