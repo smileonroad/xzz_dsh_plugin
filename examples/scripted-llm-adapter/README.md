@@ -116,12 +116,15 @@ The start of the last human message decides what this turn says.
 
 ## Tests
 
-14 behaviours in four groups, observed at real boundaries rather than internal implementation.
+15 behaviours in four groups. Each group aims at a real runtime boundary rather than at internal functions.
 
-- **End to end** (mounting the `agent-loop-testkit` prerequisites plus the production AgentLoop): a text turn assembles an assistant message and usage, and pins that "the session records the packed stream"; a tool-call turn runs two rounds with arguments staying raw JSON and the tool result returning to the model; harness-injected user messages are not mistaken for the human prompt.
-- **Stream protocol and failure** (reading `ctx.llm.stream()` directly): block order and indexes; a deliberately malformed stream rejected by the package invariant; throw normalization; in-band failure; `UNSUPPORTED_OPTION`; `EMPTY_RESPONSE`; mid-stream abort.
-- **Capability**: an explicitly unsupported reasoning level leaves `stream()` uncalled; omitting it falls back to the declared default; a model id outside the catalog is still accepted.
-- **Registration**: duplicate registration, atomic `replace()`, and `REGISTRATION_DISPOSED`.
+**One full conversation turn.** The harness's own test kit (`agent-loop-testkit`) mounts the production `AgentLoop`, the plugin is installed like any other plugin, and the test sends a message the way a user would. Three things are checked: whether what the model said assembles into one assistant message, whether the usage numbers come out right, and whether a tool can actually be driven (sending a script like `tool:echo {"text":"hi"}` runs two rounds, with the arguments staying a raw JSON string the whole way). One case guards a trap: the harness inserts user-role messages of its own making into the history (workspace instructions, skill catalogs), and the test confirms the model does not mistake one for something a person said. It also pins a counter-intuitive detail: the session log stores the packed form of the stream, where consecutive deltas collapse into one record, not the adapter's raw chunks.
+
+**The protocol on its own.** These read `ctx.llm.stream()` directly, without an agent in front. Block order and indexes; a deliberately malformed stream (one extra delta after `finish`) being rejected by the kernel's invariant; an adapter throw arriving as a well-formed error finish; and whether in-band failure, `UNSUPPORTED_OPTION`, `EMPTY_RESPONSE`, and a mid-stream cancel each take the path they are supposed to.
+
+**Capability declaration.** Declared reasoning levels have to be honoured: when a caller explicitly asks for an undeclared level, `stream()` must never be called; when the caller stays silent, the declared default applies; a model id missing from the catalog still works, because the catalog is display-only.
+
+**Registration.** One route cannot hold two adapters; `replace()` swaps routes atomically, so no request falls through a gap mid-swap; and replacing after disposal throws `REGISTRATION_DISPOSED`.
 
 ## Known limitations
 
