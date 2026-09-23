@@ -4,31 +4,33 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 仓库定位
 
-本仓库是 **dsh（DeepSeek Harness）插件开发的学习与实践记录**，不是 dsh 本体源码。它由三部分组成：
+本仓库是 **dsh（DeepSeek Harness）的学习与实践记录**，不是 dsh 本体源码。内容按「先懂、再用、再写」排成三段，外加一个元信息目录：
 
-- `docs/` — 自写学习摘要（对官方文档的提炼，新内容先写到这里）
-- `reference/` — 上游官方材料副本（**只读**，勿编辑，内容来自 deepseek-harness 源码）
-- `notes/` — 对外发布的经验笔记（每篇对应一个 `examples/` 实战）
-- `examples/` — 实战源码，每个目录可独立下载（含测试）
+- `01-learn-basics/` — DSH 基础学习。`notes/` 自写摘要、`sources/` 官方材料副本（**只读**，勿编辑）、`examples/` 最小可运行示例。
+- `02-practice-app/` — DSH 应用练习。`notes/` 应用形态笔记、`scripts/` 零依赖运行器与 cordis 配置、`sources/` 应用侧材料。
+- `03-practice-plugin/` — DSH 插件练习。`examples/` 实战源码（每目录可独立下载，含测试）、`notes/` 对外发布的经验笔记、`sources/` 官方插件手册副本。
+- `meta/` — 仓库元信息（整体索引 `index.md`、写作规范、`proposals/` 提案），不属于任何一段。
 
-**本仓库是 deepseek-harness 源码的子集/镜像，examples 是源码权威来源**：
+三段内部用同一套词汇。**`notes/` 是自己写的，`sources/` 是别人写的，`examples/`（或 `scripts/`）是能跑的。**
 
-- 本仓库的 `examples/<项目>/` 是插件源码的权威来源。要运行，把它**拷贝到 deepseek-harness 源码的 `examples/<项目>/`**（覆盖；同名目录可能因旧内容而不同步），再在 deepseek-harness 根目录跑测试或 `--patch` 加载。
+**本仓库是 deepseek-harness 源码的子集/镜像，`03-practice-plugin/examples` 是源码权威来源**：
+
+- 本仓库的 `03-practice-plugin/examples/<项目>/` 是插件源码的权威来源。要运行，把它**拷贝到 deepseek-harness 源码的 `examples/<项目>/`**（覆盖；同名目录可能因旧内容而不同步），再在 deepseek-harness 根目录跑测试或 `--patch` 加载。拷贝后目录内的相对引用不受影响（它们相对自身解析）。
 - 测试必须在 deepseek-harness 根目录运行（依赖 `@deepseek-ai/dsh-*` 包、`tsconfig.json`、`tsx`）。
-- 本仓库 ↔ deepseek-harness 的对应关系见 `docs/README.md`；新增 reference 副本或 examples 时要同步更新。
+- 本仓库 ↔ deepseek-harness 的对应关系见 `meta/index.md`；新增 `sources/` 副本或 `examples/` 实战时要同步更新。
 
 ## 常用命令
 
 测试与调试（**都在 deepseek-harness 根目录执行**；先把本仓库 examples 同步过去）：
 
 ```sh
-cp -r <本仓库>/examples/<项目> ../deepseek-harness/examples/<项目>  # 同步（权威源在本仓库）
+cp -r <本仓库>/03-practice-plugin/examples/<项目> ../deepseek-harness/examples/<项目>  # 同步（权威源在本仓库）
 pnpm exec vitest run examples/<项目>/tests/<项目>.spec.ts            # 跑测试
 pnpm exec vitest run ... --disableConsoleIntercept --silent=false   # 透传 console 调试
 pnpm dsh web --patch examples/<项目>/<项目>.patch.yml               # 临时挂进 web
 ```
 
-分发为可安装 bundle 的完整验证流程见 `docs/plugin-package.md`（`pnpm run constraints && typecheck && lint` 等）。
+分发为可安装 bundle 的完整验证流程见 `03-practice-plugin/notes/plugin-package.md`（`pnpm run constraints && typecheck && lint` 等）。
 
 ## 核心心智模型
 
@@ -57,20 +59,21 @@ pnpm dsh web --patch examples/<项目>/<项目>.patch.yml               # 临时
 **新实战必须按「探索 → 提案 → 开发」三步走，禁止直接动手写代码。**
 
 1. **探索**：先进入探索模式（openspec-explore 立场），只读源码/文档、画图、捋思路，不写实现代码。目标是产出选题与形态的判断——对应官方哪份指引、练什么、验证方式是什么。
-2. **提案**：探索有结论后，固化成**正式提案**再动手。提案至少包含选题依据（对应官方指引/教程章节）、实战形态（目录结构、插件角色、测试与验证方式）、风险与开放问题。本仓库未初始化 OpenSpec 时，提案写入 `docs/proposals/<日期>-<项目>.md`；初始化后走 OpenSpec change proposal。
+2. **提案**：探索有结论后，固化成**正式提案**再动手。提案至少包含选题依据（对应官方指引/教程章节）、实战形态（目录结构、插件角色、测试与验证方式）、风险与开放问题。本仓库未初始化 OpenSpec 时，提案写入 `meta/proposals/<日期>-<项目>.md`；初始化后走 OpenSpec change proposal。
 3. **开发**：提案经确认后才写源码、测试、README、笔记，按系列惯例收尾并提交。
 
 **提交/推送纪律**：commit 按逻辑单位一次一个（粒度照旧）；**推送不每次提交都做**，攒到一批（一个实战收尾或几次提交）再 `git push`。推送走 SSH（origin 已设为 `git@github.com:...`；沙箱下需要完整权限，因为 git/ssh 要以 pipe stdio 启动子进程）。
 
 ## 文档维护约定
 
-- **整体索引在 [docs/README.md](docs/README.md)**：`docs/*.md` 摘要目录 + 摘要↔上游 hash 配对表 + 实战/开发流程速记/deepseek-harness 关键源码。根 `README.md` 只留定位、目录结构、验证方式、什么是 dsh、许可（不单列快速导航，实践列表并入目录结构）；新增 `docs/*.md` 摘要或编辑摘要/上游同步时，更新配对表并重记 hash。
-- 本仓库 ↔ deepseek-harness 的对应关系在 `docs/README.md` 维护，新增 `reference/` 副本或 `examples/` 实战时更新。
-- 双语 README（`README.md` / `README.zh.md`）保持同步，改完重记 `README.i18n.yaml` hash（根目录与 helloworld 目录保留，其他双语对不强制加）。
-- `notes/<日期>-<项目>.md` 是学习心得精炼版，`examples/<项目>/README` 是源码使用说明；两者互补，勿重复维护。
-- 实战组织方式固定为「一个源码目录（`examples/`）+ 一篇笔记（`notes/`）」。
-- **笔记写作风格见 [docs/notes-writing-style.md](docs/notes-writing-style.md)**：写 `notes/` 笔记前先读（系列结构 + 正常表达为主、卡兹克味点缀 + 硬性规则 + 自检）。
-- **README 写作风格见 [docs/readme-writing-style.md](docs/readme-writing-style.md)**：写/改 `examples/<项目>/README` 前先读（直觉先行 + 逻辑递进 + 深挖块 + 双语同步）。
+- **整体索引在 [meta/index.md](meta/index.md)**：摘要目录 + 摘要↔上游 hash 配对表 + 开发流程速记 + deepseek-harness 关键源码。根 `README.md` 只留定位、目录结构、验证方式、什么是 dsh、许可（不单列快速导航，实践列表并入目录结构）；新增摘要或编辑摘要/上游同步时，更新配对表并重记 hash。
+- **命名规范**（三段同形，2026-09-23 定）：段目录 `NN-<slug>/`（`learn-` 学习段、`practice-` 练习段）；段内必有 `README.md`，`notes/` 与 `examples/`（或 `scripts/`）必建，`sources/` 有材料才建。`notes/` 用 `YYYY-MM-DD-<slug>.md`，有对应实战的 slug 与 `examples/` 项目名一致。`sources/` **保持上游原文件名与相对路径**，只读。实战目录必带 `README.md` / `README.zh.md` / `README.i18n.yaml` / `src/` / `tests/<slug>.spec.ts` / `vitest.examples.config.ts` / `LICENSE`；教学示例 patch 叫 `<slug>.patch.yml`，标准 bundle 才叫 `cordis.patch.yml`（名字被 `package.json` 的 `dsh.bundle.patch` 锁定）。
+- 本仓库 ↔ deepseek-harness 的对应关系在 `meta/index.md` 维护，新增 `sources/` 副本或 `examples/` 实战时更新。
+- 双语 README（根 `README.md` / `README.zh.md`，以及各实战目录）保持同步，改完重记对应 `README.i18n.yaml` 的 hash（根目录与 helloworld 目录保留，其他双语对不强制加）。
+- `03-practice-plugin/notes/<日期>-<项目>.md` 是学习心得精炼版，`03-practice-plugin/examples/<项目>/README` 是源码使用说明；两者互补，勿重复维护。
+- 实战组织方式固定为「一个源码目录（`03-practice-plugin/examples/`）+ 一篇笔记（`03-practice-plugin/notes/`）」。
+- **笔记写作风格见 [meta/notes-writing-style.md](meta/notes-writing-style.md)**：写 `notes/` 笔记前先读（系列结构 + 正常表达为主、卡兹克味点缀 + 硬性规则 + 自检）。
+- **README 写作风格见 [meta/readme-writing-style.md](meta/readme-writing-style.md)**：写/改 `examples/<项目>/README` 前先读（直觉先行 + 逻辑递进 + 深挖块 + 双语同步）。
 - **定稿前通读**：README 和笔记写完，以普通读者身份通读一遍，检查不通顺处并评审修改（规则见两份风格文档的「定稿前通读 / 自检」）。
 
 ## 关键源码位置（deepseek-harness 内）

@@ -3,8 +3,8 @@ node_modules/
 *.log
 
 # Build output (bundle/index.js is built from src/ via esbuild; keep it out
-# of git — rebuild with the command in examples/csv-query-tool/README.md)
-examples/*/bundle/index.js
+# of git — rebuild with the command in 03-practice-plugin/examples/csv-query-tool/README.md)
+03-practice-plugin/examples/*/bundle/index.js
 
 # OS / editor
 .DS_Store
