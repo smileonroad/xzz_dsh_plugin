@@ -27,4 +27,4 @@
 - 这一步懂了概念，去 [02-practice-app](../02-practice-app/) 把 dsh 本身跑起来（headless / acp / jsonrpc / web / schedule）。
 - 想改 dsh 的行为，去 [03-practice-plugin](../03-practice-plugin/) 自己写插件。
 
-整体索引与摘要↔上游 hash 配对见 [meta/index.md](../meta/index.md)。
+摘要↔上游 hash 配对见 [meta/upstream-pairing.md](../meta/upstream-pairing.md)。

@@ -45,7 +45,7 @@ xzz-dsh-plugin/
 │   ├── sources/              # copies of the official plugin-authoring manuals (read-only)
 │   └── examples/             # 11 hands-on projects (source of truth)
 └── meta/                     # repository metadata, belonging to no stage
-    ├── index.md              # master index + summary↔upstream hash pairing
+    ├── upstream-pairing.md   # summary↔upstream hash pairing
     ├── notes-writing-style.md / readme-writing-style.md
     └── proposals/            # development proposals
 ```
@@ -53,10 +53,6 @@ xzz-dsh-plugin/
 All three stages share one vocabulary. **`notes/` is what I wrote,
 `sources/` is what someone else wrote, and `examples/` (or `scripts/`) is what
 runs.**
-
-**Master index: [meta/index.md](meta/index.md)** (summary catalog,
-summary↔upstream hash pairing, development workflow cheatsheet, key
-deepseek-harness sources).
 
 ## What is DeepSeek Harness (dsh)
 
@@ -87,4 +83,4 @@ and the official
   ships its own `LICENSE` (MIT) and can be downloaded and distributed
   independently.
 - The referenced dsh official docs/source follow their upstream license (the
-  dsh repo is MIT); the pairing is recorded in `meta/index.md`.
+  dsh repo is MIT); the pairing is recorded in `meta/upstream-pairing.md`.

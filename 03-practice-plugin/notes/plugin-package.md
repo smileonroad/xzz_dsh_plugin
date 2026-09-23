@@ -1,7 +1,7 @@
 # 插件包布局与分发
 
 > 摘要：dsh 插件包的布局、命名、README 规范与验证流程，以及独立分发包（装进任意 profile）的双面 Client 形态、官方安装通道 `dsh plugin add` 与浏览器产物必须的 `__ModuleLoader__` 工厂格式。
-> 上游：[`sources/cookbook/adding-a-package.zh.md`](../sources/cookbook/adding-a-package.zh.md) + deepseek-harness `docs/user/develop/basic/publish.md`（后者在本仓库 sources/ 未收录，hash 不配对；见 `meta/index.md` 配对表备注）。
+> 上游：[`sources/cookbook/adding-a-package.zh.md`](../sources/cookbook/adding-a-package.zh.md) + deepseek-harness `docs/user/develop/basic/publish.md`（后者在本仓库 sources/ 未收录，hash 不配对；见 `meta/upstream-pairing.md` 配对表备注）。
 
 ## 包的最小结构
 

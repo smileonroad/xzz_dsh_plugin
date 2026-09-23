@@ -53,4 +53,4 @@ pnpm exec vitest run --config examples/<项目>/vitest.examples.config.ts exampl
 - 概念没打底的，先看 [01-learn-basics](../01-learn-basics/)。
 - 只想把 dsh 用起来、不打算写插件，看 [02-practice-app](../02-practice-app/)。
 
-整体索引、摘要↔上游 hash 配对、开发流程速记见 [meta/index.md](../meta/index.md)。
+摘要↔上游 hash 配对见 [meta/upstream-pairing.md](../meta/upstream-pairing.md)；开发流程速记与关键源码位置见 [CLAUDE.md](../CLAUDE.md)。

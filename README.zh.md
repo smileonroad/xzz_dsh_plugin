@@ -37,14 +37,12 @@ xzz-dsh-plugin/
 │   ├── sources/              # 官方插件开发手册副本（只读）
 │   └── examples/             # 11 个实战源码（权威来源）
 └── meta/                     # 元信息，不属于任何一段
-    ├── index.md              # 整体索引 + 摘要↔上游 hash 配对
+    ├── upstream-pairing.md   # 摘要↔上游 hash 配对
     ├── notes-writing-style.md / readme-writing-style.md
     └── proposals/            # 开发提案
 ```
 
 三段内部用同一套词汇。**`notes/` 是自己写的，`sources/` 是别人写的，`examples/`（或 `scripts/`）是能跑的。**
-
-**整体索引：[meta/index.md](meta/index.md)**（各篇摘要 + 摘要↔上游 hash 配对 + 开发流程速记 + deepseek-harness 关键源码）。
 
 ## 什么是 DeepSeek Harness（dsh）
 
@@ -62,4 +60,4 @@ xzz-dsh-plugin/
 
 - 项目根 `LICENSE` 覆盖全仓库。
 - 独立源码包 `03-practice-plugin/examples/helloworld-command/` 自带 `LICENSE`（MIT），可独立下载、独立分发。
-- 引用的 dsh 官方文档/源码遵循其上游许可（dsh 仓库为 MIT），本仓库已在 `meta/index.md` 中标注对应关系。
+- 引用的 dsh 官方文档/源码遵循其上游许可（dsh 仓库为 MIT），本仓库已在 `meta/upstream-pairing.md` 中标注对应关系。

@@ -39,4 +39,4 @@ node 02-practice-app/scripts/run-headless.mjs "<你的任务>"
 - 概念没打底的，先看 [01-learn-basics](../01-learn-basics/)。
 - 想改 dsh 的行为而不只是用，去 [03-practice-plugin](../03-practice-plugin/) 写插件。
 
-整体索引见 [meta/index.md](../meta/index.md)。
+三段的入口各自在段 README；其它元信息见 [meta/](../meta/)。

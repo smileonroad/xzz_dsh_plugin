@@ -9,7 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `01-learn-basics/` — DSH 基础学习。`notes/` 自写摘要、`sources/` 官方材料副本（**只读**，勿编辑）、`examples/` 最小可运行示例。
 - `02-practice-app/` — DSH 应用练习。`notes/` 应用形态笔记、`scripts/` 零依赖运行器与 cordis 配置、`sources/` 应用侧材料。
 - `03-practice-plugin/` — DSH 插件练习。`examples/` 实战源码（每目录可独立下载，含测试）、`notes/` 对外发布的经验笔记、`sources/` 官方插件手册副本。
-- `meta/` — 仓库元信息（整体索引 `index.md`、写作规范、`proposals/` 提案），不属于任何一段。
+- `meta/` — 仓库元信息（摘要↔上游配对 `upstream-pairing.md`、写作规范、`proposals/` 提案），不属于任何一段。
 
 三段内部用同一套词汇。**`notes/` 是自己写的，`sources/` 是别人写的，`examples/`（或 `scripts/`）是能跑的。**
 
@@ -17,7 +17,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - 本仓库的 `03-practice-plugin/examples/<项目>/` 是插件源码的权威来源。要运行，把它**拷贝到 deepseek-harness 源码的 `examples/<项目>/`**（覆盖；同名目录可能因旧内容而不同步），再在 deepseek-harness 根目录跑测试或 `--patch` 加载。拷贝后目录内的相对引用不受影响（它们相对自身解析）。
 - 测试必须在 deepseek-harness 根目录运行（依赖 `@deepseek-ai/dsh-*` 包、`tsconfig.json`、`tsx`）。
-- 本仓库 ↔ deepseek-harness 的对应关系见 `meta/index.md`；新增 `sources/` 副本或 `examples/` 实战时要同步更新。
+- 本仓库 ↔ deepseek-harness 的对应关系见 `meta/upstream-pairing.md`；新增 `sources/` 副本或 `examples/` 实战时要同步更新。
 
 ## 常用命令
 
@@ -66,9 +66,9 @@ pnpm dsh web --patch examples/<项目>/<项目>.patch.yml               # 临时
 
 ## 文档维护约定
 
-- **整体索引在 [meta/index.md](meta/index.md)**：摘要目录 + 摘要↔上游 hash 配对表 + 开发流程速记 + deepseek-harness 关键源码。根 `README.md` 只留定位、目录结构、验证方式、什么是 dsh、许可（不单列快速导航，**也不列经验文章清单** —— 笔记与实战清单在段索引 `03-practice-plugin/README.md` 与 [meta/index.md](meta/index.md)）；新增摘要或编辑摘要/上游同步时，更新配对表并重记 hash。
-- **命名规范**（三段同形，2026-09-23 定）：段目录 `NN-<slug>/`（`learn-` 学习段、`practice-` 练习段）；段内必有 `README.md`，`notes/` 与 `examples/`（或 `scripts/`）必建，`sources/` 有材料才建。`notes/` 分三类：**学习摘要**按主题命名（`<topic>.md`，如 `cordis-basics.md`、`typescript-basics.md`），上游配对记进 `meta/index.md`；**实战笔记**用 `YYYY-MM-DD-<slug>.md`，slug 与 `examples/` 项目名一致；**系列笔记**是一个目录（`<topic>/README.md` 作总览 + 分章文件，如 `cordis-tutorial/`）。`sources/` **保持上游原文件名与相对路径**，只读。实战目录必带 `README.md` / `README.zh.md` / `README.i18n.yaml` / `src/` / `tests/<slug>.spec.ts` / `vitest.examples.config.ts` / `LICENSE`；教学示例 patch 叫 `<slug>.patch.yml`，标准 bundle 才叫 `cordis.patch.yml`（名字被 `package.json` 的 `dsh.bundle.patch` 锁定）。
-- 本仓库 ↔ deepseek-harness 的对应关系在 `meta/index.md` 维护，新增 `sources/` 副本或 `examples/` 实战时更新。
+- **不设全仓「整体索引」**。入口在根 `README.md`（定位、目录结构、验证方式、什么是 dsh、许可）；每段的内容清单在各段 `README.md`；`meta/` 只放别处没有的东西 —— 摘要↔上游配对表（[upstream-pairing.md](meta/upstream-pairing.md)）、写作规范、提案。新增摘要或同步上游时，更新配对表并重记 hash。
+- **命名规范**（三段同形，2026-09-23 定）：段目录 `NN-<slug>/`（`learn-` 学习段、`practice-` 练习段）；段内必有 `README.md`，`notes/` 与 `examples/`（或 `scripts/`）必建，`sources/` 有材料才建。`notes/` 分三类：**学习摘要**按主题命名（`<topic>.md`，如 `cordis-basics.md`、`typescript-basics.md`），上游配对记进 `meta/upstream-pairing.md`；**实战笔记**用 `YYYY-MM-DD-<slug>.md`，slug 与 `examples/` 项目名一致；**系列笔记**是一个目录（`<topic>/README.md` 作总览 + 分章文件，如 `cordis-tutorial/`）。`sources/` **保持上游原文件名与相对路径**，只读。实战目录必带 `README.md` / `README.zh.md` / `README.i18n.yaml` / `src/` / `tests/<slug>.spec.ts` / `vitest.examples.config.ts` / `LICENSE`；教学示例 patch 叫 `<slug>.patch.yml`，标准 bundle 才叫 `cordis.patch.yml`（名字被 `package.json` 的 `dsh.bundle.patch` 锁定）。
+- 本仓库 ↔ deepseek-harness 的对应关系在 `meta/upstream-pairing.md` 维护，新增 `sources/` 副本或 `examples/` 实战时更新。
 - 双语 README（根 `README.md` / `README.zh.md`，以及各实战目录）保持同步，改完重记对应 `README.i18n.yaml` 的 hash（根目录与 helloworld 目录保留，其他双语对不强制加）。
 - `03-practice-plugin/notes/<日期>-<项目>.md` 是学习心得精炼版，`03-practice-plugin/examples/<项目>/README` 是源码使用说明；两者互补，勿重复维护。
 - 实战组织方式固定为「一个源码目录（`03-practice-plugin/examples/`）+ 一篇笔记（`03-practice-plugin/notes/`）」。
