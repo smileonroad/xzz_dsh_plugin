@@ -1,0 +1,4 @@
+# targets 应该是数组，这里故意写成字符串 —— 应该在校验阶段就报错
+- name: './config-demo.ts'
+  config:
+    targets: 'not-an-array'

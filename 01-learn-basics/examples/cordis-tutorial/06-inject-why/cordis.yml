@@ -1,0 +1,7 @@
+# cordis.yml —— 三个顶层条目；late / child / greeter 由 dynamic.ts 按时间线挂载
+- id: parent
+  name: './parent.ts'      # 有 inject，但 boot 时没人提供 → PENDING
+- id: poll
+  name: './poll.ts'        # 无 inject，用 ctx.get 手动读
+- id: dynamic
+  name: './dynamic.ts'     # 时间线导演

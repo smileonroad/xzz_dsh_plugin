@@ -1,0 +1,2 @@
+# 完全不写 config —— 观察 .default() 是否被填充
+- name: './config-demo.ts'

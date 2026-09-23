@@ -1,0 +1,5 @@
+# !!js 标签：这个字符串会被当成 JS 表达式求值（能读到 process.env）
+- name: './js-tag-demo.ts'
+  config:
+    greeting: !!js process.env.DEMO_GREETING
+    target: env-test

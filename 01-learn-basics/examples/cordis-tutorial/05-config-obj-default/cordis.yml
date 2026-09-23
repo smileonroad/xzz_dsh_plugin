@@ -1,0 +1,4 @@
+# 非法配置 —— 如果对象字面量里的 Config 生效，应该被拦下
+- name: './obj-config.ts'
+  config:
+    targets: 'not-an-array'

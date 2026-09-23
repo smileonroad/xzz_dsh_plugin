@@ -1,0 +1,3 @@
+# 把 orphan 直接挂在【根】下，且没有任何祖先声明过 inject
+- id: orphan
+  name: './orphan.ts'

@@ -1,0 +1,2 @@
+- name: './js-tag-demo.ts'
+  id: !!js process.env.DEMO_GREETING

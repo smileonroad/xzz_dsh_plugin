@@ -1,0 +1,4 @@
+# 顶层写成对象而不是数组 —— 应该在 validate 阶段报 ConfigFileError
+name: './js-tag-demo.ts'
+config:
+  greeting: '你好'

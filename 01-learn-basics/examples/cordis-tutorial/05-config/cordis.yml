@@ -1,0 +1,6 @@
+- name: './config-demo.ts'
+  config:
+    greeting: '你好'
+    targets:
+      - alpha
+      - beta

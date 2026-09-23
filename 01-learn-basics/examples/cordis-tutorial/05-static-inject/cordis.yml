@@ -1,0 +1,2 @@
+# 没有任何插件提供 greeter 服务 —— 如果 static inject 生效，本插件应保持沉默
+- name: './class-inject.ts'
