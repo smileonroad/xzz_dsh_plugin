@@ -1,0 +1,4 @@
+# 传【非法】配置
+- name: './cfg-class-module.ts'
+  config:
+    targets: 'not-an-array'
