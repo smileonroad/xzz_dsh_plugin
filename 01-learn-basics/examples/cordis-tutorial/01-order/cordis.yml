@@ -1,0 +1,4 @@
+# 注意：消费者写在【前面】，提供方写在【后面】
+# 但 A 依赖 hello 服务，所以实际执行顺序由依赖决定，不由位置决定
+- name: './a-consumer.ts'
+- name: './b-provider.ts'

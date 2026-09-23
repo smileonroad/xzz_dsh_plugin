@@ -1,0 +1,3 @@
+- name: './fn-plugin.ts'
+- name: './obj-plugin.ts'
+- name: './cls-plugin.ts'
