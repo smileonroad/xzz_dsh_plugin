@@ -2,7 +2,7 @@
 
 > 面向 DeepSeek Harness 代码库的入门笔记。例子尽量取自 harness 真实代码，便于对照理解。
 >
-> 配套阅读：[架构文档（官方，已归档）](../sources/architecture.zh.md)
+> 配套文档：[架构文档带领阅读](architecture-reading.md)
 
 ---
 
