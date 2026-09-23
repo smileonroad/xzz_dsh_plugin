@@ -9,6 +9,7 @@
 | 基础学习段总览 | [../01-learn-basics/](../01-learn-basics/) |
 | 应用练习段总览 | [../02-practice-app/](../02-practice-app/) |
 | 插件练习段总览 | [../03-practice-plugin/](../03-practice-plugin/) |
+| TypeScript 与工程化基础（tsconfig / ESM / monorepo） | [../01-learn-basics/notes/typescript-basics.md](../01-learn-basics/notes/typescript-basics.md) |
 | 插件模型入门（命令／工具／服务／effect） | [../01-learn-basics/notes/cordis-basics.md](../01-learn-basics/notes/cordis-basics.md) |
 | 添加模型工具（工具 vs 命令、执行扩展点） | [../03-practice-plugin/notes/adding-a-tool.md](../03-practice-plugin/notes/adding-a-tool.md) |
 | 插件包布局、独立分发包与官方安装通道 | [../03-practice-plugin/notes/plugin-package.md](../03-practice-plugin/notes/plugin-package.md) |

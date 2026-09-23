@@ -4,16 +4,17 @@
 
 ## 从哪读起
 
-1. [sources/architecture.zh.md](sources/architecture.zh.md) — dsh 的整体架构，先建立全局印象。
-2. [notes/cordis-basics.md](notes/cordis-basics.md) — Cordis 基础，插件、context、服务、事件、effect 五件事。
-3. [sources/cordis-primer.zh.md](sources/cordis-primer.zh.md) — Cordis 官方入门，看一遍原文。
-4. [sources/cordis-tutorial/](sources/cordis-tutorial/) — 官方七步教程，从第一个插件写到接进 harness。
+1. [notes/typescript-basics.md](notes/typescript-basics.md) — TypeScript 与工程化小抄。没写过 TS、或者被 `tsconfig.json` / 包解析绊住的，从这篇开始。
+2. [sources/architecture.zh.md](sources/architecture.zh.md) — dsh 的整体架构，先建立全局印象。
+3. [notes/cordis-basics.md](notes/cordis-basics.md) — Cordis 基础，插件、context、服务、事件、effect 五件事。
+4. [sources/cordis-primer.zh.md](sources/cordis-primer.zh.md) — Cordis 官方入门，看一遍原文。
+5. [sources/cordis-tutorial/](sources/cordis-tutorial/) — 官方七步教程，从第一个插件写到接进 harness。
 
 ## 目录
 
 | 目录 | 装什么 |
 | --- | --- |
-| `notes/` | 自写学习摘要，目前一篇 `cordis-basics.md` |
+| `notes/` | 自写学习摘要，目前两篇：`typescript-basics.md`（语言与工程化）、`cordis-basics.md`（Cordis 容器） |
 | `sources/` | 官方一手材料副本（只读，版权归上游）：`cordis-primer`、`cordis-tutorial/`、`architecture` |
 | `examples/` | 基础概念的最小可运行示例，**待补** |
 
