@@ -6,7 +6,7 @@
 
 **框架先立起来，实验目录逐个补。**
 
-已落盘：第 1 章那 7 个目录（`01-first-plugin`、`01-baseurl`、`01-plugin-forms`、`01-not-a-plugin`、`01-order`、`01-error-apply`、`01-error-import`）。
+已落盘：第 1 章那 7 个目录（`01-first-plugin`、`01-baseurl`、`01-plugin-forms`、`01-not-a-plugin`、`01-order`、`01-error-apply`、`01-error-import`），以及第 2 章的 2 个（`02-lifecycle`、`02-disposer-order`）。
 
 - 每个实验验哪一条、归哪一章：见笔记总览的[实验目录](../../notes/cordis-tutorial/README.md#实验目录)一节，那里是唯一清单，不在这里重复。
 - 笔记里每个 🧪 验证实验块会给出该实验的文件内容与运行命令，补实验时按它落盘即可。
