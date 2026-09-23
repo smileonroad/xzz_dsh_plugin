@@ -1,0 +1,4 @@
+- id: needs-timer
+  name: './needs-timer.ts'
+- id: diagnose
+  name: './diagnose.ts'

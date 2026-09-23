@@ -1,0 +1,11 @@
+- id: logger
+  name: '@deepseek-ai/cordis-plugin-logger-console'
+  config:
+    levels:
+      default: 3
+- id: hmr
+  name: '@deepseek-ai/cordis-plugin-hmr'
+  config:
+    root: ['.']
+- id: hello
+  name: './hello.ts'

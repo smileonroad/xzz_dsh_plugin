@@ -1,0 +1,6 @@
+# 唯一能提供 timer 的条目被 disabled 了。
+- id: timer
+  name: '@deepseek-ai/cordis-plugin-timer'
+  disabled: true
+- id: needs-timer
+  name: './needs-timer.ts'

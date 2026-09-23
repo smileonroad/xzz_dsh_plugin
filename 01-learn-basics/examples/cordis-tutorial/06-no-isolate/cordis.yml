@@ -1,0 +1,16 @@
+# 与 06-isolate 完全相同，只去掉 isolate —— 对照组
+- id: group-a
+  name: '@deepseek-ai/cordis-plugin-group'
+  config:
+    - name: './greeter.ts'
+      config:
+        label: A
+    - name: './consumer.ts'
+
+- id: group-b
+  name: '@deepseek-ai/cordis-plugin-group'
+  config:
+    - name: './greeter.ts'
+      config:
+        label: B
+    - name: './consumer.ts'

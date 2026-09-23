@@ -1,0 +1,21 @@
+# 两个组各带一个 greeter 提供方。isolate 让每个组拥有【自己那份】
+# greeter 服务的独立实例 —— 靠的是给服务名分配不同的 Symbol。
+- id: group-a
+  name: '@deepseek-ai/cordis-plugin-group'
+  isolate:
+    greeter: true            # ← 这个组独占一份 greeter
+  config:
+    - name: './greeter.ts'
+      config:
+        label: A
+    - name: './consumer.ts'
+
+- id: group-b
+  name: '@deepseek-ai/cordis-plugin-group'
+  isolate:
+    greeter: true            # ← 另一个组独占另一份
+  config:
+    - name: './greeter.ts'
+      config:
+        label: B
+    - name: './consumer.ts'

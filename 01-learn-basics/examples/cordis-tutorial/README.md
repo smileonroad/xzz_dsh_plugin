@@ -6,7 +6,7 @@
 
 **框架先立起来，实验目录逐个补。**
 
-已落盘 26 个目录：
+已落盘 60 个目录：
 
 | 章 | 实验目录 |
 | --- | --- |
@@ -14,8 +14,10 @@
 | 2 | `02-lifecycle`、`02-disposer-order` |
 | 3 | `03-service`、`03-service-consumer-only`、`03-retrack` |
 | 4 | `04-events`、`04-modes`、`04-serial`、`04-parallel`、`04-bail-edge`、`04-waterfall` |
-| 5 | `05-schema-shape`、`05-config`、`05-config-default`、`05-config-invalid`、`05-config-none`、`05-config-not-array`、`05-config-class-static`、`05-config-class-static-default`、`05-config-class-module`、`05-config-class-module-default`、`05-config-obj-default`、`05-named-class-only`、`05-static-inject`、`05-js-tag`、`05-js-tag-id` |
-| 6（提前） | `06-inject-why` |
+| 5 | `05-schema-shape`、`05-config`、`05-config-default`、`05-config-invalid`、`05-config-none`、`05-config-not-array`、`05-config-class-static`、`05-config-class-static-default`、`05-config-class-module`、`05-config-class-module-default`、`05-config-obj-default`、`05-named-class-only`、`05-static-inject`、`05-js-tag`、`05-js-tag-id`、`05-default-export` |
+| 6 | `06-entry-id`、`06-disabled`、`06-disabled-silent-exit`、`06-group`、`06-isolate`、`06-no-isolate`、`06-duplicate-service`、`06-hmr`、`06-hmr-config-error`、`06-hmr-reload-error`、`06-logger-level`、`06-pending-diagnose`、`06-pending-fixed`、`06-inject-why` |
+| 7 | `07-greet-tool`、`07-schema`、`07-args-invalid`、`07-unregister`、`07-abort`、`07-missing-provider` |
+| 8 | `08-policy-chain`、`08-deny-guard`、`08-post-execute`、`08-output-invalid`、`08-nested-schema`、`08-presentation-soft` |
 
 - 每个实验验哪一条、归哪一章：见笔记总览的[实验目录](../../notes/cordis-tutorial/README.md#实验目录)一节，那里是唯一清单，不在这里重复。
 - 笔记里每个 🧪 验证实验块会给出该实验的文件内容与运行命令，补实验时按它落盘即可。

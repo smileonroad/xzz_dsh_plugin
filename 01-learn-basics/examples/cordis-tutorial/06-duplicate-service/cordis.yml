@@ -1,0 +1,18 @@
+# 两个条目抢同一个服务名 greeter —— 谁赢？会不会报错？
+- id: logger
+  name: '@deepseek-ai/cordis-plugin-logger-console'
+  config:
+    levels:
+      default: 3          # 已经开到最详细了
+- id: greeter-a
+  name: './greeter.ts'
+  config:
+    label: A
+- id: greeter-b
+  name: './greeter.ts'
+  config:
+    label: B
+- id: consumer
+  name: './consumer.ts'
+- id: dump-all
+  name: './dump-all.ts'

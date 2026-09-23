@@ -1,0 +1,5 @@
+# 注意：故意【不放】@deepseek-ai/dsh-system-prompt
+# dsh-tools 注入 systemPrompt → 它 PENDING → 注入 tools 的插件也 PENDING
+- name: '@deepseek-ai/dsh-tools'
+- name: './greet-tool.ts'
+- name: './diagnose.ts'

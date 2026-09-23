@@ -1,0 +1,6 @@
+# alpha 显式给了 id；beta 没给。
+- id: alpha
+  name: './a.ts'
+- name: './b.ts'
+- id: ids
+  name: './ids.ts'

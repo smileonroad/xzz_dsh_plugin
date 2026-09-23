@@ -1,0 +1,20 @@
+- id: logger
+  name: '@deepseek-ai/cordis-plugin-logger-console'
+  config:
+    levels:
+      default: 3
+- id: timer
+  name: '@deepseek-ai/cordis-plugin-timer'
+- id: hmr
+  name: '@deepseek-ai/cordis-plugin-hmr'
+  config:
+    root: ['.']
+# 嵌套的条目子列表：整个组是一个挂载/卸载单元
+- id: group-a
+  name: '@deepseek-ai/cordis-plugin-group'
+  disabled: false
+  config:
+    - id: x
+      name: './x.ts'
+    - id: y
+      name: './y.ts'
