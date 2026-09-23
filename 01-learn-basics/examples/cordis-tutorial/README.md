@@ -62,9 +62,9 @@ await this.create(newMap[id]).catch((error) => { this.ctx.logger.error(error) })
 
 ---
 
-### 补全件（20 个代码文件）
+### 补全件（22 个文件）
 
-文档没给这些文件的内容，按**正文描述 + 同模块／相邻实验的源码**补出。**每份文件首行都带「补全件」标记，不要当文档原文看。**（`05-schema-shape` 已拿到真源码，不在其中。）
+文档没给这些文件的内容，按**正文描述 + 同模块／相邻实验的源码**补出。**每份文件首行都带「补全件」标记，不要当文档原文看。**（`05-schema-shape` 已拿到真源码，不在其中；`06-disabled/consumer.ts` 经实跑修正过文案，`05-config-class-module-default/cfg-class-module.ts` 是它的拷见。）
 
 | 目录 | 补全的文件 | 依据 |
 | --- | --- | --- |
