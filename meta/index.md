@@ -11,6 +11,8 @@
 | 插件练习段总览 | [../03-practice-plugin/](../03-practice-plugin/) |
 | TypeScript 与工程化基础（tsconfig / ESM / monorepo） | [../01-learn-basics/notes/typescript-basics.md](../01-learn-basics/notes/typescript-basics.md) |
 | 架构文档带领阅读（插件树 / 事件域 / 轮次流程 / 会话日志） | [../01-learn-basics/notes/architecture-reading.md](../01-learn-basics/notes/architecture-reading.md) |
+| Cordis 教程跟学笔记（8 章，待补） | [../01-learn-basics/notes/cordis-tutorial/](../01-learn-basics/notes/cordis-tutorial/) |
+| 基础学习段的可运行示例 | [../01-learn-basics/examples/](../01-learn-basics/examples/) |
 | 插件模型入门（命令／工具／服务／effect） | [../01-learn-basics/notes/cordis-basics.md](../01-learn-basics/notes/cordis-basics.md) |
 | 添加模型工具（工具 vs 命令、执行扩展点） | [../03-practice-plugin/notes/adding-a-tool.md](../03-practice-plugin/notes/adding-a-tool.md) |
 | 插件包布局、独立分发包与官方安装通道 | [../03-practice-plugin/notes/plugin-package.md](../03-practice-plugin/notes/plugin-package.md) |
@@ -64,6 +66,7 @@
 3. **web 的 HMR 默认禁用**：加新插件必须重启 web 进程。
 4. 测试：`pnpm exec vitest run --config examples/<项目>/vitest.examples.config.ts ... --disableConsoleIntercept --silent=false`（harness 的 vitest 工作区已不含 examples/，用随示例分发的临时配置；vitest 默认拦 console，调试要透传）。
 5. 分发：把示例提升为**独立标准包**（`package.json` 声明 `dsh.bundle.patch` 与 `dsh.client`、自带 `cordis.patch.yml`、预构建 `lib/`、`files` 收口），经官方通道 `dsh plugin --profile web add <本地目录|git|npm|tarball>` 装进 profile（参数转发 pnpm + reconcile 只激活声明 `dsh.bundle` 的依赖），**重启 web 进程生效**。浏览器半边产物必须是 `window.__ModuleLoader__.load(...)` 工厂格式（裸 ESM 会整批加载失败）。机制见 [plugin-package.md](../03-practice-plugin/notes/plugin-package.md)。
+6. 基础学习段的最小示例（`01-learn-basics/examples/`）不走上面这套：它们用 `vendor/cordis/bin.js` 跑，**先拷进 deepseek-harness 的 `tmp/`，再在实验自己目录里启动**（原因见 [examples/README.md](../01-learn-basics/examples/README.md)）。
 
 ## 关键源码位置（deepseek-harness 内）
 

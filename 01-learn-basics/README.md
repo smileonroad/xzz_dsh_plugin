@@ -9,15 +9,16 @@
 3. [sources/architecture.zh.md](sources/architecture.zh.md) — 架构原文（归档的中文版，与带领阅读是同一个修订版；只是中英行数不同，引用中的行号以英文原本为准）。
 4. [notes/cordis-basics.md](notes/cordis-basics.md) — Cordis 基础，插件、context、服务、事件、effect 五件事。
 5. [sources/cordis-primer.zh.md](sources/cordis-primer.zh.md) — Cordis 官方入门，看一遍原文。
-6. [sources/cordis-tutorial/](sources/cordis-tutorial/) — 官方七步教程，从第一个插件写到接进 harness。
+6. [sources/cordis-tutorial/](sources/cordis-tutorial/) — 官方七步教程原文。
+7. [notes/cordis-tutorial/](notes/cordis-tutorial/) — Cordis 教程跟学笔记，照着官方教程一章章实跑，每章末尾配实验与自测；实验源码在 [examples/cordis-tutorial/](examples/cordis-tutorial/)。**框架已立，章节和实验逐步补。**
 
 ## 目录
 
 | 目录 | 装什么 |
 | --- | --- |
-| `notes/` | 自写学习摘要，目前三篇：`typescript-basics.md`（语言与工程化）、`architecture-reading.md`（架构文档精读）、`cordis-basics.md`（Cordis 容器） |
+| `notes/` | 自写笔记。三篇单篇摘要（`typescript-basics.md` 语言与工程化、`architecture-reading.md` 架构精读、`cordis-basics.md` Cordis 容器），外加一个系列目录 `cordis-tutorial/`（8 章，待补） |
 | `sources/` | 官方一手材料副本（只读，版权归上游）：`cordis-primer`、`cordis-tutorial/`、`architecture` |
-| `examples/` | 基础概念的最小可运行示例，**待补** |
+| `examples/` | 能跑的最小示例。目前 `cordis-tutorial/` 的框架已就位，实验逐个补；跑法见 [examples/README.md](examples/README.md) |
 
 ## 和另外两段的关系
 
