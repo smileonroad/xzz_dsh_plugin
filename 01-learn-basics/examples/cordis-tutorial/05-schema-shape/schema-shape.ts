@@ -19,3 +19,8 @@ console.log('   → 取值要用 .value        :', JSON.stringify(result.value))
 
 console.log('\n④ 校验失败时的形状')
 console.log('   ', JSON.stringify((s as any)['~standard'].validate({ targets: 'oops' }).issues))
+import type { Context } from '@deepseek-ai/cordis'
+
+export const name = 'schema-shape'
+
+export function apply(_ctx: Context) {}

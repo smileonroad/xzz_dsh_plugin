@@ -13,9 +13,9 @@
 - **文档代码块** —— 正文写过内容的每一行都逐字照搬；
 - **`cordis.yml`** —— 挂哪些插件由各目录的 `.ts` 和正文的运行命令确定，按代码补全（不是反推正文叙述）。
 
-### 补全件（21 个代码文件 + 1 个 `cordis.yml`）
+### 补全件（20 个代码文件）
 
-文档没给这些文件的内容，按**正文描述 + 同模块／相邻实验的源码**补出。**每份文件首行都带「补全件」标记，不要当文档原文看。**
+文档没给这些文件的内容，按**正文描述 + 同模块／相邻实验的源码**补出。**每份文件首行都带「补全件」标记，不要当文档原文看。**（`05-schema-shape` 已拿到真源码，不在其中。）
 
 | 目录 | 补全的文件 | 依据 |
 | --- | --- | --- |
@@ -23,7 +23,6 @@
 | `05-config-none` | `no-config.ts` | 5.4 「完全没有 `Config` 的类插件」+ 输出文案 |
 | `05-default-export` | `default-fn.ts` | 第 1 章 Q4 给的模块级导出与输出 |
 | `05-js-tag`、`05-js-tag-id` | `js-tag-demo.ts` | 5.7 「普通插件，`greeting` 默认 `'Hello'`，`apply` 打印 `${greeting}, ${target}!`」 |
-| `05-schema-shape` | `run.ts` + `cordis.yml` | `schema-shape.ts` 没有 `apply`，加一个一行启动器把它 import 进来（⚠️ 这一份纯属重搭，文档完全没提启动器） |
 | `06-entry-id` | `a.ts`、`b.ts` | 输出里的 `alpha 加载` / `beta 加载` |
 | `06-disabled` | `report.ts`、`run.sh` | 6.1 「在 1 秒和 13 秒各打印一次所有 fiber 状态」；`run.sh` 的行为正文写了 |
 | `06-group` | `x.ts`、`y.ts`、`run.sh` | 6.1 「各自在挂载和卸载时打印一行」（卸载用 `ctx.effect` 的 disposer） |
