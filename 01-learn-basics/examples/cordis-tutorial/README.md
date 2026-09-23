@@ -13,31 +13,29 @@
 - **文档代码块** —— 正文写过内容的每一行都逐字照搬；
 - **`cordis.yml`** —— 挂哪些插件由各目录的 `.ts` 和正文的运行命令确定，按代码补全（不是反推正文叙述）。
 
-### 待补：文档里没给源码的实验文件（共 22 个）
+### 补全件（21 个代码文件 + 1 个 `cordis.yml`）
 
-这些都是**真代码**（插件体、脚本、启动器），文档没给就不写：
+文档没给这些文件的内容，按**正文描述 + 同模块／相邻实验的源码**补出。**每份文件首行都带「补全件」标记，不要当文档原文看。**
 
-| 章 | 目录 | 缺的文件 | 说明 |
-| --- | --- | --- | --- |
-| 5 | `05-config-class-module` | `cfg-class-module.ts` | 正文说「只差一行」，但那一行没写出来 |
-| 5 | `05-config-none` | `no-config.ts` | 正文只描述「一个完全没有 Config 的类插件」 |
-| 5 | `05-default-export` | `default-fn.ts` | 被第 1 章 Q4、第 5 章 5.5 和总览三处引用，代码从未出现 |
-| 5 | `05-js-tag` | `js-tag-demo.ts` | 正文只描述「普通插件，`greeting` 默认 `'Hello'`」 |
-| 5 | `05-js-tag-id` | `js-tag-demo.ts` | 同上（拷贝） |
-| 5 | `05-schema-shape` | `cordis.yml` + 启动器 | `schema-shape.ts` 是纯脚本、没有 `apply`，`bin.js` 挂不上它；正文没给启动器 |
-| 6 | `06-entry-id` | `a.ts`、`b.ts` | 正文只在输出里出现过 `alpha 加载` / `beta 加载` |
-| 6 | `06-disabled` | `report.ts`、`run.sh` | 正文说「在 1 秒和 13 秒各打一次所有 fiber 状态」 |
-| 6 | `06-group` | `x.ts`、`y.ts`、`run.sh` | 正文说「各自在挂载和卸载时打印一行」 |
-| 6 | `06-hmr` | `run.sh` | 正文给了三条命令行，没给脚本 |
-| 6 | `06-hmr-config-error` | `hello.ts` | 正文只给出它的输出（`hello is ACTIVE`） |
-| 6 | `06-hmr-reload-error` | `hello.ts` | 同上 |
-| 6 | `06-inject-why` | `dynamic.ts`、`orphan.ts`、`run.sh` | 第 3 章只描述了时间线和 `run.sh` 的行为 |
-| 6 | `06-pending-fixed` | `dump-all.ts` | 正文说「把所有 fiber 的名字和状态都打出来」 |
-| 6 | `06-duplicate-service` | `dump-all.ts` | 同上 |
+| 目录 | 补全的文件 | 依据 |
+| --- | --- | --- |
+| `05-config-class-module` | `cfg-class-module.ts` | 对照 `05-config-class-static/cfg-class-static.ts`；日志文案取自 5.4 的输出 |
+| `05-config-none` | `no-config.ts` | 5.4 「完全没有 `Config` 的类插件」+ 输出文案 |
+| `05-default-export` | `default-fn.ts` | 第 1 章 Q4 给的模块级导出与输出 |
+| `05-js-tag`、`05-js-tag-id` | `js-tag-demo.ts` | 5.7 「普通插件，`greeting` 默认 `'Hello'`，`apply` 打印 `${greeting}, ${target}!`」 |
+| `05-schema-shape` | `run.ts` + `cordis.yml` | `schema-shape.ts` 没有 `apply`，加一个一行启动器把它 import 进来（⚠️ 这一份纯属重搭，文档完全没提启动器） |
+| `06-entry-id` | `a.ts`、`b.ts` | 输出里的 `alpha 加载` / `beta 加载` |
+| `06-disabled` | `report.ts`、`run.sh` | 6.1 「在 1 秒和 13 秒各打印一次所有 fiber 状态」；`run.sh` 的行为正文写了 |
+| `06-group` | `x.ts`、`y.ts`、`run.sh` | 6.1 「各自在挂载和卸载时打印一行」（卸载用 `ctx.effect` 的 disposer） |
+| `06-hmr` | `run.sh` | 6.3 给了三条命令行，包成脚本 |
+| `06-hmr-config-error`、`06-hmr-reload-error` | `hello.ts` | 输出里的 `hello is ACTIVE` |
+| `06-inject-why` | `dynamic.ts`、`orphan.ts`、`run.sh` | 第 3 章 3.3 给了时间线和 `run.sh` 的行为；`orphan.ts` 按输出反推 |
+| `06-pending-fixed` | `dump-all.ts` | 6.4 「把所有 fiber 的名字和状态都打出来（不过滤）」+ 输出格式 |
+| `06-duplicate-service` | `dump-all.ts` | 同上（拷贝） |
 
-> 第 1–4 章、第 7–8 章的实验源码**无缺口**（加上本次补的 `cordis.yml` 全部就位）。
+> 第 1–4 章、第 7–8 章的实验源码**无补全件**，全部来自文档代码块。
 >
-> 作者把真源码发来后，按目录逐行回填。
+> 作者把真源码发来后，逐个替换 —— 标记行也一并去掉。
 
 - 每个实验验哪一条、归哪一章：见笔记总览的[实验目录](../../notes/cordis-tutorial/README.md#实验目录)一节，那里是唯一清单，不在这里重复。
 - 笔记里每个 🧪 验证实验块会给出该实验的文件内容与运行命令，补实验时按它落盘即可。
