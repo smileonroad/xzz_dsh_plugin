@@ -15,7 +15,7 @@
 ## 跑
 
 ```sh
-H=/d/myPI/deepseek-harness
+H=/path/to/deepseek-harness                # ← 换成你的检出目录（Windows 例：D:/work/deepseek-harness）
 cd "$H/tmp/cordis-tutorial/<实验目录>"
 node --import tsx ../../../vendor/cordis/bin.js     # 正常跑
 node --import tsx ../_diag.ts                      # 要看失败信息时用这个

@@ -128,7 +128,7 @@ notes/cordis-tutorial/
 要 `tsx` 和 `@deepseek-ai/*` 的解析，所以先拷进 harness 的临时目录（那边 `.gitignore` 里有 `tmp/`），再在实验自己的目录里启动：
 
 ```sh
-H=/d/myPI/deepseek-harness
+H=/path/to/deepseek-harness            # ← 换成你的检出目录（Windows 例：D:/work/deepseek-harness）
 cp -r <本仓库>/01-learn-basics/examples/cordis-tutorial "$H/tmp/cordis-tutorial"
 cd "$H/tmp/cordis-tutorial/<实验目录>"
 node --import tsx ../../../vendor/cordis/bin.js     # 原样跑（和笔记记录的启动器一致）

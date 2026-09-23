@@ -18,7 +18,7 @@
 - **要跑，先拷进 harness 的临时目录**。harness 的 `.gitignore` 里有 `tmp/`，拷进去不会污染它的工作区。
 
 ```sh
-H=/d/myPI/deepseek-harness
+H=/path/to/deepseek-harness            # ← 换成你的 deepseek-harness 检出目录（Windows 例：D:/work/deepseek-harness）
 cd <本仓库>/01-learn-basics/examples
 cp -r cordis-tutorial "$H/tmp/cordis-tutorial"
 cd "$H/tmp/cordis-tutorial/<实验目录>"

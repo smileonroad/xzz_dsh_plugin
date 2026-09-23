@@ -7,8 +7,8 @@
 # （只有放在 profile 目录里的 `cordis.patch.yml` 才是相对 profile 目录解析，
 # 那种写法需要 profile 下的 examples junction；本文件在自己目录里，不需要。）
 # 要写绝对路径时 Windows 必须带 `file:///` 前缀，例如
-# `file:///D:/myPI/deepseek-harness/examples/scripted-llm-adapter/src/index.ts`，
-# 裸 `D:/...` 会被当成 URL scheme 报 ERR_UNSUPPORTED_ESM_URL_SCHEME。
+# `file:///C:/path/to/deepseek-harness/examples/scripted-llm-adapter/src/index.ts`，
+# 裸 `C:/...` 会被当成 URL scheme 报 ERR_UNSUPPORTED_ESM_URL_SCHEME。
 #
 # 第二行把默认模型指到离线提供方，但**它可能不生效**：`agent-default-model`
 # 的值会被 settings 用户层（`$DSH_HOME/settings.yaml`）覆盖，而真实 home 里通常
