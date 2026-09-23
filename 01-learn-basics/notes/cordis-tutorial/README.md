@@ -25,7 +25,7 @@ notes/cordis-tutorial/
 
 章节之间会互相引用（比如「见 [6.5 服务名撞车](06-组合与-HMR.md#65-服务名撞车先注册的胜出后注册的静默-failed)」），点链接直接跳。
 
-> **进度**：8 章全部已落盘，60 个实验目录已就位。
+> **进度**：8 章全部已落盘。实验源码只收文档给过的（116 个文件）；文档没给的 37 个列在 [examples/cordis-tutorial/README.md](../../examples/cordis-tutorial/README.md) 的「待补」表里。
 
 ---
 
