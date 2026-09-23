@@ -1,4 +1,0 @@
-# 传一个形状完全不对的 config —— 但本插件没有 Config，所以应当静默放行
-- name: './no-config.ts'
-  config:
-    targets: 'not-an-array'

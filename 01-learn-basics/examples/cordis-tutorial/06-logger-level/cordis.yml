@@ -1,7 +1,0 @@
-- id: logger
-  name: '@deepseek-ai/cordis-plugin-logger-console'
-  config:
-    levels:
-      default: 3
-- id: warn
-  name: './warn.ts'

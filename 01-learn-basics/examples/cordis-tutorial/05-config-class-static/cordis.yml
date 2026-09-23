@@ -1,4 +1,0 @@
-# 传【非法】配置
-- name: './cfg-class-static.ts'
-  config:
-    targets: 'not-an-array'

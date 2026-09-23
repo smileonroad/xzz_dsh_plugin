@@ -4,20 +4,49 @@
 
 ## 状态
 
-**框架先立起来，实验目录逐个补。**
+## 状态
 
-已落盘 60 个目录：
+**框架已立，实验目录逐个补。只放文档真正给过的源码 —— 不反推。**
 
-| 章 | 实验目录 |
-| --- | --- |
-| 1 | `01-first-plugin`、`01-baseurl`、`01-plugin-forms`、`01-not-a-plugin`、`01-order`、`01-error-apply`、`01-error-import` |
-| 2 | `02-lifecycle`、`02-disposer-order` |
-| 3 | `03-service`、`03-service-consumer-only`、`03-retrack` |
-| 4 | `04-events`、`04-modes`、`04-serial`、`04-parallel`、`04-bail-edge`、`04-waterfall` |
-| 5 | `05-schema-shape`、`05-config`、`05-config-default`、`05-config-invalid`、`05-config-none`、`05-config-not-array`、`05-config-class-static`、`05-config-class-static-default`、`05-config-class-module`、`05-config-class-module-default`、`05-config-obj-default`、`05-named-class-only`、`05-static-inject`、`05-js-tag`、`05-js-tag-id`、`05-default-export` |
-| 6 | `06-entry-id`、`06-disabled`、`06-disabled-silent-exit`、`06-group`、`06-isolate`、`06-no-isolate`、`06-duplicate-service`、`06-hmr`、`06-hmr-config-error`、`06-hmr-reload-error`、`06-logger-level`、`06-pending-diagnose`、`06-pending-fixed`、`06-inject-why` |
-| 7 | `07-greet-tool`、`07-schema`、`07-args-invalid`、`07-unregister`、`07-abort`、`07-missing-provider` |
-| 8 | `08-policy-chain`、`08-deny-guard`、`08-post-execute`、`08-output-invalid`、`08-nested-schema`、`08-presentation-soft` |
+当前 **116 个文件**，每一个都能在 `notes/cordis-tutorial/` 的代码块里找到对应内容。
+
+### 待补：文档里没给源码的实验文件（共 37 个）
+
+这些文件名在各章的运行命令、输出或叙述里出现过，但**文档本身没有给出它们的内容**（章内引用处写成 `./cfg-class-xxx.ts` 占位、或只描述了行为）。不反推，宁可空着：
+
+| 章 | 目录 | 缺的文件 |
+| --- | --- | --- |
+| 1 | `01-not-a-plugin` | `cordis.yml` |
+| 4 | `04-modes` | `cordis.yml` |
+| 4 | `04-serial` | `cordis.yml` |
+| 4 | `04-parallel` | `cordis.yml` |
+| 4 | `04-bail-edge` | `cordis.yml` |
+| 4 | `04-waterfall` | `cordis.yml` |
+| 5 | `05-config-class-static` | `cordis.yml` |
+| 5 | `05-config-class-static-default` | `cordis.yml`（整个目录空着） |
+| 5 | `05-config-class-module` | `cfg-class-module.ts`、`cordis.yml`（整个目录空着） |
+| 5 | `05-config-class-module-default` | `cordis.yml`（整个目录空着） |
+| 5 | `05-config-none` | `no-config.ts`、`cordis.yml`（整个目录空着） |
+| 5 | `05-named-class-only` | `cordis.yml` |
+| 5 | `05-default-export` | `default-fn.ts`、`cordis.yml`（整个目录空着；该目录被第 1 章 Q4、第 5 章 5.5 和总览引用，但从未给出代码） |
+| 5 | `05-js-tag` | `js-tag-demo.ts` |
+| 5 | `05-js-tag-id` | `js-tag-demo.ts` |
+| 5 | `05-schema-shape` | `cordis.yml`、启动器（`schema-shape.ts` 是纯脚本没有 `apply`，`bin.js` 挂不上它） |
+| 6 | `06-entry-id` | `a.ts`、`b.ts` |
+| 6 | `06-disabled` | `report.ts`、`run.sh` |
+| 6 | `06-group` | `x.ts`、`y.ts`、`run.sh` |
+| 6 | `06-hmr` | `run.sh` |
+| 6 | `06-hmr-config-error` | `hello.ts` |
+| 6 | `06-hmr-reload-error` | `hello.ts` |
+| 6 | `06-logger-level` | `cordis.yml`、`cordis.default.yml` |
+| 6 | `06-pending-fixed` | `dump-all.ts` |
+| 6 | `06-duplicate-service` | `dump-all.ts` |
+| 6 | `06-inject-why` | `dynamic.ts`、`orphan.ts`、`run.sh` |
+
+> 第 2、3、7、8 章**没有缺口** —— 那四章的实验源码文档全给了。
+>
+> 各处 `cordis.yml` 大多只是一行 `- name: './x.ts'`，但既然文档没写，就不放。
+> 作者把真源码发来后，按目录逐个回填。
 
 - 每个实验验哪一条、归哪一章：见笔记总览的[实验目录](../../notes/cordis-tutorial/README.md#实验目录)一节，那里是唯一清单，不在这里重复。
 - 笔记里每个 🧪 验证实验块会给出该实验的文件内容与运行命令，补实验时按它落盘即可。

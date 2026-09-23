@@ -1,5 +1,0 @@
-# 对照组：不设 levels，用 logger-console 的默认级别（INFO）
-- id: logger
-  name: '@deepseek-ai/cordis-plugin-logger-console'
-- id: warn
-  name: './warn.ts'

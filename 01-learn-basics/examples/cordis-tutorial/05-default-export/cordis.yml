@@ -1,2 +1,0 @@
-# 没有任何插件提供 greeter —— 如果 inject 生效，本插件应保持沉默
-- name: './default-fn.ts'
