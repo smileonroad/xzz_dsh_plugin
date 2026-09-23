@@ -92,12 +92,14 @@ git hash-object 01-learn-basics/notes/cordis-basics.md 01-learn-basics/sources/c
 
 本仓库的 `sources/` 从 deepseek-harness 同步了一版（2026-09-23，harness `c36a83ff6b`）。这次变动：`architecture.zh.md`（135 → 168 行，补上了「应用启动」与「桌面应用」两节）、`adding-a-package.zh.md`（120 → 172）、`adding-a-tool.zh.md`（96 → 103）、`cordis-primer.zh.md`（50 → 51）、`cordis-tutorial/05-config`（84 → 111）、`06-composition-and-hmr`、`07-into-the-harness`。`basic/config.md` 两侧未变。cookbook 下的 `adding-a-conversation-node.zh.md` 上游已删除。
 
+受影响的四篇摘要已按新版重读并更新（cordis 补了 `bail` 分发模式；adding-a-tool 改名 PTC mode、补 `read` 卡片与「Web Client 不消费 presentCall/presentResult」；plugin-package 换了分组名、改了 `files` 不变式、补了 frontmatter `kind` 与展示元信息）。
+
 | 摘要 | 上游原文 | 摘要 hash | 上游 hash | 一致? |
 | --- | --- | --- | --- | --- |
-| `01-learn-basics/notes/cordis-basics.md` | `01-learn-basics/sources/cordis-primer.zh.md` | ce8dfd3 | 3706173 | ⚠️ |
+| `01-learn-basics/notes/cordis-basics.md` | `01-learn-basics/sources/cordis-primer.zh.md` | 6889f67 | 3706173 | ✓ |
 | `01-learn-basics/notes/architecture-reading.md` | `01-learn-basics/sources/architecture.zh.md`（同一个修订版的中文副本；带领阅读逐段引的是英文原本 `docs/architecture.md`，行号以那份为准） | 0f54c1a | 53125c0 | ✓ |
-| `03-practice-plugin/notes/adding-a-tool.md` | `03-practice-plugin/sources/cookbook/adding-a-tool.zh.md` | 201bcde | 5ad488c | ⚠️ |
-| `03-practice-plugin/notes/plugin-package.md` | `03-practice-plugin/sources/cookbook/adding-a-package.zh.md` | 8901df3 | 44a613b | ⚠️ |
+| `03-practice-plugin/notes/adding-a-tool.md` | `03-practice-plugin/sources/cookbook/adding-a-tool.zh.md` | 1662293 | 5ad488c | ✓ |
+| `03-practice-plugin/notes/plugin-package.md` | `03-practice-plugin/sources/cookbook/adding-a-package.zh.md` | 9cef48f | 44a613b | ✓ |
 | `03-practice-plugin/notes/plugin-config.md` | `03-practice-plugin/sources/basic/config.md`（deepseek-harness `docs/user/develop/basic/config.md` 双语副本） | bdcf399 | d935fc3 / 642a413 | ✓ |
 | `03-practice-plugin/notes/client-plugin.md` | `03-practice-plugin/sources/cookbook/adding-a-conversation-node.zh.md`（部分，上游已删除）+ deepseek-harness `packages/client/AGENTS.md` | 7d58c2e | 2986f69 | — |
 

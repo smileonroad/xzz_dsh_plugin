@@ -8,7 +8,7 @@
 1. **插件是实现 Service 的对象。** 带可选 `inject` 和 `apply(ctx)` 字段的函数，或 `Service` 子类；生命周期由 Cordis 挂载到当前上下文。
 2. **上下文是服务的容器。** 一个服务占一个稳定 `ctx.<key>`（`ctx.tools`、`ctx.llm`、`ctx.sessions`…）；其他插件按 key 查找服务，**不 import 具体实现**。
 3. **`inject` 声明服务依赖。** 依赖就绪才启动插件，加载顺序由依赖表达，不手动排启动序列。
-4. **类型化事件通信。** TypeScript 声明合并注册事件名，按分发模式（emit / waterfall / parallel / serial）分发。
+4. **类型化事件通信。** TypeScript 声明合并注册事件名，按分发模式（emit / waterfall / parallel / serial / bail）分发。
 5. **注册是可逆副作用。** `ctx.effect()` / `ctx.on()` 安装的东西，reload 和 teardown 自动撤销。
 
 ## 事件分发模式
@@ -21,6 +21,9 @@
 | `waterfall` | 否 | 按注册顺序观察 | 是 |
 | `parallel` | 是 | 全部并行 | 否 |
 | `serial` | 是 | 按注册顺序 | 是 |
+| `bail` | 否 | 按注册顺序观察，直到某个监听器返回 bail 值即停 | 是 |
+
+`bail` 是最晚加进这份清单的模式，与前四个并列，语义是「依次问，谁先给答案听谁的」。
 
 ## Waterfall：环绕中间件
 

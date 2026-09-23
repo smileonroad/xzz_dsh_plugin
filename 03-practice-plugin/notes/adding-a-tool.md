@@ -1,6 +1,6 @@
 # 添加模型工具
 
-> 摘要：`ctx.tools` + `defineTool` 的约定：最小形态、execute 规则、后台任务、执行策略、Code Mode 触达、UI 渲染。
+> 摘要：`ctx.tools` + `defineTool` 的约定：最小形态、execute 规则、后台任务、执行策略、PTC mode 触达、UI 渲染。
 > 上游：[`sources/cookbook/adding-a-tool.zh.md`](../sources/cookbook/adding-a-tool.zh.md)；
 > 按步骤新手教程见 deepseek-harness `docs/user/develop/basic/tool.md`；生产级三包示例 `packages/shell/tool-bash`。
 
@@ -45,7 +45,7 @@ export function apply(ctx: Context) {
 
 ## 长时间运行
 
-`run_in_background` + `ctx.jobs.start({ kind, label, owner: exec.agent, run })`。成功返回类型化句柄 `{ kind: 'background', jobId }`；**Code Mode 绝不解析自然语言文本取 id**。预先中止的调用判失败（没有任务 id）。任务发布后用任务自己的取消信号，不再用 `exec.signal`；`job_kill`、owner dispose、teardown 拥有任务生命周期。
+`run_in_background` + `ctx.jobs.start({ kind, label, owner: exec.agent, run })`。成功返回类型化句柄 `{ kind: 'background', jobId }`；**PTC mode 绝不解析自然语言文本取 id**。预先中止的调用判失败（没有任务 id）。任务发布后用任务自己的取消信号，不再用 `exec.signal`；`job_kill`、owner dispose、teardown 拥有任务生命周期。输出走注册表泵入的 job 输出环，模型侧的消费式读取由 `dsh-tool-jobs` 从该环渲染。
 
 ## 执行策略与观测（不要内建到工具）
 
@@ -55,15 +55,21 @@ export function apply(ctx: Context) {
 - `tools/post-execute`：替换展示/返回值、阻止结果、附加模型可见上下文
 - `tools/result`：观测不可变归一化结果
 
-## Code Mode 自动触达
+## PTC mode 自动触达
 
 每个可见已注册工具都可 `await tools.<name>(args)`，参数/返回类型从同一组 schema 派生，调用重进正常执行流水线。成功解析为策略处理后的规范 JSON（不是渲染后内容）；失败以 `ToolCallError` reject（只能查 name/toolName/message）。所以 `output.schema` 要设计成实用程序化 API：直接返回句柄与字段，人话放 `output.render`。
 
 ## UI 卡片（与模型可见内容分离）
 
-`output.render` 给模型；卡片是独立关注点，用 `presentCall` / `presentResult` 声明（纯展示投影）。卡片类型：`generic`（默认）、`terminal`（shell 命令）、`diff`（建/改文件，`oldText: null` 表示新文件）、`search`（grep/glob 发现型，`shape: 'matches' | 'paths'`）、`web`（检索，`kind: 'search' | 'fetch'`）。
+`output.render` 给模型；卡片是独立关注点，用 `presentCall` / `presentResult` 声明（纯展示投影）。卡片类型：`generic`（默认）、`terminal`（shell 命令）、`diff`（建/改文件，`oldText: null` 表示新文件）、`read`（已完成的文件窗口：`path`、从 1 起的 `offset`、带文件行号的 `lines`、`totalLines`、可选 `lang`；**没有 read 调用视图**，pending 保持 generic 卡片，因为内容要到 execute 之后才存在）、`search`（grep/glob 发现型，`shape: 'matches' | 'paths'`）、`web`（检索，`kind: 'search' | 'fetch'`）。
 
 硬性规则：展示器必须是纯函数（实时流式和回放都会运行，不做 I/O、不读会话状态、不用时钟）；UI 格式（```console 围栏、diff、相对路径）不进规范值/Native 内容；展示路径失败返回 `undefined` 回退通用卡片，**绝不崩溃回放**。
+
+## Web Client 展示（和 Host 展示器是两条路）
+
+**内置 Web Client 不消费 `presentCall` / `presentResult`。** Session 的 `page` 与 `follow` 把原始 `tool/call`、`tool/result`（含持久化的 `result.meta`）直接送到浏览器，Client 插件在 keyed slot `tool.call.toolview` 里按 wire 工具名注册自己的组件，props 从 `ToolCallBlock` 的参数、内容、错误、metadata、PTC dispatch 的 `parentCallId` 与 Session 路径事实派生，并在本地校验（格式不对就回退到 generic 行）。
+
+需要模型可见内容装不下的有界结构化事实时，用 `output.presentationMeta(args, value)`。三条禁忌：不要在 metadata 里放 React props 或预选卡片；不要把 Host 工具实现 import 进浏览器 bundle；不要再造一套 Client presenter registry。**只定义 Host 展示方法，不会自动长出 Web 卡片。**
 
 ## 验证
 

@@ -11,10 +11,12 @@ packages/<group>/<pkg>/
   tsconfig.json    # extends ../../../tsconfig.base.json；references vendor/cosmokit、vendor/cordis
                    # （用 Config 加 schemastery；每个 dsh 依赖也加 reference）
   src/index.ts     # service default export 或插件（name/inject/apply/Config）
+  locale/en.json   # 可选展示元信息：meta.title / meta.description
+  locale/zh.json   # 同字段的译文
   README.md        # 服务 API、事件、扩展点、设计说明 + Model Experience + Known Limitations
 ```
 
-分组已有就复用（`core`、`llm`、`bash`、`compact`、`subagent`、`todo`、`session-persistence`、`ui`、`util`、`support`）；新分组只是纯容器，包仍恰好在其下一层。
+分组已有就复用（**`core`、`llm`、`shell`、`compaction`、`subagent`、`todo`、`session`、`client`/`host`、`util`、`test-support`**）；新分组只是纯容器，包仍恰好在其下一层。（这组名字 2026-09 改过一轮，旧叫法是 `bash`、`compact`、`session-persistence`、`ui`、`support`。）
 
 ## package.json 不变式（`pnpm run constraints` 强制）
 
@@ -22,7 +24,7 @@ packages/<group>/<pkg>/
 - `main: "lib/index.js"`，`types: "lib/types/index.d.ts"`，exports 同样指向 lib
 - `@deepseek-ai/cordis` 同时出现在 peerDependencies 和 devDependencies（相同范围）；每个 dsh peer 依赖在 dev 里镜像
 - `@deepseek-ai/schemastery` 放 dependencies（运行时校验器）
-- `files` 精确列出 `lib/index.js`、`lib/invariant.js`、`lib/types/**/*.d.ts` 等；**不发布 src、map、陈旧根声明**
+- `files` 精确列出 `lib/index.js`、`lib/types/**/*.d.ts` 与门禁认可的运行时产物；**只有发布 `./invariant` 的包才加 `lib/invariant.js`**；不发布 src、map、陈旧根声明
 - 源码内相对导入用显式 `.ts` 后缀，编译器输出时改写为 `.js`
 
 ## 注册到根配置
@@ -42,7 +44,16 @@ packages/<group>/<pkg>/
 
 ## README 规范
 
-服务 API / 配置 / 事件 / 扩展点在前；持久消费方缺口进 "Known Limitations and Deferred Work"（日常清理留源码 TODO）；Model Experience 章节按「请求上下文与条件 / 模型看到什么 / Token effect / KV Cache effect」填，无模型上下文效果的包用审计过的 `None, as ` 语句或 `NO_MODEL_EXPERIENCE_SECTION`。
+frontmatter 的 `kind` 从四种标签里选（组 / 参考 / 库 / bundle，依据 dsh-doc 元数据参考），让它匹配包在仓库中的位置与入口形态，一个 kind 对应一套 README 模板。正文里服务 API / 配置 / 事件 / 扩展点在前；持久消费方缺口进 "Known Limitations and Deferred Work"（日常清理留源码 TODO）；Model Experience 章节按「请求上下文与条件 / 模型看到什么 / Token effect / KV Cache effect」填，无模型上下文效果的包用审计过的 `None, as ` 语句或 `NO_MODEL_EXPERIENCE_SECTION`。
+
+## 可选的展示元信息（插件卡片上的标题与描述）
+
+`locale/en.json` 定义 `meta.title` / `meta.description`，`locale/zh.json` 用同字段给译文；`en.json` 是发现入口。字段可缺，缺了**逐字段回退**：
+
+- 标题：locale `meta.title` → `package.json` 的 `name` → Cordis 插件全名
+- 描述：locale `meta.description` → `package.json` 的 `description` → 不显示描述
+
+`package.json` 里要开放 `./package.json` 与 `./locale/*.json` 两个 exports，并把 `locale/*.json` 加进 `files`。想在插件卡片、详情和组件行显示图片，就在导出清单顶层写 `"icon": "./icon.svg"` 并把图片加进 `files`（≤ 256 KiB 的 SVG / PNG / JPEG / WebP，路径不得指向目录外）。图片由 Host 以 data URL 返回，**不激活插件**。验证跑 `pnpm run verify-package-meta`。
 
 ## 验证
 
