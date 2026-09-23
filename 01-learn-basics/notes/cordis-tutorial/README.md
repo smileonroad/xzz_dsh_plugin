@@ -131,10 +131,13 @@ notes/cordis-tutorial/
 H=/d/myPI/deepseek-harness
 cp -r <本仓库>/01-learn-basics/examples/cordis-tutorial "$H/tmp/cordis-tutorial"
 cd "$H/tmp/cordis-tutorial/<实验目录>"
-node --import tsx ../../../vendor/cordis/bin.js
+node --import tsx ../../../vendor/cordis/bin.js     # 原样跑（和笔记记录的启动器一致）
+node --import tsx ../_diag.ts                      # 要看失败信息时用这个
 ```
 
-`../../../` 是从实验目录回到 harness 根。
+`../../../` 是从实验目录回到 harness 根；`../_diag.ts` 是同目录旁的诊断启动器。
+
+**什么时候用哪个。** 预期跑得成的实验，两个给的结果一样。**预期会报错的实验**（1.2 / 1.4 / 1.6、5.4 / 5.6 / 5.7、3.3 的 orphan）**得用 `_diag.ts`** —— 当前 harness 把加载失败吞成 `logger.error`，而启动期日志会在 exporter 注册前丢掉，用 `bin.js` 跑出来是「零输出 + 退出码 0」。原因与实测对照见 [examples/cordis-tutorial/README.md](../../examples/cordis-tutorial/README.md#实测校验2026-09-23harness-c36a83ff6b)。
 
 **为什么必须在实验自己的目录里跑**：`bin.js` 把 `ctx.baseUrl` 设成**当前工作目录**，而 `cordis.yml` 里的 `./xxx.ts` 是相对 `baseUrl` 解析的。站在 harness 根目录跑就会找不到文件。
 
