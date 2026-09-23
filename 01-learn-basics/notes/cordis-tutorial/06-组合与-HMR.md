@@ -369,6 +369,8 @@ access(key, create = false) {
 
 「启动期模块解析失败会直接崩溃」这一点在 [1.6 两个故障实验](01-第一个插件.md#16-两个故障实验报错的动词不同) 已经实测过。这一节补上另一半：**运行期的增量更新是不是也只记日志？** 现在有了 HMR，可以实测了。
 
+> ⚠️ **实测更新（2026-09-23）**：**前提变了 —— 启动期不再崩溃**（见 [1.6 的实测更新](01-第一个插件.md#实测更新崩溃发生在启动期还是运行期)）。所以本节「两条路径两种命运」的对照**已经不再成立**，现在是「两条路径都只记日志」。实测这一段本身（运行期改坏配置 → 进程活着、旧树保留）**完全复现**，`hello is STILL ALIVE` 和退出码 124 都对得上。
+
 **📄 文件** `01-learn-basics/examples/cordis-tutorial/06-hmr-config-error/run.sh`
 
 ```sh
@@ -438,20 +440,26 @@ hello is STILL ALIVE
 
 ### 结论：同一份错误，两条路径两种命运
 
+> ⚠️ **实测更新（2026-09-23）**：**「启动期崩溃」已经不成立。** `group.ts` 的 `update()` 现在把条目失败吞成 `logger.error`，`bin.js` 的顶层 `await` 再也不 reject。当前实测：
+
 | 阶段 | 引用不存在的模块 | 退出码 | 恢复方式 |
 |---|---|---|---|
-| **启动期**（`bin.js` 的顶层 `await`） | **崩溃**，异常一路冒到顶层 | **1** | 修好文件重跑 |
-| **运行期**（HMR 触发的 config refresh） | **只记日志**，`config reload ... failed` + 原始错误 | **0**（进程存活） | 旧树已回滚，**继续编辑即可** |
+| **启动期**（`bin.js` 读 `cordis.yml`） | 失败记 `logger.error`，**而且启动期日志会丢**（exporter 还没注册）→ 什么都看不见 | **0** | 修好重跑；用 `../_diag.ts` 才看得到 |
+| **运行期**（HMR 触发的 config refresh） | **只记日志** + 原始错误 | **0**（进程存活） | 旧树已回滚，**继续编辑即可** |
 
-**判据：看有没有顶层 `await` 兜着。** 差异的根源在 `bin.js`：
+（原文当时记录的是「启动期崩溃 / 退出码 1」；那段依据的 `if (failures.length === 1) throw failures[0]` 在当前 `group.ts` 里已经不存在了。）
+
+**判据**：启动期和运行期的差别不再是「崩不崩」，而是**有没有旧树可以回滚** —— 启动期没有（什么都没起来），运行期有（旧配置继续跑）。
+
+两边都源自 `bin.js:11` 的顶层 `await`：
 
 ```js
 // vendor/cordis/bin.js:11
 await ctx.loader.create({ name: '@deepseek-ai/cordis-plugin-include', config: { path: './cordis.yml' } })
-//   ↑ 顶层 await：这里的 rejection 直接变成未捕获异常 → 进程退出
+//   ↑ 以前这里的 rejection 会变成未捕获异常 → 进程退出；现在 group.ts 把它 catch 掉了
 ```
 
-而运行期走的是 `Hmr.refreshConfig` 的 `try/catch`（`hmr/src/index.ts:305-316`）：捕获 → `logger.warn` → 继续。**同一份错误，两条路径两种命运。**
+运行期另有一层 `Hmr.refreshConfig` 的 `try/catch`（`hmr/src/index.ts:305-316`）：捕获 → `logger.warn` → 继续。
 
 **第 ③ 步是这一节最关键的证据**：配置刷新失败之后，改 `hello.ts` **仍然能正常 reload**（`hello is STILL ALIVE`）。这说明 `EntryGroup.update` 的事务回滚（`group.ts:85-105`）**真的把旧树留下了** —— 配置改坏了不会让你丢掉整个进程，只是那次修改没生效。
 
@@ -952,13 +960,15 @@ const key = this.ctx[symbols.isolate][name]
 
 **不一样。**
 
+> ⚠️ **实测更新（2026-09-23）**：**启动期那一栏已经不成立** —— 现在两边都不崩、退出码都是 0（错误被 `group.ts` 吞成 `logger.error`，且启动期日志会丢）。下面这张表是原文记录，保留对照。
+
 | | 启动期 | 运行期 |
 |---|---|---|
-| 现象 | 异常冒到顶层，进程退出 | `[W] config reload at ... failed` + 原始错误 |
-| 退出码 | **1** | **0**（进程存活） |
+| 现象 | ~~异常冒到顶层，进程退出~~ → 实测：什么都不输出 | `[W] config reload at ... failed` + 原始错误 |
+| 退出码 | ~~**1**~~ → 实测 **0** | **0**（进程存活） |
 | 旧树 | —— | **回滚保留**，继续编辑即可恢复 |
 
-**根源**：启动走 `bin.js:11` 的**顶层 `await`**（rejection → 未捕获异常 → 退出）；运行期走 `Hmr.refreshConfig` 的 `try/catch`（`hmr/src/index.ts:305-316`）。
+**根源**：启动走 `bin.js:11` 的**顶层 `await`**（以前 rejection → 未捕获异常 → 退出，现在被 `group.ts` 的 `.catch(logger.error)` 拦住）；运行期走 `Hmr.refreshConfig` 的 `try/catch`（`hmr/src/index.ts:305-316`）。
 
 **怎么证明运行期旧树真的活着**：配置刷新失败后，接着改 `hello.ts` —— 仍然正常 reload（实测输出 `hello is STILL ALIVE`）。说明 `EntryGroup.update` 的事务回滚（`group.ts:85-105`）起作用了。
 
