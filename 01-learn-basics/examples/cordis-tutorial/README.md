@@ -62,6 +62,48 @@ await this.create(newMap[id]).catch((error) => { this.ctx.logger.error(error) })
 
 ---
 
+### 怎么看到失败：用 `_diag.ts`
+
+这个目录里有一个诊断启动器 [`_diag.ts`](_diag.ts)。在任意实验目录里：
+
+```sh
+node --import tsx ../_diag.ts          # 用诊断启动器
+node --import tsx ../../../vendor/cordis/bin.js   # 原来的
+```
+
+它和 `bin.js` 做同样三件事，只多两步：**先把日志出口装上，再读 `cordis.yml`**；结尾再汇总一行 `FAILED` / `PENDING` 的 fiber。
+
+实测下来，那 10 个「静默」的实验全部能直接看到错误，而且错误文案与文档逐字一致：
+
+```
+[E] boom Error: apply exploded          ← 01-error-apply（+ boom = FAILED）
+[E] include Error: invalid plugin, expect function or object with an "apply" method, received object
+[E] config-demo ValidationError: invalid config:
+      - $.targets expected array but got not-an-array (at targets)
+[E] include TypeError: config file must be a top-level array of entries: ...cordis.yml
+```
+
+> 剩下的差别只有退出码：还是 `0`（错误是日志，不是异常）。要脚本能感知失败，靠末尾的「异常 fiber」汇总或下面那个改法。
+
+### 备选：恢复「失败就抛」
+
+如果不想换启动器，也可以把 `vendor/loader/src/config/group.ts` 的 `update()` 改成失败即抛（就是把笔记引用的那段形状装回去）：
+
+```ts
+const outcomes = await Promise.allSettled(ids.map(async (id) => {
+  if (newMap[id]) await this.create(newMap[id])
+  else this.remove(id)
+}))
+const failures = outcomes
+  .filter((o): o is PromiseRejectedResult => o.status === 'rejected')
+  .map((o) => o.reason)
+if (failures.length === 1) throw failures[0]
+```
+
+这样 `bin.js` 的顶层 `await` 会拿到 rejection → 崩溃 + 退出码 1，和第 1 章、 5.6 的记录一致。**但这是在改上游源码**，下次更新 harness 会冲突；诊断启动器不改任何 harness 文件，代价是得手动换命令。
+
+---
+
 ### 补全件（22 个文件）
 
 文档没给这些文件的内容，按**正文描述 + 同模块／相邻实验的源码**补出。**每份文件首行都带「补全件」标记，不要当文档原文看。**（`05-schema-shape` 已拿到真源码，不在其中；`06-disabled/consumer.ts` 经实跑修正过文案，`05-config-class-module-default/cfg-class-module.ts` 是它的拷见。）
@@ -85,8 +127,9 @@ await this.create(newMap[id]).catch((error) => { this.ctx.logger.error(error) })
 >
 > 作者把真源码发来后，逐个替换 —— 标记行也一并去掉。
 
+### 清单位置
+
 - 每个实验验哪一条、归哪一章：见笔记总览的[实验目录](../../notes/cordis-tutorial/README.md#实验目录)一节，那里是唯一清单，不在这里重复。
-- 笔记里每个 🧪 验证实验块会给出该实验的文件内容与运行命令，补实验时按它落盘即可。
 
 ## 每个实验的形状
 
@@ -103,7 +146,10 @@ await this.create(newMap[id]).catch((error) => { this.ctx.logger.error(error) })
 ```sh
 H=/d/myPI/deepseek-harness
 cd "$H/tmp/cordis-tutorial/<实验目录>"
-node --import tsx ../../../vendor/cordis/bin.js
+node --import tsx ../../../vendor/cordis/bin.js     # 正常跑
+node --import tsx ../_diag.ts                      # 要看失败信息时用这个
 ```
 
 拷过来之后，在每个实验自己的目录里启动 —— 原因见 [../README.md](../README.md) 的「怎么跑」。
+
+两个启动器的区别见上面的[「怎么看到失败」](#怎么看到失败用-_diagts)：`bin.js` 是原样的，`_diag.ts` 把日志出口提前装好，启动期的错误才看得见。
