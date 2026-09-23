@@ -46,24 +46,6 @@ xzz-dsh-plugin/
 
 **整体索引：[meta/index.md](meta/index.md)**（各篇摘要 + 摘要↔上游 hash 配对 + 开发流程速记 + deepseek-harness 关键源码）。
 
-## 经验文章
-
-插件练习段一个实战对应一篇，每篇与其 `03-practice-plugin/examples/` 下的源码包配对（实战表见 [meta/index.md](meta/index.md)）。应用练习段另有一套「surface 系列」讲 dsh 的接入形态，索引见 [02-practice-app/README.md](02-practice-app/README.md)。
-
-| 日期 | 主题 | 笔记 |
-| ---- | ---- | ---- |
-| 2026-08-15 | `/helloworld` 命令插件实战：命令 vs 工具、三个坑、测试哲学 | [2026-08-15-helloworld-command.md](03-practice-plugin/notes/2026-08-15-helloworld-command.md) |
-| 2026-08-16 | `sql_check` 工具插件实战：defineTool 契约、canonical value、presenters 纯函数、零依赖 node:sqlite | [2026-08-16-sql-check-tool.md](03-practice-plugin/notes/2026-08-16-sql-check-tool.md) |
-| 2026-08-16 | `csv_query` 工具插件实战：Config schema、参数覆盖配置分层、手写 CSV 解析器、bundle 打包分发 | [2026-08-16-csv-query-tool.md](03-practice-plugin/notes/2026-08-16-csv-query-tool.md) |
-| 2026-08-22 | `ctx.units` seam 实战：Definition/Provider/Consumer 三角色、服务键命名空间、inject 依赖驱动、config 换表 | [2026-08-22-units-capability.md](03-practice-plugin/notes/2026-08-22-units-capability.md) |
-| 2026-08-23 | 事件实战：监听真实 harness 事件（tools 瀑布 + commands/change）、waterfall 观察者/决策者纪律、五种分发模式 | [2026-08-23-events-demo.md](03-practice-plugin/notes/2026-08-23-events-demo.md) |
-| 2026-08-24 | 自声明事件实战：奶茶店事件族（declare module + @mode 契约）、五种分发模式全自有声明（serial/bail/parallel 真实语义）、type-only import、事件派生 | [2026-08-24-tea-shop-demo.md](03-practice-plugin/notes/2026-08-24-tea-shop-demo.md) |
-| 2026-08-26 | approval 应答者实战：传达室自动审批（allow/deny 名单 + prepend 层序）、approval/request 三角色与 fail-closed、审计对与会话策略 | [2026-08-26-gatehouse-demo.md](03-practice-plugin/notes/2026-08-26-gatehouse-demo.md) |
-| 2026-09-02 | Client 对话节点实战：洗衣店卡片（可重放 session 事件 + Conversation Node Definition + keyed 聊天渲染器，纯投影测试） | [2026-09-02-laundry-demo.md](03-practice-plugin/notes/2026-09-02-laundry-demo.md) |
-| 2026-09-07 | 输入栏一键发送按钮：聊天输入框旁加一个可点按钮，点一下就把预设的一句话发出去（练习在输入框工具行加控件、走官方发送通道、消息在飞时自动禁用；09-09 补记：提升为可安装标准包，经官方命令装进 profile） | [2026-09-07-grill-send-button.md](03-practice-plugin/notes/2026-09-07-grill-send-button.md) |
-| 2026-09-09 | 回答完自动给建议：发送键旁加一个推荐开关，打开后每次回答结束，输入框上方自动给出一排可点的问题建议，点一下就发出去（练习界面与服务端两头协作，界面只负责显示，服务端负责记住开关和照着最新问答生成建议） | [2026-09-09-reply-tips.md](03-practice-plugin/notes/2026-09-09-reply-tips.md) |
-| 2026-09-17 | 模型提供方实战：离线模型适配器（自定义 LlmAdapter 实现 stream、规范分片流由包不变量强制、抛错被规范化成终态 finish、reasoning 能力在 stream 之前校验、注册与原子 replace）+ 敏感词拦截层（`llm/stream` 瀑布短路，不调模型也能回答） | [2026-09-17-scripted-llm-adapter.md](03-practice-plugin/notes/2026-09-17-scripted-llm-adapter.md) |
-
 ## 什么是 DeepSeek Harness（dsh）
 
 > dsh 是一个开源的 agent harness（智能体框架）。它基于 **Cordis** 插件框架构建：一切皆插件——模型适配器、工具注册表、会话日志、agent loop 本身都只是插件。

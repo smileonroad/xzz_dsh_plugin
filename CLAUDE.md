@@ -66,7 +66,7 @@ pnpm dsh web --patch examples/<项目>/<项目>.patch.yml               # 临时
 
 ## 文档维护约定
 
-- **整体索引在 [meta/index.md](meta/index.md)**：摘要目录 + 摘要↔上游 hash 配对表 + 开发流程速记 + deepseek-harness 关键源码。根 `README.md` 只留定位、目录结构、验证方式、什么是 dsh、许可（不单列快速导航，实践列表并入目录结构）；新增摘要或编辑摘要/上游同步时，更新配对表并重记 hash。
+- **整体索引在 [meta/index.md](meta/index.md)**：摘要目录 + 摘要↔上游 hash 配对表 + 开发流程速记 + deepseek-harness 关键源码。根 `README.md` 只留定位、目录结构、验证方式、什么是 dsh、许可（不单列快速导航，**也不列经验文章清单** —— 笔记与实战清单在段索引 `03-practice-plugin/README.md` 与 [meta/index.md](meta/index.md)）；新增摘要或编辑摘要/上游同步时，更新配对表并重记 hash。
 - **命名规范**（三段同形，2026-09-23 定）：段目录 `NN-<slug>/`（`learn-` 学习段、`practice-` 练习段）；段内必有 `README.md`，`notes/` 与 `examples/`（或 `scripts/`）必建，`sources/` 有材料才建。`notes/` 分三类：**学习摘要**按主题命名（`<topic>.md`，如 `cordis-basics.md`、`typescript-basics.md`），上游配对记进 `meta/index.md`；**实战笔记**用 `YYYY-MM-DD-<slug>.md`，slug 与 `examples/` 项目名一致；**系列笔记**是一个目录（`<topic>/README.md` 作总览 + 分章文件，如 `cordis-tutorial/`）。`sources/` **保持上游原文件名与相对路径**，只读。实战目录必带 `README.md` / `README.zh.md` / `README.i18n.yaml` / `src/` / `tests/<slug>.spec.ts` / `vitest.examples.config.ts` / `LICENSE`；教学示例 patch 叫 `<slug>.patch.yml`，标准 bundle 才叫 `cordis.patch.yml`（名字被 `package.json` 的 `dsh.bundle.patch` 锁定）。
 - 本仓库 ↔ deepseek-harness 的对应关系在 `meta/index.md` 维护，新增 `sources/` 副本或 `examples/` 实战时更新。
 - 双语 README（根 `README.md` / `README.zh.md`，以及各实战目录）保持同步，改完重记对应 `README.i18n.yaml` 的 hash（根目录与 helloworld 目录保留，其他双语对不强制加）。
