@@ -2,62 +2,42 @@
 
 本仓库三段内容的入口，以及各篇摘要与其上游原文的 hash 配对。三段的定位与目录结构见根 [README.md](../README.md)。
 
-## 快速导航
+## 三段入口
 
-| 想找什么 | 去哪里 |
+| 段 | 里面有什么 |
 | --- | --- |
-| 基础学习段总览 | [../01-learn-basics/](../01-learn-basics/) |
-| 应用练习段总览 | [../02-practice-app/](../02-practice-app/) |
-| 插件练习段总览 | [../03-practice-plugin/](../03-practice-plugin/) |
-| TypeScript 与工程化基础（tsconfig / ESM / monorepo） | [../01-learn-basics/notes/typescript-basics.md](../01-learn-basics/notes/typescript-basics.md) |
-| 架构文档带领阅读（插件树 / 事件域 / 轮次流程 / 会话日志） | [../01-learn-basics/notes/architecture-reading.md](../01-learn-basics/notes/architecture-reading.md) |
-| Cordis 教程跟学笔记（8 章，待补） | [../01-learn-basics/notes/cordis-tutorial/](../01-learn-basics/notes/cordis-tutorial/) |
-| 基础学习段的可运行示例 | [../01-learn-basics/examples/](../01-learn-basics/examples/) |
-| 插件模型入门（命令／工具／服务／effect） | [../01-learn-basics/notes/cordis-basics.md](../01-learn-basics/notes/cordis-basics.md) |
-| 添加模型工具（工具 vs 命令、执行扩展点） | [../03-practice-plugin/notes/adding-a-tool.md](../03-practice-plugin/notes/adding-a-tool.md) |
-| 插件包布局、独立分发包与官方安装通道 | [../03-practice-plugin/notes/plugin-package.md](../03-practice-plugin/notes/plugin-package.md) |
-| 插件配置（Schemastery、同名导出、分层） | [../03-practice-plugin/notes/plugin-config.md](../03-practice-plugin/notes/plugin-config.md) |
-| Client 插件（Web UI 侧） | [../03-practice-plugin/notes/client-plugin.md](../03-practice-plugin/notes/client-plugin.md) |
-| 应用形态笔记（headless／acp／jsonrpc／web／schedule） | [../02-practice-app/notes/](../02-practice-app/notes/) |
-| 实战源码 + 测试（11 个插件） | [../03-practice-plugin/examples/](../03-practice-plugin/examples/) |
-| 应用运行脚本 | [../02-practice-app/scripts/](../02-practice-app/scripts/) |
-| 官方一手教程／手册 | [../01-learn-basics/sources/](../01-learn-basics/sources/) + [../03-practice-plugin/sources/](../03-practice-plugin/sources/) |
-| 关键源码位置（deepseek-harness 内） | 见下文 |
+| [01-learn-basics](../01-learn-basics/) · DSH 基础学习 | 自写摘要 + 官方材料副本 + 最小可运行示例 |
+| [02-practice-app](../02-practice-app/) · DSH 应用练习 | surface 系列笔记 + 零依赖运行脚本 |
+| [03-practice-plugin](../03-practice-plugin/) · DSH 插件练习 | 11 个实战源码 + 经验文章 + 官方手册副本 |
 
-## 实战组织
+## 摘要目录
 
-一个实战 = 一个源码目录（`03-practice-plugin/examples/<项目>/`）+ 一篇经验笔记（`03-practice-plugin/notes/`）。应用侧的运行脚本在 `02-practice-app/scripts/`，与 `02-practice-app/notes/` 的应用笔记配套。
+| 篇 | 讲什么 |
+| --- | --- |
+| [typescript-basics](../01-learn-basics/notes/typescript-basics.md) | TypeScript 与工程化：tsconfig / ESM / pnpm monorepo |
+| [architecture-reading](../01-learn-basics/notes/architecture-reading.md) | 逐段精读 harness 架构文档：插件树 / 事件域 / 轮次流程 / 会话日志 |
+| [cordis-tutorial/](../01-learn-basics/notes/cordis-tutorial/) | Cordis 教程跟学笔记，8 章，含 60 个实验（已实跑校验） |
+| [cordis-basics](../01-learn-basics/notes/cordis-basics.md) | 插件模型入门：命令／工具／服务／effect |
+| [adding-a-tool](../03-practice-plugin/notes/adding-a-tool.md) | 添加模型工具：工具 vs 命令、执行扩展点 |
+| [plugin-config](../03-practice-plugin/notes/plugin-config.md) | 插件配置：Schemastery、同名导出、分层 |
+| [plugin-package](../03-practice-plugin/notes/plugin-package.md) | 插件包布局、独立分发与官方安装通道 |
+| [client-plugin](../03-practice-plugin/notes/client-plugin.md) | Client 插件（Web UI 侧） |
 
-- `03-practice-plugin/examples/<项目>/` — 完整源码（可独立阅读、可作参考模板），也是**源码权威来源**。测试通过 `@deepseek-ai/dsh-*` 包与根 `tsconfig.json` 加载（`tsx`），须在 deepseek-harness 根目录运行——**验证前先把该目录拷贝到 deepseek-harness 的 `examples/<项目>/`**（覆盖，同名目录可能因旧内容而不同步），再在 deepseek-harness 根目录跑测试或在 web 中用 `--patch` 加载。`grill-send-button` 已升级为可独立安装的标准 bundle（`package.json` + `cordis.patch.yml`，官方通道安装，见 [plugin-package.md](../03-practice-plugin/notes/plugin-package.md)）；其余教学示例无 `package.json`，要分发需先做同样提升。
-- `03-practice-plugin/notes/` — 对外发布的经验总结，面向对 dsh 插件开发感兴趣的读者；文章引用 `examples/` 下的源码作为参考。
-- `02-practice-app/` — 换一个视角：不写插件，而是把 dsh 本身当应用跑起来（headless／acp／jsonrpc／web／schedule），笔记讲形态与坑，`scripts/` 放零依赖运行器。
+> 每篇对应的上游原文与 hash 配对见文末。官方一手材料都在 `sources/` 下：[01 段](../01-learn-basics/sources/)（Cordis 教程与架构）+ [03 段](../03-practice-plugin/sources/)（插件开发手册）。
 
-**已发布系列（插件练习）：**
+## 实战与笔记
 
-| 日期 | 主题 | 笔记 | 源码 |
-| --- | --- | --- | --- |
-| 2026-08-15 | `/helloworld` 命令插件实战：命令 vs 工具、三个坑、测试哲学 | [notes/2026-08-15-helloworld-command.md](../03-practice-plugin/notes/2026-08-15-helloworld-command.md) | [examples/helloworld-command/](../03-practice-plugin/examples/helloworld-command/) |
-| 2026-08-16 | `sql_check` 工具插件实战：defineTool 契约、canonical value、presenters 纯函数、零依赖 node:sqlite | [notes/2026-08-16-sql-check-tool.md](../03-practice-plugin/notes/2026-08-16-sql-check-tool.md) | [examples/sql-check-tool/](../03-practice-plugin/examples/sql-check-tool/) |
-| 2026-08-16 | `csv_query` 工具插件实战：Config schema、参数覆盖配置分层、手写 CSV 解析器、bundle 打包分发 | [notes/2026-08-16-csv-query-tool.md](../03-practice-plugin/notes/2026-08-16-csv-query-tool.md) | [examples/csv-query-tool/](../03-practice-plugin/examples/csv-query-tool/) |
-| 2026-08-22 | `ctx.units` seam 实战：Definition/Provider/Consumer 三角色、服务键命名空间、inject 依赖驱动、config 换表 | [notes/2026-08-22-units-capability.md](../03-practice-plugin/notes/2026-08-22-units-capability.md) | [examples/units-capability/](../03-practice-plugin/examples/units-capability/) |
-| 2026-08-23 | 事件实战：监听真实 harness 事件（tools 瀑布 + commands/change）、waterfall 观察者/决策者纪律、五种分发模式（serial/bail/parallel 用夹具） | [notes/2026-08-23-events-demo.md](../03-practice-plugin/notes/2026-08-23-events-demo.md) | [examples/events-demo/](../03-practice-plugin/examples/events-demo/) |
-| 2026-08-24 | 自声明事件实战：奶茶店事件族（declare module + @mode 契约）、五种分发模式全自有声明（serial/bail/parallel 真实语义）、type-only import、事件派生 | [notes/2026-08-24-tea-shop-demo.md](../03-practice-plugin/notes/2026-08-24-tea-shop-demo.md) | [examples/tea-shop-demo/](../03-practice-plugin/examples/tea-shop-demo/) |
-| 2026-08-26 | approval 应答者实战：传达室自动审批（allow/deny 名单 + prepend 层序）、approval/request 三角色与 fail-closed、审计对与会话策略 | [notes/2026-08-26-gatehouse-demo.md](../03-practice-plugin/notes/2026-08-26-gatehouse-demo.md) | [examples/gatehouse-demo/](../03-practice-plugin/examples/gatehouse-demo/) |
-| 2026-09-02 | Client 对话节点实战：洗衣店卡片（可重放 session 事件 + Conversation Node Definition + keyed 聊天渲染器，纯投影测试） | [notes/2026-09-02-laundry-demo.md](../03-practice-plugin/notes/2026-09-02-laundry-demo.md) | [examples/laundry-demo/](../03-practice-plugin/examples/laundry-demo/) |
-| 2026-09-07 | 纯 Client 插件实战：输入栏加按钮（list 槽新增 vs 替换、slots.inject、standard props 的 inputActions、busy 纯函数闸门、动态插件零重启验证；9-9 补记提升为独立标准包、官方通道装进 profile、`__ModuleLoader__` 产物坑） | [notes/2026-09-07-grill-send-button.md](../03-practice-plugin/notes/2026-09-07-grill-send-button.md) | [examples/grill-send-button/](../03-practice-plugin/examples/grill-send-button/) |
-| 2026-09-09 | Client + Host 双端联动实战：💡 推荐开关与 LLM 追问胶囊（host.call↔harness.handle、readSession 取正文、session.running 边沿触发、reasoningEffort off、notOld/isJunkTip、26 版动态迭代） | [notes/2026-09-09-reply-tips.md](../03-practice-plugin/notes/2026-09-09-reply-tips.md) | [examples/reply-tips/](../03-practice-plugin/examples/reply-tips/) |
-| 2026-09-17 | 模型提供方实战：离线模型适配器（LlmAdapter 只需实现 stream、规范分片流契约由包不变量强制、抛错被规范化成终态 finish、reasoning 能力在 stream 之前校验、注册与原子 replace）+ 敏感词拦截层（llm/stream 瀑布短路，不调模型也能回答） | [notes/2026-09-17-scripted-llm-adapter.md](../03-practice-plugin/notes/2026-09-17-scripted-llm-adapter.md) | [examples/scripted-llm-adapter/](../03-practice-plugin/examples/scripted-llm-adapter/) |
+一个实战 = 一个源码目录 + 一篇笔记。**清单在段索引里，本页不重复：**
 
-**已发布系列（应用练习，surface 系列）：**
+| 段 | 清单 |
+| --- | --- |
+| 插件练习 | [../03-practice-plugin/README.md](../03-practice-plugin/README.md) —— 11 个实战的序列表，外加 4 篇插件开发摘要 |
+| 应用练习 | [../02-practice-app/README.md](../02-practice-app/README.md) —— surface 系列 5 篇笔记与运行脚本对照 |
 
-| # | 形态 | 主题 | 笔记 | 运行脚本 |
-| --- | --- | --- | --- | --- |
-| 01 | headless | 一次性任务 CLI | [2026-08-21-headless-cli.md](../02-practice-app/notes/2026-08-21-headless-cli.md) | `scripts/run-headless.mjs` |
-| 02 | acp | 宿主驱动的长会话 | [2026-08-21-acp.md](../02-practice-app/notes/2026-08-21-acp.md) | `scripts/acp-mini-client.mjs` |
-| 03 | jsonrpc | SDK 极简协议 | [2026-09-02-jsonrpc-sdk-protocol.md](../02-practice-app/notes/2026-09-02-jsonrpc-sdk-protocol.md) | `scripts/jsonrpc-mini-client.mjs` |
-| 04 | web | 浏览器 GUI | [2026-09-02-web-gui.md](../02-practice-app/notes/2026-09-02-web-gui.md) | `scripts/run-web.mjs` |
-| 05 | schedule | 定时提醒能力 | [2026-09-02-schedule.md](../02-practice-app/notes/2026-09-02-schedule.md) | `scripts/run-schedule.mjs` |
-| — | 汇总 | 同一个内核的五种打开方式 | [2026-09-02-surface-summary.md](../02-practice-app/notes/2026-09-02-surface-summary.md) | — |
+两点容易踩的：
+
+- `03-practice-plugin/examples/` 是**源码权威来源**，在本仓库不独立运行。测试、`--patch` 加载都要先拷进 deepseek-harness 的 `examples/<项目>/`，做法见根 [README.md](../README.md#验证方式)。
+- `grill-send-button` 已提升为可独立安装的标准 bundle（`package.json` + `cordis.patch.yml`，走官方安装通道）；其余教学示例要分发，得先做同样提升，见 [plugin-package.md](../03-practice-plugin/notes/plugin-package.md)。
 
 ## 开发流程速记（helloworld / sql-check-tool 实战印证）
 
@@ -93,9 +73,7 @@ git hash-object 01-learn-basics/notes/cordis-basics.md 01-learn-basics/sources/c
 
 **「一致?」这一列读法**。`✓` 表示上游自上次核对后没动，摘要的结论仍然有效；`⚠️` 表示**上游已经更新**，摘要还没重读，结论可能已经过时（自己写的一侧改了但结论没变的不算）；`—` 表示上游文件已不在 harness 里。改完摘要后，把两侧 hash 一起重记，并把标记改回 `✓`。
 
-本仓库的 `sources/` 从 deepseek-harness 同步了一版（2026-09-23，harness `c36a83ff6b`）。这次变动：`architecture.zh.md`（135 → 168 行，补上了「应用启动」与「桌面应用」两节）、`adding-a-package.zh.md`（120 → 172）、`adding-a-tool.zh.md`（96 → 103）、`cordis-primer.zh.md`（50 → 51）、`cordis-tutorial/05-config`（84 → 111）、`06-composition-and-hmr`、`07-into-the-harness`。`basic/config.md` 两侧未变。cookbook 下的 `adding-a-conversation-node.zh.md` 上游已删除。
-
-受影响的四篇摘要已按新版重读并更新（cordis 补了 `bail` 分发模式；adding-a-tool 改名 PTC mode、补 `read` 卡片与「Web Client 不消费 presentCall/presentResult」；plugin-package 换了分组名、改了 `files` 不变式、补了 frontmatter `kind` 与展示元信息）。
+同步记录：`sources/` 于 2026-09-23 对齐到 harness `c36a83ff6b`（`architecture`、`adding-a-package`、`adding-a-tool`、`cordis-primer` 与三章 cordis-tutorial 有更新；`basic/config.md` 未变；cookbook 的 `adding-a-conversation-node.zh.md` 上游已删除）。受影响的四篇摘要均已重读对齐。
 
 | 摘要 | 上游原文 | 摘要 hash | 上游 hash | 一致? |
 | --- | --- | --- | --- | --- |
