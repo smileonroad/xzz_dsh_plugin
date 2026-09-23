@@ -6,7 +6,7 @@
 
 1. [notes/typescript-basics.md](notes/typescript-basics.md) — TypeScript 与工程化小抄。没写过 TS、或者被 `tsconfig.json` / 包解析绊住的，从这篇开始。
 2. [notes/architecture-reading.md](notes/architecture-reading.md) — 架构文档带领阅读。逐段精读 harness 的 `docs/architecture.md`，每段给原文关键句、白话解释、代码佐证和容易踩的坑，附自测题。
-3. [sources/architecture.zh.md](sources/architecture.zh.md) — 架构原文（归档的中文版，比带领阅读所据的英文版早一点，行号对不上）。
+3. [sources/architecture.zh.md](sources/architecture.zh.md) — 架构原文（归档的中文版，与带领阅读是同一个修订版；只是中英行数不同，引用中的行号以英文原本为准）。
 4. [notes/cordis-basics.md](notes/cordis-basics.md) — Cordis 基础，插件、context、服务、事件、effect 五件事。
 5. [sources/cordis-primer.zh.md](sources/cordis-primer.zh.md) — Cordis 官方入门，看一遍原文。
 6. [sources/cordis-tutorial/](sources/cordis-tutorial/) — 官方七步教程，从第一个插件写到接进 harness。
